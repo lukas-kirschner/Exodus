@@ -27,6 +27,15 @@ impl GameWorld {
     }
     ///
     /// Fill the whole map with the given tile and delete everything else.
+    ///
+    /// ```rust
+    /// use libexodus::tiles;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(2,2);
+    /// world.set(1,1,&tiles::SPIKES);
+    /// world.fill(&tiles::WALL);
+    /// assert_eq!(&tiles::WALL,world.get(1,1).unwrap());
+    /// ```
     pub fn fill(&mut self, tile: &Tile) -> &mut Self {
         for i in 0..self.data.len() {
             for j in 0..self.data[0].len() {

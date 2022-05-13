@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TileKind {
     ///
     /// A tile that cannot interact with the player in any way
@@ -14,7 +14,7 @@ pub enum TileKind {
     SPECIAL,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Tile {
     ///
     /// The texture index in the tile atlas that is used as sprite for this tile
@@ -44,5 +44,11 @@ pub static WALL: Tile = Tile {
 /// Spikes that sit on the ground and point up
 pub static SPIKES: Tile = Tile {
     atlas_index: Some(228),
+    kind: TileKind::DEADLY,
+};
+///
+/// Spikes that sit on a slope and point up, only deadly if touched from above.
+pub static SLOPED_SPIKES: Tile = Tile {
+    atlas_index: Some(250),
     kind: TileKind::DEADLY,
 };

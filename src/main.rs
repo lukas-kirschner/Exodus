@@ -5,7 +5,7 @@ use bevy::render::render_resource::{Texture, TextureDescriptor};
 use bevy::render::renderer::RenderDevice;
 use bevy::window::WindowMode;
 use libexodus::tiles;
-use libexodus::tiles::{SPIKES, WALL};
+use libexodus::tiles::{SLOPED_SPIKES, SPIKES, WALL};
 use libexodus::world;
 use libexodus::world::GameWorld;
 
@@ -63,6 +63,9 @@ fn setup_game_world(
         .set(2, 0, &WALL)
         .set(2, 1, &WALL)
         .set(2, 2, &SPIKES)
+        .set(1, 1, &SPIKES)
+        .set(2, 3, &WALL)
+        .set(3, 3, &SLOPED_SPIKES)
     ;
 
     for row in 0..world.height() {
