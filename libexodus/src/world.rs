@@ -35,6 +35,14 @@ impl GameWorld {
         }
         self
     }
+    ///
+    /// Get the width of this world.
+    ///
+    /// ```rust
+    /// use libexodus::world::GameWorld;
+    /// let world = GameWorld::new(69,1337);
+    /// assert_eq!(69, world.width());
+    /// ```
     pub fn width(&self) -> usize {
         self.data.len()
     }
@@ -42,8 +50,9 @@ impl GameWorld {
     /// Get the height of this world.
     ///
     /// ```rust
+    /// use libexodus::world::GameWorld;
     /// let world = GameWorld::new(69,1337);
-    /// assert!(world.height == 1337);
+    /// assert_eq!(1337, world.height());
     /// ```
     pub fn height(&self) -> usize {
         self.data[0].len()

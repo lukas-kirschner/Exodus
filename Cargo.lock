@@ -1288,6 +1288,7 @@ name = "exodus"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "libexodus",
 ]
 
 [[package]]
@@ -1783,6 +1784,10 @@ name = "libc"
 version = "0.2.125"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5916d2ae698f6de9bfb891ad7a8d65c09d232dc58cc4ac433c7da3b2fd84bc2b"
+
+[[package]]
+name = "libexodus"
+version = "0.1.0"
 
 [[package]]
 name = "libloading"

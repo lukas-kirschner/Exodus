@@ -4,11 +4,9 @@ use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::render::render_resource::{Texture, TextureDescriptor};
 use bevy::render::renderer::RenderDevice;
 use bevy::window::WindowMode;
-use crate::tiles::Tile;
-use crate::world::GameWorld;
-
-mod world;
-mod tiles;
+use libexodus::tiles;
+use libexodus::world;
+use libexodus::world::GameWorld;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
