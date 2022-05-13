@@ -4,10 +4,27 @@ use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::render::render_resource::{Texture, TextureDescriptor};
 use bevy::render::renderer::RenderDevice;
 use bevy::window::WindowMode;
+use libexodus::player::Player;
 use libexodus::tiles;
 use libexodus::tiles::{SLOPED_SPIKES, SPIKES, WALL};
 use libexodus::world;
 use libexodus::world::GameWorld;
+
+// Number of columns in the game board
+static columns: usize = 24;
+// Number of rows in the game board
+static rows: usize = 10;
+// Number of pixels between game board tiles
+static margins: f32 = 0.00;
+//(1000 / rows) - margins; // Size of a tile, all tiles are square
+static tile_size: f32 = 1.0;
+// Texture size in pixels
+static texture_size: f32 = 32.0;
+
+#[derive(Component)]
+struct PlayerComponent {
+    pub player: Player,
+}
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -33,6 +50,35 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(camera);
 }
 
+fn setup_player(
+    mut commands: Commands,
+    rpg_sprite_handles: Res<RpgSpriteHandles>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut textures: ResMut<Assets<Image>>,
+) {
+    let mut texture_atlas_player = TextureAtlas::from_grid(
+        asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
+        Vec2::splat(texture_size),
+        16,
+        16,
+    );
+    let atlas_handle_player = texture_atlases.add(texture_atlas_player);
+    let mut player: PlayerComponent = PlayerComponent { player: Player::new(0., 0.) };
+    commands
+        .spawn_bundle(SpriteSheetBundle {
+            sprite: TextureAtlasSprite::new(player.player.atlas_index()),
+            texture_atlas: atlas_handle_player.clone(),
+            transform: Transform {
+                translation: Vec3::new(player.player.position.0, player.player.position.1, 0.),
+                scale: Vec3::splat((tile_size - margins) as f32 / texture_size),
+                ..default()
+            },
+            ..Default::default()
+        })
+        .insert(player);
+}
+
 fn setup_game_world(
     mut commands: Commands,
     rpg_sprite_handles: Res<RpgSpriteHandles>,
@@ -40,11 +86,6 @@ fn setup_game_world(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
 ) {
-    let columns = 24; // Number of columns in the game board
-    let rows = 10; // Number of rows in the game board
-    let margins = 0.00; // Number of pixels between game board tiles
-    let tile_size = 1.0;//(1000 / rows) - margins; // Size of a tile, all tiles are square
-    let texture_size = 32.0; // Texture size in pixels
 
     // Load Texture Atlas
     let mut texture_atlas = TextureAtlas::from_grid(
@@ -99,6 +140,7 @@ fn main() {
         .init_resource::<RpgSpriteHandles>()
         .add_startup_system(setup_camera)
         .add_startup_system(setup_game_world)
+        .add_startup_system(setup_player)
         .add_plugins(DefaultPlugins)
         .run();
 }
