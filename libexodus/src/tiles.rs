@@ -39,3 +39,10 @@ pub static WALL: Tile = Tile {
     atlas_index: Some(58),
     kind: TileKind::SOLID,
 };
+
+///
+/// Spikes that sit on the ground and point up
+pub static SPIKES: Tile = Tile {
+    atlas_index: Some(228),
+    kind: TileKind::DEADLY,
+};

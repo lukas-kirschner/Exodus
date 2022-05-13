@@ -5,6 +5,7 @@ use bevy::render::render_resource::{Texture, TextureDescriptor};
 use bevy::render::renderer::RenderDevice;
 use bevy::window::WindowMode;
 use libexodus::tiles;
+use libexodus::tiles::{SPIKES, WALL};
 use libexodus::world;
 use libexodus::world::GameWorld;
 
@@ -57,10 +58,11 @@ fn setup_game_world(
 
     let mut world: GameWorld = GameWorld::new(columns, rows);
     world
-        .set(0, 0, &tiles::WALL)
-        .set(1, 0, &tiles::WALL)
-        .set(2, 0, &tiles::WALL)
-        .set(2, 1, &tiles::WALL)
+        .set(0, 0, &WALL)
+        .set(1, 0, &WALL)
+        .set(2, 0, &WALL)
+        .set(2, 1, &WALL)
+        .set(2, 2, &SPIKES)
     ;
 
     for row in 0..world.height() {
