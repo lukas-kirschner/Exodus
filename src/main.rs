@@ -4,6 +4,11 @@ use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::render::render_resource::{Texture, TextureDescriptor};
 use bevy::render::renderer::RenderDevice;
 use bevy::window::WindowMode;
+use crate::tiles::Tile;
+use crate::world::GameWorld;
+
+mod world;
+mod tiles;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -52,26 +57,39 @@ fn setup_game_world(
     let solid_index: usize = 58;
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    for row in 0..rows {
+    let mut world: GameWorld = GameWorld::new(columns, rows);
+    world
+        .set(0, 0, &tiles::WALL)
+        .set(1, 0, &tiles::WALL)
+        .set(2, 0, &tiles::WALL)
+        .set(2, 1, &tiles::WALL)
+    ;
+
+    for row in 0..world.height() {
         let y = row as f32 * (tile_size);
-        for col in 0..columns {
+        for col in 0..world.width() {
             let x = col as f32 * (tile_size);
             let tile_position = Vec3::new(
                 x as f32,
                 y as f32,
                 0.0,
             );
-            commands
-                .spawn_bundle(SpriteSheetBundle {
-                    sprite: TextureAtlasSprite::new(solid_index),
-                    texture_atlas: atlas_handle.clone(),
-                    transform: Transform {
-                        translation: tile_position,
-                        scale: Vec3::splat((tile_size - margins) as f32 / texture_size),
-                        ..default()
-                    },
-                    ..Default::default()
-                });
+            match world.get(col, row).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str()).atlas_index {
+                None => {}
+                Some(index) => {
+                    commands
+                        .spawn_bundle(SpriteSheetBundle {
+                            sprite: TextureAtlasSprite::new(index),
+                            texture_atlas: atlas_handle.clone(),
+                            transform: Transform {
+                                translation: tile_position,
+                                scale: Vec3::splat((tile_size - margins) as f32 / texture_size),
+                                ..default()
+                            },
+                            ..Default::default()
+                        });
+                }
+            }
         }
     }
     commands
