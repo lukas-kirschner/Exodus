@@ -53,20 +53,9 @@ fn setup_game_world(
         16,
         16,
     );
-    let solid_index: usize = 58;
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    let mut world: GameWorld = GameWorld::new(columns, rows);
-    world
-        .set(0, 0, &WALL)
-        .set(1, 0, &WALL)
-        .set(2, 0, &WALL)
-        .set(2, 1, &WALL)
-        .set(2, 2, &SPIKES)
-        .set(1, 1, &SPIKES)
-        .set(2, 3, &WALL)
-        .set(3, 3, &SLOPED_SPIKES)
-    ;
+    let mut world: GameWorld = GameWorld::exampleworld();
 
     for row in 0..world.height() {
         let y = row as f32 * (tile_size);
@@ -95,16 +84,6 @@ fn setup_game_world(
             }
         }
     }
-    commands
-        .spawn_bundle(
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::splat(1.0)),
-                    ..default()
-                },
-                ..default()
-            }
-        );
 }
 
 fn main() {

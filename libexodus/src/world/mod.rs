@@ -1,6 +1,8 @@
 use crate::tiles;
 use crate::tiles::Tile;
 
+mod exampleworlds;
+
 #[derive(Clone)]
 pub struct GameWorld {
     data: Vec<Vec<Tile>>,
