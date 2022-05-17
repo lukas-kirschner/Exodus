@@ -125,6 +125,32 @@ pub fn keyboard_controls(
                         velocity: (0., -vy),
                         target: (transform.translation.x, transform.translation.y - 1.),
                     });
+                } else if keyboard_input.just_pressed(KeyCode::Q) {
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (transform.translation.x, transform.translation.y + 1.),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (transform.translation.x, transform.translation.y + 2.),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (-vx, 0.),
+                        target: (transform.translation.x - 1., transform.translation.y + 2.),
+                    });
+                } else if keyboard_input.just_pressed(KeyCode::W) {
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (transform.translation.x, transform.translation.y + 1.),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (transform.translation.x, transform.translation.y + 2.),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (vx, 0.),
+                        target: (transform.translation.x + 1., transform.translation.y + 2.),
+                    });
                 }
             }
             Some(_) => {
