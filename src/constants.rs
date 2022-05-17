@@ -9,4 +9,4 @@ pub const TILE_SIZE: f32 = 1.0;
 /// Texture size in pixels
 pub const TEXTURE_SIZE: f32 = 32.0;
 /// The speed of the player movement
-pub const PLAYER_SPEED: f32 = 0.1;
+pub const PLAYER_SPEED: f32 = 4.0;

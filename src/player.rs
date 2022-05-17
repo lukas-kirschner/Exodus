@@ -15,6 +15,7 @@ pub struct RpgSpriteHandles {
 
 pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut Transform)>,
+    time: Res<Time>,
 ) {
     for (mut _player, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
@@ -24,27 +25,31 @@ pub fn player_movement(
             Some(movement) => {
                 if movement.velocity.0 > 0. {
                     if transform.translation.x < movement.target.0 {
-                        transform.translation.x += movement.velocity.0;
-                    } else {
+                        transform.translation.x += movement.velocity.0 * time.delta_seconds();
+                    }
+                    if transform.translation.x >= movement.target.0 {
                         transform.translation.x = movement.target.0;
                     }
                 } else {
                     if transform.translation.x > movement.target.0 {
-                        transform.translation.x += movement.velocity.0;
-                    } else {
+                        transform.translation.x += movement.velocity.0 * time.delta_seconds();
+                    }
+                    if transform.translation.x <= movement.target.0 {
                         transform.translation.x = movement.target.0;
                     }
                 }
                 if movement.velocity.1 > 0. {
                     if transform.translation.y < movement.target.1 {
-                        transform.translation.y += movement.velocity.1;
-                    } else {
+                        transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                    }
+                    if transform.translation.y >= movement.target.1 {
                         transform.translation.y = movement.target.1;
                     }
                 } else {
                     if transform.translation.y > movement.target.1 {
-                        transform.translation.y += movement.velocity.1;
-                    } else {
+                        transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                    }
+                    if transform.translation.y <= movement.target.1 {
                         transform.translation.y = movement.target.1;
                     }
                 }
