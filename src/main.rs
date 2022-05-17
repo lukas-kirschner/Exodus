@@ -31,9 +31,6 @@ struct RpgSpriteHandles {
     handles: Vec<HandleUntyped>,
 }
 
-#[derive(Component)]
-struct TileSolid;
-
 fn setup_camera(mut commands: Commands) {
     let mut camera = OrthographicCameraBundle::new_2d();
     camera.orthographic_projection = OrthographicProjection {
@@ -171,6 +168,47 @@ fn setup_game_world(
     }
 }
 
+fn keyboard_controls(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut players: Query<(&mut PlayerComponent, &Transform)>,
+) {
+    for (mut _player, transform) in players.iter_mut() {
+        let player: &mut Player = &mut _player.player;
+        match player.peek_movement_queue() {
+            None => {
+                let vx = PLAYER_SPEED;
+                let vy = PLAYER_SPEED;
+                // Register the key press
+                if keyboard_input.pressed(KeyCode::Left) {
+                    player.push_movement_queue(Movement {
+                        velocity: (-vx, 0.),
+                        target: (transform.translation.x - 1., transform.translation.y),
+                    });
+                } else if keyboard_input.pressed(KeyCode::Up) {
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (transform.translation.x, transform.translation.y + 1.),
+                    });
+                } else if keyboard_input.pressed(KeyCode::Right) {
+                    player.push_movement_queue(Movement {
+                        velocity: (vx, 0.),
+                        target: (transform.translation.x + 1., transform.translation.y),
+                    });
+                } else if keyboard_input.pressed(KeyCode::Down) {
+                    player.push_movement_queue(Movement {
+                        velocity: (0., -vy),
+                        target: (transform.translation.x, transform.translation.y - 1.),
+                    });
+                }
+            }
+            Some(_) => {
+                // Do not change anything if there is a pending movement!
+                continue;
+            }
+        }
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
@@ -186,6 +224,7 @@ fn main() {
         .add_startup_system(setup_game_world)
         .add_startup_system(setup_player)
         .add_system(player_movement)
+        .add_system(keyboard_controls)
         .add_plugins(DefaultPlugins)
         .run();
 }
