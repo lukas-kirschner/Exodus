@@ -3,17 +3,15 @@ use crate::movement::Movement;
 
 pub struct Player {
     movement_queue: LinkedList<Movement>,
-    pub position: (f32, f32),
     facing_left: bool,
 }
 
 impl Player {
     ///
-    /// Create a new player with the given coordinates
-    pub fn new(x: f32, y: f32) -> Self {
+    /// Create a new player
+    pub fn new() -> Self {
         Player {
             movement_queue: LinkedList::new(),
-            position: (x, y),
             facing_left: false,
         }
     }
