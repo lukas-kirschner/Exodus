@@ -12,6 +12,17 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
+fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, right: bool) {
+    if right && !player.is_facing_right() {
+        player.set_face_right(true);
+        sprite.index = player.atlas_index();
+    }
+    if !right && player.is_facing_right() {
+        player.set_face_right(false);
+        sprite.index = player.atlas_index();
+    }
+}
+
 pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
     mut worldwrapper: ResMut<MapWrapper>,
@@ -43,10 +54,7 @@ pub fn player_movement(
             let direction = movement.direction();
             if velocity_x > 0. {
                 // Check player's x direction and change texture accordingly
-                if !player.is_facing_right() {
-                    player.set_face_right(true);
-                    sprite.index = player.atlas_index();
-                }
+                set_player_direction(player, &mut sprite, true);
 
                 if transform.translation.x < target_x as f32 {
                     transform.translation.x += velocity_x * time.delta_seconds();
@@ -57,10 +65,7 @@ pub fn player_movement(
             } else {
                 if velocity_x < 0. { // Do not change direction if no x acceleration is happening
                     // Check player's x direction and change texture accordingly
-                    if player.is_facing_right() {
-                        player.set_face_right(false);
-                        sprite.index = player.atlas_index();
-                    }
+                    set_player_direction(player, &mut sprite, false);
                 }
 
                 if transform.translation.x > target_x {
@@ -147,9 +152,9 @@ pub fn setup_player(
 
 pub fn keyboard_controls(
     keyboard_input: Res<Input<KeyCode>>,
-    mut players: Query<(&mut PlayerComponent, &Transform)>,
+    mut players: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &Transform)>,
 ) {
-    for (mut _player, transform) in players.iter_mut() {
+    for (mut _player, mut sprite, transform) in players.iter_mut() {
         let player: &mut Player = &mut _player.player;
         match player.peek_movement_queue() {
             None => {
@@ -159,6 +164,7 @@ pub fn keyboard_controls(
                 let cur_x: i32 = transform.translation.x as i32;
                 let cur_y: i32 = transform.translation.y as i32;
                 if keyboard_input.just_pressed(KeyCode::Left) {
+                    set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
                         target: (cur_x - 1, cur_y),
@@ -169,6 +175,7 @@ pub fn keyboard_controls(
                         target: (cur_x, cur_y + 1),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Right) {
+                    set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y),
@@ -179,6 +186,7 @@ pub fn keyboard_controls(
                         target: (cur_x, cur_y - 1),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Q) {
+                    set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
@@ -192,6 +200,7 @@ pub fn keyboard_controls(
                         target: (cur_x - 1, cur_y + 2),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::W) {
+                    set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
