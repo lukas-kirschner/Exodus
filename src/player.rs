@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
+use libexodus::world::GameWorld;
 use crate::constants::*;
+use crate::{MapWrapper, Wall};
 
 #[derive(Component)]
 pub struct PlayerComponent {
@@ -15,53 +17,67 @@ pub struct RpgSpriteHandles {
 
 pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut Transform)>,
+    map_query: Query<(&MapWrapper)>,
     time: Res<Time>,
 ) {
     for (mut _player, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // let mut transform: Transform = _transform;
-        match player.peek_movement_queue() {
-            Some(movement) => {
-                if movement.velocity.0 > 0. {
-                    if transform.translation.x < movement.target.0 {
-                        transform.translation.x += movement.velocity.0 * time.delta_seconds();
-                    }
-                    if transform.translation.x >= movement.target.0 {
-                        transform.translation.x = movement.target.0;
-                    }
-                } else {
-                    if transform.translation.x > movement.target.0 {
-                        transform.translation.x += movement.velocity.0 * time.delta_seconds();
-                    }
-                    if transform.translation.x <= movement.target.0 {
-                        transform.translation.x = movement.target.0;
-                    }
+
+        while let Some(movement) = player.peek_movement_queue() {
+            // Check if the player collides with anything, and remove the movement if that is the case
+            let mut collision = false;
+            for map in map_query.iter() {
+                let map: &GameWorld = &map.world;
+                collision = collision || *map.is_solid(movement.target.0 as usize, movement.target.1 as usize).unwrap_or(&false);
+            }
+            if collision {
+                player.pop_movement_queue();
+            } else {
+                break;
+            }
+        }
+
+        if let Some(movement) = player.peek_movement_queue() {
+            if movement.velocity.0 > 0. {
+                if transform.translation.x < movement.target.0 {
+                    transform.translation.x += movement.velocity.0 * time.delta_seconds();
                 }
-                if movement.velocity.1 > 0. {
-                    if transform.translation.y < movement.target.1 {
-                        transform.translation.y += movement.velocity.1 * time.delta_seconds();
-                    }
-                    if transform.translation.y >= movement.target.1 {
-                        transform.translation.y = movement.target.1;
-                    }
-                } else {
-                    if transform.translation.y > movement.target.1 {
-                        transform.translation.y += movement.velocity.1 * time.delta_seconds();
-                    }
-                    if transform.translation.y <= movement.target.1 {
-                        transform.translation.y = movement.target.1;
-                    }
+                if transform.translation.x >= movement.target.0 {
+                    transform.translation.x = movement.target.0;
                 }
-                if transform.translation.x == movement.target.0 && transform.translation.y == movement.target.1 {
-                    // The player has reached the target of the movement, pop from the queue!
-                    player.pop_movement_queue();
+            } else {
+                if transform.translation.x > movement.target.0 {
+                    transform.translation.x += movement.velocity.0 * time.delta_seconds();
+                }
+                if transform.translation.x <= movement.target.0 {
+                    transform.translation.x = movement.target.0;
                 }
             }
-            None => { continue; }
+            if movement.velocity.1 > 0. {
+                if transform.translation.y < movement.target.1 {
+                    transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                }
+                if transform.translation.y >= movement.target.1 {
+                    transform.translation.y = movement.target.1;
+                }
+            } else {
+                if transform.translation.y > movement.target.1 {
+                    transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                }
+                if transform.translation.y <= movement.target.1 {
+                    transform.translation.y = movement.target.1;
+                }
+            }
+            if transform.translation.x == movement.target.0 && transform.translation.y == movement.target.1 {
+                // The player has reached the target of the movement, pop from the queue!
+                player.pop_movement_queue();
+            }
         }
     }
 }
+
 
 pub fn setup_player(
     mut commands: Commands,

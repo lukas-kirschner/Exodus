@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::window::WindowMode;
 use libexodus::movement::Movement;
+use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 
 mod constants;
@@ -11,6 +12,10 @@ use crate::constants::*;
 mod player;
 
 use crate::player::*;
+
+mod tilewrapper;
+
+use crate::tilewrapper::*;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -28,6 +33,10 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(camera);
 }
 
+#[derive(Component)]
+struct WorldWrapper {
+    world: GameWorld,
+}
 
 fn setup_game_world(
     mut commands: Commands,
@@ -57,10 +66,11 @@ fn setup_game_world(
                 y as f32,
                 0.0,
             );
-            match world.get(col, row).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str()).atlas_index {
+            let tile = world.get(col, row).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
+            match tile.atlas_index {
                 None => {}
                 Some(index) => {
-                    commands
+                    let entity = commands
                         .spawn_bundle(SpriteSheetBundle {
                             sprite: TextureAtlasSprite::new(index),
                             texture_atlas: atlas_handle.clone(),
@@ -70,11 +80,14 @@ fn setup_game_world(
                                 ..default()
                             },
                             ..Default::default()
-                        });
+                        }).id();
                 }
             }
         }
     }
+    commands.spawn().insert(
+        MapWrapper { world },
+    );
 }
 
 

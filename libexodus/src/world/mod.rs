@@ -1,11 +1,14 @@
 use crate::tiles;
-use crate::tiles::Tile;
+use crate::tiles::{Tile, TileKind};
 
 mod exampleworlds;
 
 #[derive(Clone)]
 pub struct GameWorld {
+    /// Data that contains all tiles in this world
     data: Vec<Vec<Tile>>,
+    /// Cache that contains the information if the tile at x,y is solid
+    solid_cache: Vec<Vec<bool>>,
 }
 
 impl GameWorld {
@@ -14,12 +17,28 @@ impl GameWorld {
         assert! {height > 0};
         Self {
             data: vec![vec![tiles::AIR; height]; width],
+            solid_cache: vec![vec![false; height]; width],
         }
     }
     ///
     /// Set the tile at the given coordinate to the given value.
     pub fn set(&mut self, x: usize, y: usize, tile: &Tile) -> &mut Self {
         self.data[x][y] = tile.clone();
+        // Update the caches
+        match tile.kind {
+            TileKind::AIR => {
+                self.solid_cache[x][y] = false;
+            }
+            TileKind::SOLID => {
+                self.solid_cache[x][y] = true;
+            }
+            TileKind::DEADLY => {
+                //TODO
+            }
+            TileKind::SPECIAL => {
+                //TODO
+            }
+        }
         self
     }
     ///
@@ -27,6 +46,7 @@ impl GameWorld {
     pub fn get(&self, x: usize, y: usize) -> Option<&Tile> {
         self.data.get(x)?.get(y)
     }
+
     ///
     /// Fill the whole map with the given tile and delete everything else.
     ///
@@ -46,6 +66,7 @@ impl GameWorld {
         }
         self
     }
+
     ///
     /// Get the width of this world.
     ///
@@ -57,6 +78,7 @@ impl GameWorld {
     pub fn width(&self) -> usize {
         self.data.len()
     }
+
     ///
     /// Get the height of this world.
     ///
@@ -67,5 +89,20 @@ impl GameWorld {
     /// ```
     pub fn height(&self) -> usize {
         self.data[0].len()
+    }
+
+    ///
+    /// Check if the given tile is solid, i.e. if the player can collide with the tile at the given position
+    ///
+    /// ```rust
+    /// use libexodus::tiles;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(69,1337);
+    /// world.set(1,2,&tiles::WALL);
+    /// assert!(world.is_solid(1,2).unwrap());
+    /// assert!(!world.is_solid(0,0).unwrap());
+    /// ```
+    pub fn is_solid(&self, x: usize, y: usize) -> Option<&bool> {
+        self.solid_cache.get(x)?.get(y)
     }
 }
