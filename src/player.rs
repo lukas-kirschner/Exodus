@@ -30,9 +30,10 @@ pub fn player_movement(
             let mut collision = false;
             for map in map_query.iter() {
                 let map: &GameWorld = &map.world;
-                collision = collision || *map.is_solid(movement.target.0 as usize, movement.target.1 as usize).unwrap_or(&false);
+                collision = collision || *map.is_solid(movement.target.0, movement.target.1).unwrap_or(&false);
             }
             if collision {
+                println!("Dropped movement to {},{} because it is a solid block", movement.target.0, movement.target.1);
                 player.pop_movement_queue();
             } else {
                 break;
@@ -40,37 +41,39 @@ pub fn player_movement(
         }
 
         if let Some(movement) = player.peek_movement_queue() {
+            let target_x: f32 = movement.target.0 as f32;
+            let target_y: f32 = movement.target.1 as f32;
             if movement.velocity.0 > 0. {
-                if transform.translation.x < movement.target.0 {
+                if transform.translation.x < target_x as f32 {
                     transform.translation.x += movement.velocity.0 * time.delta_seconds();
                 }
-                if transform.translation.x >= movement.target.0 {
-                    transform.translation.x = movement.target.0;
+                if transform.translation.x >= target_x {
+                    transform.translation.x = movement.target.0 as f32;
                 }
             } else {
-                if transform.translation.x > movement.target.0 {
+                if transform.translation.x > target_x {
                     transform.translation.x += movement.velocity.0 * time.delta_seconds();
                 }
-                if transform.translation.x <= movement.target.0 {
-                    transform.translation.x = movement.target.0;
+                if transform.translation.x <= target_x {
+                    transform.translation.x = target_x;
                 }
             }
             if movement.velocity.1 > 0. {
-                if transform.translation.y < movement.target.1 {
+                if transform.translation.y < target_y {
                     transform.translation.y += movement.velocity.1 * time.delta_seconds();
                 }
-                if transform.translation.y >= movement.target.1 {
-                    transform.translation.y = movement.target.1;
+                if transform.translation.y >= target_y {
+                    transform.translation.y = target_y;
                 }
             } else {
-                if transform.translation.y > movement.target.1 {
+                if transform.translation.y > target_y {
                     transform.translation.y += movement.velocity.1 * time.delta_seconds();
                 }
-                if transform.translation.y <= movement.target.1 {
-                    transform.translation.y = movement.target.1;
+                if transform.translation.y <= target_y {
+                    transform.translation.y = target_y;
                 }
             }
-            if transform.translation.x == movement.target.0 && transform.translation.y == movement.target.1 {
+            if transform.translation.x == target_x && transform.translation.y == target_y {
                 // The player has reached the target of the movement, pop from the queue!
                 player.pop_movement_queue();
             }
@@ -121,51 +124,53 @@ pub fn keyboard_controls(
                 let vx = PLAYER_SPEED;
                 let vy = PLAYER_SPEED;
                 // Register the key press
+                let cur_x: i32 = transform.translation.x as i32;
+                let cur_y: i32 = transform.translation.y as i32;
                 if keyboard_input.just_pressed(KeyCode::Left) {
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
-                        target: (transform.translation.x - 1., transform.translation.y),
+                        target: (cur_x - 1, cur_y),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Up) {
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
-                        target: (transform.translation.x, transform.translation.y + 1.),
+                        target: (cur_x, cur_y + 1),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Right) {
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
-                        target: (transform.translation.x + 1., transform.translation.y),
+                        target: (cur_x + 1, cur_y),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Down) {
                     player.push_movement_queue(Movement {
                         velocity: (0., -vy),
-                        target: (transform.translation.x, transform.translation.y - 1.),
+                        target: (cur_x, cur_y - 1),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Q) {
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
-                        target: (transform.translation.x, transform.translation.y + 1.),
+                        target: (cur_x, cur_y + 1),
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
-                        target: (transform.translation.x, transform.translation.y + 2.),
+                        target: (cur_x, cur_y + 2),
                     });
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
-                        target: (transform.translation.x - 1., transform.translation.y + 2.),
+                        target: (cur_x - 1, cur_y + 2),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::W) {
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
-                        target: (transform.translation.x, transform.translation.y + 1.),
+                        target: (cur_x, cur_y + 1),
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
-                        target: (transform.translation.x, transform.translation.y + 2.),
+                        target: (cur_x, cur_y + 2),
                     });
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
-                        target: (transform.translation.x + 1., transform.translation.y + 2.),
+                        target: (cur_x + 1, cur_y + 2),
                     });
                 }
             }

@@ -92,7 +92,8 @@ impl GameWorld {
     }
 
     ///
-    /// Check if the given tile is solid, i.e. if the player can collide with the tile at the given position
+    /// Check if the given tile is solid, i.e. if the player can collide with the tile at the given position.
+    /// If the coordinate is not inside the map, return None
     ///
     /// ```rust
     /// use libexodus::tiles;
@@ -101,8 +102,12 @@ impl GameWorld {
     /// world.set(1,2,&tiles::WALL);
     /// assert!(world.is_solid(1,2).unwrap());
     /// assert!(!world.is_solid(0,0).unwrap());
+    /// assert!(world.is_solid(-1,2).is_none());
     /// ```
-    pub fn is_solid(&self, x: usize, y: usize) -> Option<&bool> {
-        self.solid_cache.get(x)?.get(y)
+    pub fn is_solid(&self, x: i32, y: i32) -> Option<&bool> {
+        if x < 0 || y < 0 {
+            return None;
+        }
+        self.solid_cache.get(x as usize)?.get(y as usize)
     }
 }
