@@ -18,24 +18,24 @@ impl GameWorld {
         assert! {width > 0};
         assert! {height > 0};
         Self {
-            data: vec![vec![tiles::AIR; height]; width],
+            data: vec![vec![tiles::AIR(); height]; width],
             solid_cache: vec![vec![false; height]; width],
             playerspawn: (1, 1), // Default spawn point is (1,1)
         }
     }
     ///
     /// Set the tile at the given coordinate to the given value.
-    pub fn set(&mut self, x: usize, y: usize, tile: &Tile) -> &mut Self {
-        self.data[x][y] = tile.clone();
+    pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
+        self.data[x][y] = tile;
         // Update the caches
-        match tile.kind {
+        match &self.data[x][y].kind {
             TileKind::AIR => {
                 self.solid_cache[x][y] = false;
             }
             TileKind::SOLID => {
                 self.solid_cache[x][y] = true;
             }
-            TileKind::DEADLY => {
+            TileKind::DEADLY { from } => {
                 //TODO
             }
             TileKind::SPECIAL => {
@@ -44,9 +44,6 @@ impl GameWorld {
             TileKind::PLAYERSPAWN => {
                 self.solid_cache[x][y] = false;
                 self.playerspawn = (x, y);
-            }
-            TileKind::DEADLYFROMABOVE => {
-                self.solid_cache[x][y] = true;
             }
             TileKind::COIN => {}
         }
@@ -60,8 +57,8 @@ impl GameWorld {
     /// use libexodus::tiles;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,&tiles::SPIKES);
-    /// world.set(1,0,&tiles::WALL);
+    /// world.set(1,1,tiles::SPIKES());
+    /// world.set(1,0,tiles::WALL());
     /// assert_eq!(&tiles::WALL,world.get(1,0).unwrap());
     /// assert!(world.get(2,0).is_none());
     /// assert!(world.get(0,-1).is_none());
@@ -80,14 +77,14 @@ impl GameWorld {
     /// use libexodus::tiles;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,&tiles::SPIKES);
-    /// world.fill(&tiles::WALL);
+    /// world.set(1,1,tiles::SPIKES());
+    /// world.fill(&tiles::WALL());
     /// assert_eq!(&tiles::WALL,world.get(1,1).unwrap());
     /// ```
     pub fn fill(&mut self, tile: &Tile) -> &mut Self {
         for i in 0..self.data.len() {
             for j in 0..self.data[0].len() {
-                self.set(i, j, tile);
+                self.set(i, j, tile.clone());
             }
         }
         self
@@ -125,7 +122,7 @@ impl GameWorld {
     /// use libexodus::tiles;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(69,1337);
-    /// world.set(1,2,&tiles::WALL);
+    /// world.set(1,2,tiles::WALL());
     /// assert!(world.is_solid(1,2).unwrap());
     /// assert!(!world.is_solid(0,0).unwrap());
     /// assert!(world.is_solid(-1,2).is_none());

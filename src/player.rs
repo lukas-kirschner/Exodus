@@ -1,6 +1,8 @@
 use bevy::prelude::*;
+use libexodus::directions::{Directions, FromDirection};
 use libexodus::movement::Movement;
 use libexodus::player::Player;
+use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::constants::*;
 use crate::{MapWrapper, Wall};
@@ -22,13 +24,14 @@ pub fn player_movement(
 
         while let Some(movement) = player.peek_movement_queue() {
             // Check if the player collides with anything, and remove the movement if that is the case
-            let mut collision = false;
-            collision = collision || *worldwrapper.world.is_solid(movement.target.0, movement.target.1).unwrap_or(&false);
-            if collision {
-                println!("Dropped movement to {},{} because it is a solid block", movement.target.0, movement.target.1);
-                player.clear_movement_queue(); // On collision, clear all to make sure the player does not move through blocks if more movements are enqueued
-            } else {
-                break;
+            if let Some(block) = worldwrapper.world.get(movement.target.0, movement.target.1) {
+                let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
+                if collision {
+                    println!("Dropped movement to {},{} because a collision was detected.", movement.target.0, movement.target.1);
+                    player.clear_movement_queue(); // On collision, clear all to make sure the player does not move through blocks if more movements are enqueued
+                } else {
+                    break;
+                }
             }
         }
 
@@ -88,11 +91,16 @@ pub fn player_movement(
         }
 
         // Gravity: If Queue is empty and the tile below the player is non-solid, add downward movement
-        if player.movement_queue_is_empty() && !*worldwrapper.world.is_solid(transform.translation.x as i32, transform.translation.y as i32 - 1).unwrap_or(&true) {
-            player.push_movement_queue(Movement {
-                velocity: (0., -PLAYER_SPEED),
-                target: (transform.translation.x as i32, transform.translation.y as i32 - 1),
-            });
+        if player.movement_queue_is_empty() {
+            if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32 - 1){
+                if !block.can_collide_from(&FromDirection::FROMNORTH){
+                    player.push_movement_queue(Movement {
+                        velocity: (0., -PLAYER_SPEED),
+                        target: (transform.translation.x as i32, transform.translation.y as i32 - 1),
+                    });
+                }
+            }
+
         }
     }
 }

@@ -2,6 +2,7 @@ pub mod world;
 pub mod tiles;
 pub mod player;
 pub mod movement;
+pub mod directions;
 
 #[cfg(test)]
 mod tests {
