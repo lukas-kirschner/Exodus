@@ -94,9 +94,9 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .init_resource::<MapWrapper>()
-        .add_startup_system(setup_game_world)
-        .add_startup_system(setup_camera)
-        .add_startup_system(setup_player)
+        .add_startup_system(setup_game_world.label("world"))
+        .add_startup_system(setup_camera.after("world"))
+        .add_startup_system(setup_player.after("world"))
         .add_system(player_movement)
         .add_system(keyboard_controls)
         .run();
