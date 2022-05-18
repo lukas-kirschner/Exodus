@@ -62,4 +62,9 @@ impl Player {
             }
         }
     }
+    ///
+    /// Check if the movement queue is empty
+    pub fn movement_queue_is_empty(&self) -> bool {
+        self.movement_queue.is_empty()
+    }
 }

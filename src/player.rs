@@ -70,6 +70,14 @@ pub fn player_movement(
                 player.pop_movement_queue();
             }
         }
+
+        // Gravity: If Queue is empty and the tile below the player is non-solid, add downward movement
+        if player.movement_queue_is_empty() && !*worldwrapper.world.is_solid(transform.translation.x as i32, transform.translation.y as i32 - 1).unwrap_or(&true) {
+            player.push_movement_queue(Movement {
+                velocity: (0., -PLAYER_SPEED),
+                target: (transform.translation.x as i32, transform.translation.y as i32 - 1),
+            });
+        }
     }
 }
 
