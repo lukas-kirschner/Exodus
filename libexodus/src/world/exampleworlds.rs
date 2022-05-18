@@ -1,6 +1,7 @@
 use world::GameWorld;
-use crate::tiles::{SLOPED_SPIKES, SPIKES, WALL};
+use crate::tiles::{PLAYER_SPAWN, SLOPED_SPIKES, SPIKES, WALL};
 use crate::world;
+use crate::world::presets;
 
 impl GameWorld {
     ///
@@ -8,15 +9,13 @@ impl GameWorld {
     pub fn exampleworld() -> Self {
         let columns = 24; // Number of columns in the game board
         let rows = 10; // Number of rows in the game board
-        let mut world: GameWorld = GameWorld::new(columns, rows);
+        let mut world: GameWorld = presets::map_with_border(columns, rows);
         world
-            .set(0, 0, &WALL)
-            .set(1, 0, &WALL)
-            .set(2, 0, &WALL)
             .set(2, 1, &WALL)
-            .set(2, 2, &SPIKES)
-            .set(1, 1, &SPIKES)
-            .set(2, 3, &WALL)
+            .set(1, 1, &WALL)
+            .set(1, 2, &PLAYER_SPAWN)
+            .set(3, 1, &SPIKES)
+            .set(2, 2, &WALL)
             .set(3, 3, &SLOPED_SPIKES)
             .set(4, 3, &WALL)
             .set(4, 2, &WALL)

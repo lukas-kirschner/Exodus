@@ -12,6 +12,9 @@ pub enum TileKind {
     ///
     /// A special tile that the player can interact with
     SPECIAL,
+    ///
+    ///
+    PLAYERSPAWN,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -46,9 +49,17 @@ pub static SPIKES: Tile = Tile {
     atlas_index: Some(228),
     kind: TileKind::DEADLY,
 };
+
 ///
 /// Spikes that sit on a slope and point up, only deadly if touched from above.
 pub static SLOPED_SPIKES: Tile = Tile {
     atlas_index: Some(250),
     kind: TileKind::DEADLY,
+};
+
+///
+/// Spikes that sit on a slope and point up, only deadly if touched from above.
+pub static PLAYER_SPAWN: Tile = Tile {
+    atlas_index: None,
+    kind: TileKind::PLAYERSPAWN,
 };

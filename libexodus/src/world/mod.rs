@@ -1,7 +1,8 @@
 use crate::tiles;
 use crate::tiles::{Tile, TileKind};
 
-mod exampleworlds;
+pub mod exampleworlds;
+pub mod presets;
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -9,6 +10,7 @@ pub struct GameWorld {
     data: Vec<Vec<Tile>>,
     /// Cache that contains the information if the tile at x,y is solid
     solid_cache: Vec<Vec<bool>>,
+    playerspawn: (usize, usize),
 }
 
 impl GameWorld {
@@ -18,6 +20,7 @@ impl GameWorld {
         Self {
             data: vec![vec![tiles::AIR; height]; width],
             solid_cache: vec![vec![false; height]; width],
+            playerspawn: (1, 1), // Default spawn point is (1,1)
         }
     }
     ///
@@ -37,6 +40,10 @@ impl GameWorld {
             }
             TileKind::SPECIAL => {
                 //TODO
+            }
+            TileKind::PLAYERSPAWN => {
+                self.solid_cache[x][y] = false;
+                self.playerspawn = (x, y);
             }
         }
         self
@@ -124,5 +131,9 @@ impl GameWorld {
             return None;
         }
         self.solid_cache.get(x as usize)?.get(y as usize)
+    }
+
+    pub fn player_spawn(&self) -> (usize, usize) {
+        self.playerspawn
     }
 }

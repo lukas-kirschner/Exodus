@@ -33,29 +33,26 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(camera);
 }
 
-#[derive(Component)]
-struct WorldWrapper {
-    world: GameWorld,
-}
-
 fn setup_game_world(
     mut commands: Commands,
-    rpg_sprite_handles: Res<RpgSpriteHandles>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
+    mut worldwrapper: ResMut<MapWrapper>,
 ) {
 
     // Load Texture Atlas
     let mut texture_atlas = TextureAtlas::from_grid(
         asset_server.load("textures/Tiny_Platform_Quest_Tiles.png"),
-        Vec2::splat(TEXTURE_SIZE),
+        Vec2::splat(TEXTURE_SIZE as f32),
         16,
         16,
     );
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    let mut world: GameWorld = GameWorld::exampleworld();
+    // Load the world
+    worldwrapper.set_world(GameWorld::exampleworld());
+    let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {
         let y = row as f32 * (TILE_SIZE);
@@ -67,27 +64,21 @@ fn setup_game_world(
                 0.0,
             );
             let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
-            match tile.atlas_index {
-                None => {}
-                Some(index) => {
-                    let entity = commands
-                        .spawn_bundle(SpriteSheetBundle {
-                            sprite: TextureAtlasSprite::new(index),
-                            texture_atlas: atlas_handle.clone(),
-                            transform: Transform {
-                                translation: tile_position,
-                                scale: Vec3::splat((TILE_SIZE - MARGINS) as f32 / TEXTURE_SIZE),
-                                ..default()
-                            },
-                            ..Default::default()
-                        }).id();
-                }
+            if let Some(index) = tile.atlas_index {
+                let _entity = commands
+                    .spawn_bundle(SpriteSheetBundle {
+                        sprite: TextureAtlasSprite::new(index),
+                        texture_atlas: atlas_handle.clone(),
+                        transform: Transform {
+                            translation: tile_position,
+                            scale: Vec3::splat((TILE_SIZE - MARGINS) as f32 / TEXTURE_SIZE as f32),
+                            ..default()
+                        },
+                        ..Default::default()
+                    }).id();
             }
         }
     }
-    commands.spawn().insert(
-        MapWrapper { world },
-    );
 }
 
 
@@ -101,12 +92,12 @@ fn main() {
             mode: WindowMode::Windowed,
             ..Default::default()
         })
-        .init_resource::<RpgSpriteHandles>()
-        .add_startup_system(setup_camera)
+        .add_plugins(DefaultPlugins)
+        .init_resource::<MapWrapper>()
         .add_startup_system(setup_game_world)
+        .add_startup_system(setup_camera)
         .add_startup_system(setup_player)
         .add_system(player_movement)
         .add_system(keyboard_controls)
-        .add_plugins(DefaultPlugins)
         .run();
 }

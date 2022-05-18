@@ -10,14 +10,9 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
-#[derive(Default)]
-pub struct RpgSpriteHandles {
-    handles: Vec<HandleUntyped>,
-}
-
 pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut Transform)>,
-    map_query: Query<(&MapWrapper)>,
+    mut worldwrapper: ResMut<MapWrapper>,
     time: Res<Time>,
 ) {
     for (mut _player, mut transform) in player_positions.iter_mut() {
@@ -28,10 +23,7 @@ pub fn player_movement(
         while let Some(movement) = player.peek_movement_queue() {
             // Check if the player collides with anything, and remove the movement if that is the case
             let mut collision = false;
-            for map in map_query.iter() {
-                let map: &GameWorld = &map.world;
-                collision = collision || *map.is_solid(movement.target.0, movement.target.1).unwrap_or(&false);
-            }
+            collision = collision || *worldwrapper.world.is_solid(movement.target.0, movement.target.1).unwrap_or(&false);
             if collision {
                 println!("Dropped movement to {},{} because it is a solid block", movement.target.0, movement.target.1);
                 player.clear_movement_queue(); // On collision, clear all to make sure the player does not move through blocks if more movements are enqueued
@@ -84,28 +76,29 @@ pub fn player_movement(
 
 pub fn setup_player(
     mut commands: Commands,
-    rpg_sprite_handles: Res<RpgSpriteHandles>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
+    mut worldwrapper: ResMut<MapWrapper>,
 ) {
     let mut texture_atlas_player = TextureAtlas::from_grid(
         asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
-        Vec2::splat(TEXTURE_SIZE),
+        Vec2::splat(TEXTURE_SIZE as f32),
         16,
         16,
     );
     let atlas_handle_player = texture_atlases.add(texture_atlas_player);
     let mut player: PlayerComponent = PlayerComponent { player: Player::new() };
-    let map_player_position_x = 2.;
-    let map_player_position_y = 2.;
+    let mut map_player_position_x: usize = 1;
+    let mut map_player_position_y: usize = 1;
+    (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
         .spawn_bundle(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
             texture_atlas: atlas_handle_player.clone(),
             transform: Transform {
-                translation: Vec3::new(map_player_position_x, map_player_position_y, 0.),
-                scale: Vec3::splat((TILE_SIZE - MARGINS) as f32 / TEXTURE_SIZE),
+                translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, 0.),
+                scale: Vec3::splat((TILE_SIZE - MARGINS) as f32 / TEXTURE_SIZE as f32),
                 ..default()
             },
             ..Default::default()

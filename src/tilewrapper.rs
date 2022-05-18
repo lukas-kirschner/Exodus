@@ -1,6 +1,8 @@
 use bevy::prelude::*;
+use libexodus::tiles;
 use libexodus::tiles::Tile;
 use libexodus::world::GameWorld;
+use libexodus::world::presets;
 
 ///
 /// A wall that the player cannot pass through and that will not interact with the player in any way
@@ -11,7 +13,20 @@ pub struct Wall<> {
 
 ///
 /// A wrapper around a GameWorld
-#[derive(Component)]
 pub struct MapWrapper<> {
     pub world: GameWorld,
+}
+
+impl FromWorld for MapWrapper {
+    fn from_world(world: &mut World) -> Self {
+        MapWrapper {
+            world: presets::map_with_border(24, 10),
+        }
+    }
+}
+
+impl MapWrapper {
+    pub fn set_world(&mut self, world: GameWorld) {
+        self.world = world;
+    }
 }
