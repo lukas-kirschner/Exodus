@@ -41,13 +41,13 @@ impl Player {
     ///
     /// Get the atlas index of the player sprite facing right.
     /// TODO: Animation when player is walking?
-    pub fn atlas_index_right() -> usize {
+    fn atlas_index_right() -> usize {
         0
     }
     ///
     /// Get the atlas index of the player sprite facing left.
     /// TODO: Animation when player is walking?
-    pub fn atlas_index_left() -> usize {
+    fn atlas_index_left() -> usize {
         4
     }
     ///
@@ -61,6 +61,18 @@ impl Player {
                 Player::atlas_index_right()
             }
         }
+    }
+
+    ///
+    /// Set if the player is facing right
+    pub fn set_face_right(&mut self, right: bool) {
+        self.facing_left = !right;
+    }
+
+    ///
+    /// Check if the player is facing right
+    pub fn is_facing_right(&self) -> bool {
+        !self.facing_left
     }
     ///
     /// Check if the movement queue is empty

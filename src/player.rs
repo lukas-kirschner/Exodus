@@ -11,11 +11,11 @@ pub struct PlayerComponent {
 }
 
 pub fn player_movement(
-    mut player_positions: Query<(&mut PlayerComponent, &mut Transform)>,
+    mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
     mut worldwrapper: ResMut<MapWrapper>,
     time: Res<Time>,
 ) {
-    for (mut _player, mut transform) in player_positions.iter_mut() {
+    for (mut _player, mut sprite, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // let mut transform: Transform = _transform;
@@ -35,31 +35,47 @@ pub fn player_movement(
         if let Some(movement) = player.peek_movement_queue() {
             let target_x: f32 = movement.target.0 as f32;
             let target_y: f32 = movement.target.1 as f32;
-            if movement.velocity.0 > 0. {
+            let velocity_x = movement.velocity.0;
+            let velocity_y = movement.velocity.1;
+            if velocity_x > 0. {
+                // Check player's x direction and change texture accordingly
+                if !player.is_facing_right() {
+                    player.set_face_right(true);
+                    sprite.index = player.atlas_index();
+                }
+
                 if transform.translation.x < target_x as f32 {
-                    transform.translation.x += movement.velocity.0 * time.delta_seconds();
+                    transform.translation.x += velocity_x * time.delta_seconds();
                 }
                 if transform.translation.x >= target_x {
-                    transform.translation.x = movement.target.0 as f32;
+                    transform.translation.x = target_x as f32;
                 }
             } else {
+                if velocity_x < 0. { // Do not change direction if no x acceleration is happening
+                    // Check player's x direction and change texture accordingly
+                    if player.is_facing_right() {
+                        player.set_face_right(false);
+                        sprite.index = player.atlas_index();
+                    }
+                }
+
                 if transform.translation.x > target_x {
-                    transform.translation.x += movement.velocity.0 * time.delta_seconds();
+                    transform.translation.x += velocity_x * time.delta_seconds();
                 }
                 if transform.translation.x <= target_x {
                     transform.translation.x = target_x;
                 }
             }
-            if movement.velocity.1 > 0. {
+            if velocity_y > 0. {
                 if transform.translation.y < target_y {
-                    transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                    transform.translation.y += velocity_y * time.delta_seconds();
                 }
                 if transform.translation.y >= target_y {
                     transform.translation.y = target_y;
                 }
             } else {
                 if transform.translation.y > target_y {
-                    transform.translation.y += movement.velocity.1 * time.delta_seconds();
+                    transform.translation.y += velocity_y * time.delta_seconds();
                 }
                 if transform.translation.y <= target_y {
                     transform.translation.y = target_y;
