@@ -40,6 +40,7 @@ pub fn player_movement(
             let target_y: f32 = movement.target.1 as f32;
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
+            let direction = movement.direction();
             if velocity_x > 0. {
                 // Check player's x direction and change texture accordingly
                 if !player.is_facing_right() {
@@ -85,6 +86,13 @@ pub fn player_movement(
                 }
             }
             if transform.translation.x == target_x && transform.translation.y == target_y {
+                // Check for deadly collision and kill the player, if one has occurred
+                if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
+                    if block.is_deadly_from(&FromDirection::from(direction)) {
+                        println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
+                        //TODO
+                    }
+                }
                 // The player has reached the target of the movement, pop from the queue!
                 player.pop_movement_queue();
             }
@@ -92,15 +100,14 @@ pub fn player_movement(
 
         // Gravity: If Queue is empty and the tile below the player is non-solid, add downward movement
         if player.movement_queue_is_empty() {
-            if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32 - 1){
-                if !block.can_collide_from(&FromDirection::FROMNORTH){
+            if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32 - 1) {
+                if !block.can_collide_from(&FromDirection::FROMNORTH) {
                     player.push_movement_queue(Movement {
                         velocity: (0., -PLAYER_SPEED),
                         target: (transform.translation.x as i32, transform.translation.y as i32 - 1),
                     });
                 }
             }
-
         }
     }
 }

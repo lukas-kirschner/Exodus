@@ -44,6 +44,16 @@ impl Tile {
             TileKind::COIN => { false }
         }
     }
+    pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
+        match &self.kind {
+            TileKind::AIR => { false }
+            TileKind::SOLID => { false }
+            TileKind::DEADLY { from } => { from.iter().any(|fromdir| *fromdir == *from_direction) }
+            TileKind::SPECIAL => { false }
+            TileKind::PLAYERSPAWN => { false }
+            TileKind::COIN => { false }
+        }
+    }
 }
 
 // Tiles Definitions
