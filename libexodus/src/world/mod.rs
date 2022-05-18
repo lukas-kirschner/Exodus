@@ -45,6 +45,10 @@ impl GameWorld {
                 self.solid_cache[x][y] = false;
                 self.playerspawn = (x, y);
             }
+            TileKind::DEADLYFROMABOVE => {
+                self.solid_cache[x][y] = true;
+            }
+            TileKind::COIN => {}
         }
         self
     }

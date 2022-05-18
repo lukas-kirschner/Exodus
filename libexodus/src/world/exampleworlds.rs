@@ -1,5 +1,5 @@
 use world::GameWorld;
-use crate::tiles::{PLAYER_SPAWN, SLOPED_SPIKES, SPIKES, WALL};
+use crate::tiles::*;
 use crate::world;
 use crate::world::presets;
 
@@ -21,6 +21,12 @@ impl GameWorld {
             .set(4, 2, &WALL)
             .set(4, 1, &WALL)
             .set(4, 0, &WALL)
+            .set(5, 1, &SPIKES)
+            .set(6, 1, &SPIKES_ALTERNATIVE_A)
+            .set(8, 2, &SPIKES_PLATFORM)
+            .set(9,1,&COIN)
+            .set(9,2,&COIN)
+            .set(9,3,&COIN)
         ;
         world
     }

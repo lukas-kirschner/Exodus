@@ -10,11 +10,17 @@ pub enum TileKind {
     /// A tile that kills the player on impact
     DEADLY,
     ///
+    /// A tile that kills the player on impact only if the player is coming from above, and otherwise behaves like a solid block
+    DEADLYFROMABOVE,
+    ///
     /// A special tile that the player can interact with
     SPECIAL,
     ///
     ///
     PLAYERSPAWN,
+    ///
+    /// A collectible coin
+    COIN,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -49,12 +55,25 @@ pub static SPIKES: Tile = Tile {
     atlas_index: Some(228),
     kind: TileKind::DEADLY,
 };
+///
+/// Spikes that sit on the ground and point up, alternative texture
+pub static SPIKES_ALTERNATIVE_A: Tile = Tile {
+    atlas_index: Some(227),
+    kind: TileKind::DEADLY,
+};
+
+///
+/// Spikes that sit on a floating platform and are deadly from all sides
+pub static SPIKES_PLATFORM: Tile = Tile {
+    atlas_index: Some(224),
+    kind: TileKind::DEADLY,
+};
 
 ///
 /// Spikes that sit on a slope and point up, only deadly if touched from above.
 pub static SLOPED_SPIKES: Tile = Tile {
     atlas_index: Some(250),
-    kind: TileKind::DEADLY,
+    kind: TileKind::DEADLYFROMABOVE,
 };
 
 ///
@@ -62,4 +81,11 @@ pub static SLOPED_SPIKES: Tile = Tile {
 pub static PLAYER_SPAWN: Tile = Tile {
     atlas_index: None,
     kind: TileKind::PLAYERSPAWN,
+};
+
+///
+/// A collectible coin
+pub static COIN: Tile = Tile {
+    atlas_index: Some(217),
+    kind: TileKind::COIN,
 };
