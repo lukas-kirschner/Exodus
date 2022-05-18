@@ -16,7 +16,7 @@ impl GameWorld {
         assert! {width > 0};
         assert! {height > 0};
         Self {
-            data: vec![vec![tiles::AIR(); height]; width],
+            data: vec![vec![tiles::air(); height]; width],
             playerspawn: (1, 1), // Default spawn point is (1,1)
         }
     }
@@ -27,7 +27,7 @@ impl GameWorld {
         match &self.data[x][y].kind {
             TileKind::AIR => {}
             TileKind::SOLID => {}
-            TileKind::DEADLY { from } => {
+            TileKind::DEADLY { .. } => {
                 //TODO
             }
             TileKind::SPECIAL => {
@@ -48,9 +48,9 @@ impl GameWorld {
     /// use libexodus::tiles;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,tiles::SPIKES());
-    /// world.set(1,0,tiles::WALL());
-    /// assert_eq!(&tiles::WALL,world.get(1,0).unwrap());
+    /// world.set(1,1,tiles::spikes());
+    /// world.set(1,0,tiles::wall());
+    /// assert_eq!(&tiles::wall,world.get(1,0).unwrap());
     /// assert!(world.get(2,0).is_none());
     /// assert!(world.get(0,-1).is_none());
     /// ```
@@ -68,9 +68,9 @@ impl GameWorld {
     /// use libexodus::tiles;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,tiles::SPIKES());
-    /// world.fill(&tiles::WALL());
-    /// assert_eq!(&tiles::WALL,world.get(1,1).unwrap());
+    /// world.set(1,1,tiles::spikes());
+    /// world.fill(&tiles::wall());
+    /// assert_eq!(&tiles::wall,world.get(1,1).unwrap());
     /// ```
     pub fn fill(&mut self, tile: &Tile) -> &mut Self {
         for i in 0..self.data.len() {

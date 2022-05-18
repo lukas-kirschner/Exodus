@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-use libexodus::tiles;
-use libexodus::tiles::Tile;
 use libexodus::world::GameWorld;
 use libexodus::world::presets;
 
@@ -18,7 +16,7 @@ pub struct MapWrapper<> {
 }
 
 impl FromWorld for MapWrapper {
-    fn from_world(world: &mut World) -> Self {
+    fn from_world(_: &mut World) -> Self {
         MapWrapper {
             world: presets::map_with_border(24, 10),
         }

@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::window::WindowMode;
-use libexodus::movement::Movement;
-use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 
 mod constants;
@@ -37,12 +35,11 @@ fn setup_game_world(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut textures: ResMut<Assets<Image>>,
     mut worldwrapper: ResMut<MapWrapper>,
 ) {
 
     // Load Texture Atlas
-    let mut texture_atlas = TextureAtlas::from_grid(
+    let texture_atlas = TextureAtlas::from_grid(
         asset_server.load("textures/Tiny_Platform_Quest_Tiles.png"),
         Vec2::splat(TEXTURE_SIZE as f32),
         16,
@@ -95,8 +92,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<MapWrapper>()
         .add_startup_system(setup_game_world.label("world"))
-        .add_startup_system(setup_camera.after("world"))
-        .add_startup_system(setup_player.after("world"))
+        .add_startup_system(setup_camera.after("world").label("camera"))
+        .add_startup_system(setup_player.after("world").label("player"))
         .add_system(player_movement)
         .add_system(keyboard_controls)
         .run();

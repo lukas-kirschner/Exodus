@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use libexodus::directions::{Directions, FromDirection};
+use libexodus::directions::{FromDirection};
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{Tile, TileKind};
-use libexodus::world::GameWorld;
 use crate::constants::*;
-use crate::{MapWrapper, Wall};
+use crate::{MapWrapper};
 
 #[derive(Component)]
 pub struct PlayerComponent {
@@ -25,7 +23,7 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 
 pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
-    mut worldwrapper: ResMut<MapWrapper>,
+    worldwrapper: Res<MapWrapper>,
     time: Res<Time>,
 ) {
     for (mut _player, mut sprite, mut transform) in player_positions.iter_mut() {
@@ -122,20 +120,17 @@ pub fn setup_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut textures: ResMut<Assets<Image>>,
-    mut worldwrapper: ResMut<MapWrapper>,
+    worldwrapper: Res<MapWrapper>,
 ) {
-    let mut texture_atlas_player = TextureAtlas::from_grid(
+    let texture_atlas_player = TextureAtlas::from_grid(
         asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
         Vec2::splat(TEXTURE_SIZE as f32),
         16,
         16,
     );
     let atlas_handle_player = texture_atlases.add(texture_atlas_player);
-    let mut player: PlayerComponent = PlayerComponent { player: Player::new() };
-    let mut map_player_position_x: usize = 1;
-    let mut map_player_position_y: usize = 1;
-    (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
+    let player: PlayerComponent = PlayerComponent { player: Player::new() };
+    let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
         .spawn_bundle(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),

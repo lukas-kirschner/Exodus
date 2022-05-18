@@ -60,7 +60,7 @@ impl Tile {
 
 ///
 /// An air tile without a texture
-pub fn AIR() -> Tile {
+pub fn air() -> Tile {
     Tile {
         atlas_index: None,
         kind: TileKind::AIR,
@@ -69,7 +69,7 @@ pub fn AIR() -> Tile {
 
 ///
 /// A tile of Wall, a solid block that cannot be destroyed
-pub fn WALL() -> Tile {
+pub fn wall() -> Tile {
     Tile {
         atlas_index: Some(58),
         kind: TileKind::SOLID,
@@ -78,7 +78,7 @@ pub fn WALL() -> Tile {
 
 ///
 /// Spikes that sit on the ground and point up
-pub fn SPIKES() -> Tile {
+pub fn spikes() -> Tile {
     Tile {
         atlas_index: Some(228),
         kind: TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
@@ -87,7 +87,7 @@ pub fn SPIKES() -> Tile {
 
 ///
 /// Spikes that sit on the ground and point up, alternative texture
-pub fn SPIKES_ALTERNATIVE_A() -> Tile {
+pub fn spikes_alternative_a() -> Tile {
     Tile {
         atlas_index: Some(227),
         kind: TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
@@ -96,7 +96,7 @@ pub fn SPIKES_ALTERNATIVE_A() -> Tile {
 
 ///
 /// Spikes that sit on a floating platform and are deadly from all sides
-pub fn SPIKES_PLATFORM() -> Tile {
+pub fn spikes_platform() -> Tile {
     Tile {
         atlas_index: Some(224),
         kind: TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
@@ -105,7 +105,7 @@ pub fn SPIKES_PLATFORM() -> Tile {
 
 ///
 /// Spikes that sit on a slope and point up, only deadly if touched from above.
-pub fn SLOPED_SPIKES() -> Tile {
+pub fn sloped_spikes() -> Tile {
     Tile {
         atlas_index: Some(250),
         kind: TileKind::DEADLY { from: vec![FROMNORTH] },
@@ -114,7 +114,7 @@ pub fn SLOPED_SPIKES() -> Tile {
 
 ///
 /// Spikes that sit on a slope and point up, only deadly if touched from above.
-pub fn PLAYER_SPAWN() -> Tile {
+pub fn player_spawn() -> Tile {
     Tile {
         atlas_index: None,
         kind: TileKind::PLAYERSPAWN,
@@ -123,7 +123,7 @@ pub fn PLAYER_SPAWN() -> Tile {
 
 ///
 /// A collectible coin
-pub fn COIN() -> Tile {
+pub fn coin() -> Tile {
     Tile {
         atlas_index: Some(217),
         kind: TileKind::COIN,
