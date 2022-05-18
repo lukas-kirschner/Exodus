@@ -31,6 +31,13 @@ impl Player {
     pub fn pop_movement_queue(&mut self) -> Option<Movement> {
         self.movement_queue.pop_front()
     }
+
+    ///
+    /// Remove all elements of the movement queue.
+    pub fn clear_movement_queue(&mut self) {
+        self.movement_queue.clear()
+    }
+
     ///
     /// Get the atlas index of the player sprite facing right.
     /// TODO: Animation when player is walking?

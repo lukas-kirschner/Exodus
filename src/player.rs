@@ -34,7 +34,7 @@ pub fn player_movement(
             }
             if collision {
                 println!("Dropped movement to {},{} because it is a solid block", movement.target.0, movement.target.1);
-                player.pop_movement_queue();
+                player.clear_movement_queue(); // On collision, clear all to make sure the player does not move through blocks if more movements are enqueued
             } else {
                 break;
             }

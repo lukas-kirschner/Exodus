@@ -66,7 +66,7 @@ fn setup_game_world(
                 y as f32,
                 0.0,
             );
-            let tile = world.get(col, row).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
+            let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
             match tile.atlas_index {
                 None => {}
                 Some(index) => {

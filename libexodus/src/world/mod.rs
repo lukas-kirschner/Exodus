@@ -43,8 +43,23 @@ impl GameWorld {
     }
     ///
     /// Get the tile at the given location.
-    pub fn get(&self, x: usize, y: usize) -> Option<&Tile> {
-        self.data.get(x)?.get(y)
+    /// If the location is outside of the map boundaries, return None instead.
+    ///
+    /// ```rust
+    /// use libexodus::tiles;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(2,2);
+    /// world.set(1,1,&tiles::SPIKES);
+    /// world.set(1,0,&tiles::WALL);
+    /// assert_eq!(&tiles::WALL,world.get(1,0).unwrap());
+    /// assert!(world.get(2,0).is_none());
+    /// assert!(world.get(0,-1).is_none());
+    /// ```
+    pub fn get(&self, x: i32, y: i32) -> Option<&Tile> {
+        if x < 0 || y < 0 {
+            return None;
+        }
+        self.data.get(x as usize)?.get(y as usize)
     }
 
     ///
