@@ -38,6 +38,7 @@ pub fn despawn_dead_player(
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned
             commands.entity(entity).despawn_recursive();
+            // Spawn new player?
             continue;
         }
         sprite.color.set_a(new_a);
@@ -121,14 +122,14 @@ pub fn player_movement(
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
                     if block.is_deadly_from(&FromDirection::from(direction)) {
                         commands.entity(entity).despawn_recursive();
-                        sprite.index = 80;
+                        sprite.index = 80; // Angel texture
                         //TODO trigger GameOverEvent?
                         commands.spawn_bundle(SpriteSheetBundle {
                             sprite: sprite.clone(),
                             texture_atlas: handle.clone(),
                             transform: Transform {
                                 translation: transform.translation,
-                                scale: transform.scale,
+                                scale: transform.scale * Vec3::splat(1.2), // Make the angel slightly bigger
                                 ..default()
                             },
                             ..Default::default()
