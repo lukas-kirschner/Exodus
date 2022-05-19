@@ -26,7 +26,6 @@ pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
     worldwrapper: Res<MapWrapper>,
     time: Res<Time>,
-    mut scoreboard: ResMut<Scoreboard>,
 ) {
     for (mut _player, mut sprite, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
@@ -54,7 +53,6 @@ pub fn player_movement(
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
             let direction = movement.direction();
-            let is_manual = movement.is_manual;
             if direction == EAST {
                 // Check player's x direction and change texture accordingly
                 set_player_direction(player, &mut sprite, true);
@@ -100,10 +98,6 @@ pub fn player_movement(
                         println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                         //TODO
                     }
-                }
-                // The player has reached the target of the movement, pop from the queue!
-                if is_manual {
-                    scoreboard.moves += 1;
                 }
                 player.pop_movement_queue();
             }
@@ -157,6 +151,7 @@ pub fn setup_player(
 pub fn keyboard_controls(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &Transform)>,
+    mut scoreboard: ResMut<Scoreboard>,
 ) {
     for (mut _player, mut sprite, transform) in players.iter_mut() {
         let player: &mut Player = &mut _player.player;
@@ -238,6 +233,9 @@ pub fn keyboard_controls(
                         target: (cur_x + 1, cur_y + 2),
                         is_manual: true,
                     });
+                }
+                if keyboard_input.any_just_pressed(vec![KeyCode::Up, KeyCode::Right, KeyCode::Down, KeyCode::Left, KeyCode::Q, KeyCode::W]) {
+                    scoreboard.moves += 1;
                 }
             }
             Some(_) => {
