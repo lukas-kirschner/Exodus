@@ -21,6 +21,9 @@ pub enum TileKind {
     ///
     /// A collectible coin
     COIN,
+    ///
+    /// A ladder
+    LADDER,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -42,6 +45,7 @@ impl Tile {
             TileKind::SPECIAL => { false }
             TileKind::PLAYERSPAWN => { false }
             TileKind::COIN => { false }
+            TileKind::LADDER => {false}
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
@@ -52,6 +56,7 @@ impl Tile {
             TileKind::SPECIAL => { false }
             TileKind::PLAYERSPAWN => { false }
             TileKind::COIN => { false }
+            TileKind::LADDER => {false}
         }
     }
 }
@@ -127,5 +132,14 @@ pub fn coin() -> Tile {
     Tile {
         atlas_index: Some(217),
         kind: TileKind::COIN,
+    }
+}
+
+///
+/// A ladder
+pub fn ladder() -> Tile {
+    Tile {
+        atlas_index: Some(220),
+        kind: TileKind::LADDER,
     }
 }

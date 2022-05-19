@@ -37,6 +37,7 @@ impl GameWorld {
                 self.playerspawn = (x, y);
             }
             TileKind::COIN => {}
+            TileKind::LADDER => {}
         }
         self
     }

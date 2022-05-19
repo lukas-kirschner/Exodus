@@ -29,6 +29,7 @@ impl GameWorld {
             .set(3, 7, wall())
             .set(4, 7, wall())
             .set(6, 3, wall())
+            .set(5, 5, ladder())
             .set(9, 1, coin())
             .set(9, 2, coin())
             .set(9, 3, coin())
