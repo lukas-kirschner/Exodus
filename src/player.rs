@@ -152,6 +152,8 @@ pub fn player_movement(
                         TileKind::COIN => {}
                         TileKind::LADDER => {
                             // On a ladder, the movement queue is cleared after every step!
+                            // This way, the player is unable to jump on a double ladder and ascends instead of jumping.
+                            // This case is handled redundantly below in the gravity handler, but we include it here anyways
                             player.clear_movement_queue();
                         }
                     }
@@ -173,7 +175,7 @@ pub fn player_movement(
             }
             if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32) {
                 if let TileKind::LADDER = block.kind {
-                    player.clear_movement_queue();
+                    player.clear_movement_queue(); // We don't want any gravity pulling the player off a ladder
                 }
             }
         }
