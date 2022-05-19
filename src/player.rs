@@ -168,9 +168,18 @@ pub fn keyboard_controls(
                         target: (cur_x - 1, cur_y),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Up) {
+                    // Jump 3 high
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (cur_x, cur_y + 2),
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (0., vy),
+                        target: (cur_x, cur_y + 3),
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Right) {
                     set_player_direction(player, &mut sprite, true);
