@@ -24,11 +24,16 @@ impl MapWrapper {
     }
 }
 
+/// A wrapper for coins
 #[derive(Component)]
 pub struct CoinWrapper<> {
     /// The value of this coin, i.e. the score a player gets for collecting the coin
     pub coin_value: i32,
 }
+
+/// A wrapper for any other map tile
+#[derive(Component)]
+pub struct TileWrapper<> {}
 
 pub fn coin_collision(
     mut commands: Commands,

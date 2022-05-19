@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::window::WindowMode;
-use libexodus::tiles::TileKind;
-use libexodus::world::GameWorld;
 
 mod constants;
 
@@ -22,6 +20,8 @@ mod scoreboard;
 
 mod ui;
 
+pub mod world;
+use crate::world::*;
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
 // TODO There is a bug in Bevy that causes adjacent textures from the atlas to leak through due to precision errors: https://github.com/bevyengine/bevy/issues/1949
@@ -57,59 +57,6 @@ fn setup_camera(
     // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
     camera.transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5, (map.world.height() as f32 / 2.) - 0.5, 0.);
     commands.spawn_bundle(camera);
-}
-
-fn setup_game_world(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut worldwrapper: ResMut<MapWrapper>,
-) {
-
-    // Load Texture Atlas
-    let texture_atlas = TextureAtlas::from_grid(
-        asset_server.load("textures/Tiny_Platform_Quest_Tiles.png"),
-        Vec2::splat(TEXTURE_SIZE as f32),
-        16,
-        16,
-    );
-    let atlas_handle = texture_atlases.add(texture_atlas);
-
-    // Load the world
-    worldwrapper.set_world(GameWorld::exampleworld());
-    let world: &mut GameWorld = &mut worldwrapper.world;
-
-    for row in 0..world.height() {
-        let y = row as f32 * (TILE_SIZE);
-        for col in 0..world.width() {
-            let x = col as f32 * (TILE_SIZE);
-            let tile_position = Vec3::new(
-                x as f32,
-                y as f32,
-                0.0,
-            );
-            let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
-            if let Some(index) = tile.atlas_index {
-                let mut bundle = commands
-                    .spawn_bundle(SpriteSheetBundle {
-                        sprite: TextureAtlasSprite::new(index),
-                        texture_atlas: atlas_handle.clone(),
-                        transform: Transform {
-                            translation: tile_position,
-                            scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
-                            ..default()
-                        },
-                        ..Default::default()
-                    });
-                match tile.kind {
-                    TileKind::COIN => {
-                        bundle.insert(CoinWrapper { coin_value: 1 });
-                    }
-                    _ => {}
-                }
-            }
-        }
-    }
 }
 
 

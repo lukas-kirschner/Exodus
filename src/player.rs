@@ -5,7 +5,7 @@ use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::TileKind;
 use crate::constants::*;
-use crate::{MapWrapper, Scoreboard};
+use crate::{CoinWrapper, MapWrapper, reset_world, Scoreboard, TileWrapper};
 
 #[derive(Component)]
 pub struct PlayerComponent {
@@ -29,12 +29,18 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
     }
 }
 
+///
+/// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
 pub fn despawn_dead_player(
     mut commands: Commands,
     mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity, &Handle<TextureAtlas>)>,
     time: Res<Time>,
-    worldwrapper: Res<MapWrapper>,
+    worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
+    asset_server: Res<AssetServer>,
+    texture_atlases: ResMut<Assets<TextureAtlas>>,
+    coin_query: Query<Entity, With<CoinWrapper>>,
+    tiles_query: Query<Entity, With<TileWrapper>>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
@@ -44,7 +50,8 @@ pub fn despawn_dead_player(
             // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             scoreboard.reset();
-            continue;
+            reset_world(commands, asset_server, texture_atlases, worldwrapper, coin_query, tiles_query);
+            return;
         }
         sprite.color.set_a(new_a);
         transform.translation.y += DEAD_PLAYER_ASCEND_SPEED * time.delta_seconds();
@@ -185,7 +192,7 @@ pub fn player_movement(
 fn respawn_player(
     commands: &mut Commands,
     atlas_handle_player: Handle<TextureAtlas>,
-    worldwrapper: &Res<MapWrapper>,
+    worldwrapper: &ResMut<MapWrapper>,
 ) {
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
@@ -208,7 +215,7 @@ pub fn setup_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    worldwrapper: Res<MapWrapper>,
+    worldwrapper: ResMut<MapWrapper>,
 ) {
     let texture_atlas_player = TextureAtlas::from_grid(
         asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),

@@ -25,6 +25,7 @@ impl GameWorld {
             .set(6, 1, spikes_alternative_a())
             .set(8, 2, wall_spikes_rltb())
             .set(1, 4, wall())
+            .set(1, 8, coin())
             .set(2, 6, wall())
             .set(3, 7, wall())
             .set(4, 7, wall())
