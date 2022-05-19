@@ -6,3 +6,5 @@ pub const TILE_SIZE: f32 = 1.0;
 pub const TEXTURE_SIZE: usize = 32;
 /// The speed of the player movement
 pub const PLAYER_SPEED: f32 = 4.0;
+/// The pickup distance for coins
+pub const COIN_PICKUP_DISTANCE: f32 = 0.1;

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use bevy::window::WindowMode;
+use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 
 mod constants;
@@ -10,10 +11,13 @@ use crate::constants::*;
 mod player;
 
 use crate::player::*;
+use crate::scoreboard::Scoreboard;
 
 mod tilewrapper;
 
 use crate::tilewrapper::*;
+
+mod scoreboard;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -62,7 +66,7 @@ fn setup_game_world(
             );
             let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
             if let Some(index) = tile.atlas_index {
-                let _entity = commands
+                let mut bundle = commands
                     .spawn_bundle(SpriteSheetBundle {
                         sprite: TextureAtlasSprite::new(index),
                         texture_atlas: atlas_handle.clone(),
@@ -72,7 +76,13 @@ fn setup_game_world(
                             ..default()
                         },
                         ..Default::default()
-                    }).id();
+                    });
+                match tile.kind {
+                    TileKind::COIN => {
+                        bundle.insert(CoinWrapper { coin_value: 1 });
+                    }
+                    _ => {}
+                }
             }
         }
     }
@@ -91,10 +101,12 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .init_resource::<MapWrapper>()
+        .init_resource::<Scoreboard>()
         .add_startup_system(setup_game_world.label("world"))
         .add_startup_system(setup_camera.after("world").label("camera"))
         .add_startup_system(setup_player.after("world").label("player"))
-        .add_system(player_movement)
+        .add_system(player_movement.label("player_movement"))
         .add_system(keyboard_controls)
+        .add_system(coin_collision.after("player_movement"))
         .run();
 }
