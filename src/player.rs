@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use libexodus::directions::{FromDirection};
+use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use crate::constants::*;
@@ -32,12 +33,14 @@ pub fn player_movement(
         // let mut transform: Transform = _transform;
 
         while let Some(movement) = player.peek_movement_queue() {
-            // Check if the player collides with anything, and remove the movement if that is the case
-            if let Some(block) = worldwrapper.world.get(movement.target.0, movement.target.1) {
+            // Check if the player collides with anything, and remove the movement if that is the case.
+            // For Player movements, only the directions from the movements are used -- The target is discarded and calculated from the direction.
+            let (target_x, target_y) = movement.int_target_from_direction(transform.translation.x, transform.translation.y);
+            if let Some(block) = worldwrapper.world.get(target_x, target_y) {
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
-                    println!("Dropped movement to {},{} because a collision was detected.", movement.target.0, movement.target.1);
-                    player.clear_movement_queue(); // On collision, clear all to make sure the player does not move through blocks if more movements are enqueued
+                    println!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
+                    player.pop_movement_queue(); // On collision, clear the latest movement
                 } else {
                     break;
                 }
@@ -45,12 +48,12 @@ pub fn player_movement(
         }
 
         if let Some(movement) = player.peek_movement_queue() {
-            let target_x: f32 = movement.target.0 as f32;
-            let target_y: f32 = movement.target.1 as f32;
+            let (target_x, target_y) = movement.int_target_from_direction(transform.translation.x, transform.translation.y);
+            let (target_x, target_y) = (target_x as f32, target_y as f32);
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
             let direction = movement.direction();
-            if velocity_x > 0. {
+            if direction == EAST {
                 // Check player's x direction and change texture accordingly
                 set_player_direction(player, &mut sprite, true);
 
@@ -73,7 +76,7 @@ pub fn player_movement(
                     transform.translation.x = target_x;
                 }
             }
-            if velocity_y > 0. {
+            if direction == NORTH {
                 if transform.translation.y < target_y {
                     transform.translation.y += velocity_y * time.delta_seconds();
                 }
