@@ -1,6 +1,7 @@
 use std::collections::LinkedList;
 use crate::movement::Movement;
 
+#[derive(Clone)]
 pub struct Player {
     movement_queue: LinkedList<Movement>,
     facing_left: bool,

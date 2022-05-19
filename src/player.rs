@@ -11,6 +11,12 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
+#[derive(Component)]
+pub struct DeadPlayerComponent {
+    pub player: Player,
+}
+
+
 fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, right: bool) {
     if right && !player.is_facing_right() {
         player.set_face_right(true);
@@ -23,11 +29,12 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 }
 
 pub fn player_movement(
-    mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
+    mut commands: Commands,
+    mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, Entity, &mut Transform, &Handle<TextureAtlas>)>,
     worldwrapper: Res<MapWrapper>,
     time: Res<Time>,
 ) {
-    for (mut _player, mut sprite, mut transform) in player_positions.iter_mut() {
+    for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // let mut transform: Transform = _transform;
@@ -95,8 +102,21 @@ pub fn player_movement(
                 // Check for deadly collision and kill the player, if one has occurred
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
                     if block.is_deadly_from(&FromDirection::from(direction)) {
-                        println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
-                        //TODO
+                        commands.entity(entity).despawn_recursive();
+                        sprite.index = 80;
+                        //TODO trigger GameOverEvent?
+                        commands.spawn_bundle(SpriteSheetBundle {
+                            sprite: sprite.clone(),
+                            texture_atlas: handle.clone(),
+                            transform: Transform {
+                                translation: transform.translation,
+                                scale: transform.scale,
+                                ..default()
+                            },
+                            ..Default::default()
+                        })
+                            .insert(DeadPlayerComponent { player: player.clone() });
+                        // println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                     }
                 }
                 player.pop_movement_queue();
