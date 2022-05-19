@@ -24,6 +24,7 @@ mod ui;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
+// TODO There is a bug in Bevy that causes adjacent textures from the atlas to leak through due to precision errors: https://github.com/bevyengine/bevy/issues/1949
 
 fn setup_camera(
     mut commands: Commands,
@@ -95,7 +96,7 @@ fn setup_game_world(
                         texture_atlas: atlas_handle.clone(),
                         transform: Transform {
                             translation: tile_position,
-                            scale: Vec3::splat((TILE_SIZE - MARGINS) as f32 / TEXTURE_SIZE as f32),
+                            scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
                             ..default()
                         },
                         ..Default::default()
