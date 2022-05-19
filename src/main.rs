@@ -134,5 +134,6 @@ fn main() {
         .add_system(keyboard_controls)
         .add_system(coin_collision.after("player_movement"))
         .add_system(scoreboard_ui_system)
+        .add_system(despawn_dead_player)
         .run();
 }

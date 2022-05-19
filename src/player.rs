@@ -28,6 +28,24 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
     }
 }
 
+pub fn despawn_dead_player(
+    mut commands: Commands,
+    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity)>,
+    time: Res<Time>,
+) {
+    for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
+        let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
+        if new_a <= 0.0 {
+            // The player has fully decayed and can be despawned
+            commands.entity(entity).despawn_recursive();
+            continue;
+        }
+        sprite.color.set_a(new_a);
+        transform.translation.y += DEAD_PLAYER_ASCEND_SPEED * time.delta_seconds();
+        transform.scale += Vec3::splat(DEAD_PLAYER_ZOOM_SPEED * time.delta_seconds());
+    }
+}
+
 pub fn player_movement(
     mut commands: Commands,
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, Entity, &mut Transform, &Handle<TextureAtlas>)>,
