@@ -33,14 +33,16 @@ pub fn despawn_dead_player(
     mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity, &Handle<TextureAtlas>)>,
     time: Res<Time>,
     worldwrapper: Res<MapWrapper>,
+    mut scoreboard: ResMut<Scoreboard>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned
             commands.entity(entity).despawn_recursive();
-            // Spawn new player
+            // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
+            scoreboard.reset();
             continue;
         }
         sprite.color.set_a(new_a);

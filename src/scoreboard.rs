@@ -15,3 +15,10 @@ impl FromWorld for Scoreboard {
         }
     }
 }
+
+impl Scoreboard {
+    pub fn reset(&mut self) {
+        self.scores = 0;
+        self.moves = 0;
+    }
+}
