@@ -118,8 +118,8 @@ fn main() {
         .insert_resource(WindowDescriptor {
             title: "Exodus".to_string(),
             resizable: false,
-            width: 1000.,
-            height: 500.,
+            width: 1001.,
+            height: 501.,
             mode: WindowMode::Windowed,
             ..Default::default()
         })
