@@ -16,8 +16,11 @@ use crate::scoreboard::Scoreboard;
 mod tilewrapper;
 
 use crate::tilewrapper::*;
+use crate::ui::{scoreboard_ui_system, setup_game_ui};
 
 mod scoreboard;
+
+mod ui;
 
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -105,8 +108,10 @@ fn main() {
         .add_startup_system(setup_game_world.label("world"))
         .add_startup_system(setup_camera.after("world").label("camera"))
         .add_startup_system(setup_player.after("world").label("player"))
+        .add_startup_system(setup_game_ui.after("world").after("player").after("camera").label("ui"))
         .add_system(player_movement.label("player_movement"))
         .add_system(keyboard_controls)
         .add_system(coin_collision.after("player_movement"))
+        .add_system(scoreboard_ui_system)
         .run();
 }

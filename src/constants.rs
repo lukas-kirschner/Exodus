@@ -8,3 +8,5 @@ pub const TEXTURE_SIZE: usize = 32;
 pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins
 pub const COIN_PICKUP_DISTANCE: f32 = 0.1;
+/// The UI Font Size for main UI elements
+pub const UI_FONT_SIZE: f32 = 20.0;
