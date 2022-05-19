@@ -25,16 +25,32 @@ mod ui;
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
 
-fn setup_camera(mut commands: Commands) {
+fn setup_camera(
+    mut commands: Commands,
+    window: Res<WindowDescriptor>,
+    map: Res<MapWrapper>,
+) {
+    let map_width_pixels: usize = TEXTURE_SIZE * map.world.width();
+    let map_height_pixels: usize = TEXTURE_SIZE * map.world.height();
+    let window_height_pixels: usize = window.height as usize;
+    let window_width_pixels: usize = window.width as usize;
+    let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
+    let map_ratio: f32 = map_width_pixels as f32 / map_height_pixels as f32;
+    let camera_scale = if window_ratio < map_ratio {
+        window_width_pixels as f32 / map_width_pixels as f32
+    } else {
+        window_height_pixels as f32 / map_height_pixels as f32
+    };
+
     let mut camera = OrthographicCameraBundle::new_2d();
     camera.orthographic_projection = OrthographicProjection {
         far: 1000.0,
         depth_calculation: DepthCalculation::ZDifference,
-        scaling_mode: ScalingMode::FixedHorizontal,
+        scaling_mode: ScalingMode::WindowSize,
         ..default()
     };
-    camera.transform.scale = Vec3::splat(1000.0 / 24.0);
-    camera.transform.translation = Vec3::new(12., 5., 0.);
+    camera.transform.scale = Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32));
+    camera.transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5, (map.world.height() as f32 / 2.) - 0.5, 0.);
     commands.spawn_bundle(camera);
 }
 
