@@ -39,8 +39,8 @@ pub fn setup_game_ui(
         style: Style {
             position_type: PositionType::Absolute,
             position: Rect {
-                top: Val::Px(5.0),
-                left: Val::Px(5.0),
+                top: Val::Px(0.0),
+                bottom: Val::Px(0.0),
                 ..Default::default()
             },
             ..Default::default()
