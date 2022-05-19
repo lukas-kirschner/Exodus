@@ -30,15 +30,17 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 
 pub fn despawn_dead_player(
     mut commands: Commands,
-    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity)>,
+    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity, &Handle<TextureAtlas>)>,
     time: Res<Time>,
+    worldwrapper: Res<MapWrapper>,
 ) {
-    for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
+    for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned
             commands.entity(entity).despawn_recursive();
-            // Spawn new player?
+            // Spawn new player
+            respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             continue;
         }
         sprite.color.set_a(new_a);
@@ -157,20 +159,11 @@ pub fn player_movement(
     }
 }
 
-
-pub fn setup_player(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    worldwrapper: Res<MapWrapper>,
+fn respawn_player(
+    commands: &mut Commands,
+    atlas_handle_player: Handle<TextureAtlas>,
+    worldwrapper: &Res<MapWrapper>,
 ) {
-    let texture_atlas_player = TextureAtlas::from_grid(
-        asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
-        Vec2::splat(TEXTURE_SIZE as f32),
-        16,
-        16,
-    );
-    let atlas_handle_player = texture_atlases.add(texture_atlas_player);
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
@@ -185,6 +178,23 @@ pub fn setup_player(
             ..Default::default()
         })
         .insert(player);
+}
+
+
+pub fn setup_player(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    worldwrapper: Res<MapWrapper>,
+) {
+    let texture_atlas_player = TextureAtlas::from_grid(
+        asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
+        Vec2::splat(TEXTURE_SIZE as f32),
+        16,
+        16,
+    );
+    let atlas_handle_player = texture_atlases.add(texture_atlas_player);
+    respawn_player(&mut commands, atlas_handle_player, &worldwrapper);
 }
 
 pub fn keyboard_controls(
