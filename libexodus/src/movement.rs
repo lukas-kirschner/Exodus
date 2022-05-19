@@ -4,6 +4,8 @@ use crate::directions::Directions;
 pub struct Movement {
     pub velocity: (f32, f32),
     pub target: (i32, i32),
+    /// If the move came from a player interaction, this should be set to true
+    pub is_manual: bool,
 }
 
 impl Movement {

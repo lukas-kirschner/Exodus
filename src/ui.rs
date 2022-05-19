@@ -33,6 +33,22 @@ pub fn setup_game_ui(
                         color: Color::rgb(1.0, 0.5, 0.5),
                     },
                 },
+                TextSection {
+                    value: " Moves: ".to_string(),
+                    style: TextStyle {
+                        font: asset_server.load("fonts/PublicPixel.ttf"),
+                        font_size: UI_FONT_SIZE,
+                        color: Color::rgb(0.5, 0.5, 1.0),
+                    },
+                },
+                TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: asset_server.load("fonts/PublicPixel.ttf"),
+                        font_size: UI_FONT_SIZE,
+                        color: Color::rgb(1.0, 0.5, 0.5),
+                    },
+                },
             ],
             ..Default::default()
         },
@@ -55,5 +71,6 @@ pub fn scoreboard_ui_system(
 ) {
     for mut text in textobjects.iter_mut() {
         text.sections[1].value = scoreboard.scores.to_string();
+        text.sections[3].value = scoreboard.moves.to_string();
     }
 }

@@ -4,7 +4,7 @@ use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use crate::constants::*;
-use crate::{MapWrapper};
+use crate::{MapWrapper, Scoreboard};
 
 #[derive(Component)]
 pub struct PlayerComponent {
@@ -26,6 +26,7 @@ pub fn player_movement(
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &mut Transform)>,
     worldwrapper: Res<MapWrapper>,
     time: Res<Time>,
+    mut scoreboard: ResMut<Scoreboard>,
 ) {
     for (mut _player, mut sprite, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
@@ -53,6 +54,7 @@ pub fn player_movement(
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
             let direction = movement.direction();
+            let is_manual = movement.is_manual;
             if direction == EAST {
                 // Check player's x direction and change texture accordingly
                 set_player_direction(player, &mut sprite, true);
@@ -100,6 +102,9 @@ pub fn player_movement(
                     }
                 }
                 // The player has reached the target of the movement, pop from the queue!
+                if is_manual {
+                    scoreboard.moves += 1;
+                }
                 player.pop_movement_queue();
             }
         }
@@ -111,6 +116,7 @@ pub fn player_movement(
                     player.push_movement_queue(Movement {
                         velocity: (0., -PLAYER_SPEED),
                         target: (transform.translation.x as i32, transform.translation.y as i32 - 1),
+                        is_manual: false,
                     });
                 }
             }
@@ -166,59 +172,71 @@ pub fn keyboard_controls(
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
                         target: (cur_x - 1, cur_y),
+                        is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Up) {
                     // Jump 3 high
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 2),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 3),
+                        is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Right) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y),
+                        is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Down) {
                     player.push_movement_queue(Movement {
                         velocity: (0., -vy),
                         target: (cur_x, cur_y - 1),
+                        is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Q) {
                     set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 2),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
                         target: (cur_x - 1, cur_y + 2),
+                        is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::W) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 2),
+                        is_manual: true,
                     });
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y + 2),
+                        is_manual: true,
                     });
                 }
             }
