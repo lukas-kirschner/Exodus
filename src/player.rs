@@ -5,7 +5,31 @@ use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::TileKind;
 use crate::constants::*;
-use crate::{CoinWrapper, MapWrapper, reset_world, Scoreboard, TileWrapper};
+use crate::{AppState, cleanup, CoinWrapper, MapWrapper, reset_world, Scoreboard, TileWrapper};
+
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(setup_player).after("world").label("player")
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(keyboard_controls)
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(player_movement).label("player_movement")
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(despawn_dead_player)
+            )
+            .add_system_set(SystemSet::on_exit(AppState::Playing)
+                .with_system(cleanup)
+            )
+        ;
+    }
+}
 
 #[derive(Component)]
 pub struct PlayerComponent {

@@ -1,8 +1,20 @@
 use bevy::prelude::*;
 use libexodus::world::GameWorld;
 use libexodus::world::presets;
-use crate::{COIN_PICKUP_DISTANCE, PlayerComponent};
+use crate::{AppState, COIN_PICKUP_DISTANCE, PlayerComponent};
 use crate::scoreboard::Scoreboard;
+
+pub struct CoinPlugin;
+
+impl Plugin for CoinPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(coin_collision).after("player_movement")
+            )
+        ;
+    }
+}
 
 ///
 /// A wrapper around a GameWorld

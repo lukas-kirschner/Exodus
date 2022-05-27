@@ -1,7 +1,23 @@
 use bevy::prelude::*;
-use crate::{Scoreboard, UI_FONT_SIZE};
+use crate::{AppState, Scoreboard, UI_FONT_SIZE};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
+
+pub struct GameUIPlugin;
+
+impl Plugin for GameUIPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .init_resource::<Scoreboard>()
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(setup_game_ui).after("world").after("player").after("camera").label("ui")
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(scoreboard_ui_system)
+            )
+        ;
+    }
+}
 
 #[derive(Component)]
 pub struct ScoreboardUICounter {}

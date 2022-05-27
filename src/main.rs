@@ -5,6 +5,7 @@ use bevy::window::WindowMode;
 mod constants;
 
 use crate::constants::*;
+use crate::mainmenu::MainMenu;
 
 mod player;
 
@@ -14,14 +15,23 @@ use crate::scoreboard::Scoreboard;
 mod tilewrapper;
 
 use crate::tilewrapper::*;
-use crate::ui::{scoreboard_ui_system, setup_game_ui};
+use crate::ui::{GameUIPlugin, scoreboard_ui_system, setup_game_ui};
 
 mod scoreboard;
 
 mod ui;
 
 pub mod world;
+
 use crate::world::*;
+
+mod mainmenu;
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+enum AppState {
+    MainMenu,
+    Playing,
+}
 // We use https://opengameart.org/content/8x8-resource-pack and https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
 // TODO There is a bug in Bevy that causes adjacent textures from the atlas to leak through due to precision errors: https://github.com/bevyengine/bevy/issues/1949
@@ -59,6 +69,13 @@ fn setup_camera(
     commands.spawn_bundle(camera);
 }
 
+/// Cleanup every entity that is present in the stage. Used for State Changes
+fn cleanup(mut commands: Commands, query: Query<Entity>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
 
 fn main() {
     App::new()
@@ -67,20 +84,23 @@ fn main() {
             resizable: false,
             width: 1001.,
             height: 501.,
+            cursor_visible: true,
+            decorations: true,
             mode: WindowMode::Windowed,
             ..Default::default()
         })
+        .add_state(AppState::MainMenu)
         .add_plugins(DefaultPlugins)
         .init_resource::<MapWrapper>()
-        .init_resource::<Scoreboard>()
-        .add_startup_system(setup_game_world.label("world"))
-        .add_startup_system(setup_camera.after("world").label("camera"))
-        .add_startup_system(setup_player.after("world").label("player"))
-        .add_startup_system(setup_game_ui.after("world").after("player").after("camera").label("ui"))
-        .add_system(player_movement.label("player_movement"))
-        .add_system(keyboard_controls)
-        .add_system(coin_collision.after("player_movement"))
-        .add_system(scoreboard_ui_system)
-        .add_system(despawn_dead_player)
+        .add_system_set(SystemSet::on_enter(AppState::Playing)
+            .with_system(setup_game_world).label("world")
+        )
+        .add_system_set(SystemSet::on_enter(AppState::Playing)
+            .with_system(setup_camera).after("world").label("camera")
+        )
+        .add_plugin(MainMenu)
+        .add_plugin(GameUIPlugin)
+        .add_plugin(PlayerPlugin)
+        .add_plugin(CoinPlugin)
         .run();
 }
