@@ -1,7 +1,57 @@
 use bevy::prelude::*;
 use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
-use crate::{CoinWrapper, MapWrapper, TEXTURE_SIZE, TILE_SIZE, TileWrapper};
+use bevy::render::camera::{DepthCalculation, ScalingMode};
+use crate::{AppState, CoinWrapper, MapWrapper, TEXTURE_SIZE, TILE_SIZE, TileWrapper};
+
+
+fn setup_camera(
+    mut commands: Commands,
+    window: Res<WindowDescriptor>,
+    map: Res<MapWrapper>,
+) {
+    // Scale the camera, such that the world exactly fits into the viewport. At the top and bottom,
+    // we leave at least one world tile of space free for UI elements, which we also scale
+    // exactly to the height of one tile.
+    let map_width_pixels: usize = TEXTURE_SIZE * map.world.width();
+    let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height() + 2); // 2 tiles for UI elements
+    let window_height_pixels: usize = window.height as usize;
+    let window_width_pixels: usize = window.width as usize;
+    let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
+    let map_ratio: f32 = map_width_pixels as f32 / map_height_pixels_plus_ui as f32;
+    let camera_scale = if window_ratio < map_ratio {
+        window_width_pixels as f32 / map_width_pixels as f32
+    } else {
+        window_height_pixels as f32 / map_height_pixels_plus_ui as f32
+    };
+
+    let mut camera = OrthographicCameraBundle::new_2d();
+    camera.orthographic_projection = OrthographicProjection {
+        far: 1000.0,
+        depth_calculation: DepthCalculation::ZDifference,
+        scaling_mode: ScalingMode::WindowSize,
+        ..default()
+    };
+    camera.transform.scale = Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32));
+    // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
+    camera.transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5, (map.world.height() as f32 / 2.) - 0.5, 0.);
+    commands.spawn_bundle(camera);
+}
+
+pub struct WorldPlugin;
+
+impl Plugin for WorldPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(setup_game_world).label("world")
+            )
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(setup_camera).after("world").label("camera")
+            )
+        ;
+    }
+}
 
 pub fn setup_game_world(
     mut commands: Commands,
