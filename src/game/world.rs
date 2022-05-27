@@ -2,7 +2,9 @@ use bevy::prelude::*;
 use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
-use crate::{AppState, CoinWrapper, MapWrapper, TEXTURE_SIZE, TILE_SIZE, TileWrapper};
+use crate::AppState;
+use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE};
+use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
 
 
 fn setup_camera(

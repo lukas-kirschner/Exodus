@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use crate::{AppState, Scoreboard, UI_FONT_SIZE};
+use crate::AppState;
+use crate::game::constants::UI_FONT_SIZE;
+use crate::game::scoreboard::Scoreboard;
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 

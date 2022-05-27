@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use libexodus::world::GameWorld;
 use libexodus::world::presets;
-use crate::{AppState, COIN_PICKUP_DISTANCE, PlayerComponent};
-use crate::scoreboard::Scoreboard;
+use crate::AppState;
+use crate::game::constants::COIN_PICKUP_DISTANCE;
+use crate::game::player::PlayerComponent;
+use crate::game::scoreboard::Scoreboard;
 
 pub struct CoinPlugin;
 

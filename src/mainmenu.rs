@@ -181,15 +181,6 @@ fn button_press_system(
     }
 }
 
-fn back_to_main_menu_controls(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if *app_state.current() == AppState::Playing {
-        if keys.just_pressed(KeyCode::Escape) {
-            app_state.set(AppState::MainMenu).expect("Could not go back to Main Menu");
-            keys.reset(KeyCode::Escape);
-        }
-    }
-}
-
 fn cleanup(mut commands: Commands, menu_data: Res<MainMenuData>) {
     commands.entity(menu_data.ui_root).despawn_recursive();
     commands.entity(menu_data.camera_entity).despawn_recursive();
@@ -211,9 +202,6 @@ impl Plugin for MainMenu {
             )
             .add_system_set(SystemSet::on_exit(AppState::MainMenu)
                 .with_system(cleanup)
-            )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(back_to_main_menu_controls)
             )
         ;
     }

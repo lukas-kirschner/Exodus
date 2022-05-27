@@ -4,8 +4,11 @@ use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::TileKind;
-use crate::constants::*;
-use crate::{AppState, cleanup, CoinWrapper, MapWrapper, reset_world, Scoreboard, TileWrapper};
+use crate::AppState;
+use crate::game::constants::*;
+use crate::game::scoreboard::Scoreboard;
+use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
+use crate::game::world::reset_world;
 
 pub struct PlayerPlugin;
 
@@ -23,9 +26,6 @@ impl Plugin for PlayerPlugin {
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(despawn_dead_player)
-            )
-            .add_system_set(SystemSet::on_exit(AppState::Playing)
-                .with_system(cleanup)
             )
         ;
     }
