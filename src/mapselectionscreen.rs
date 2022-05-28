@@ -108,7 +108,6 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
                 flex_shrink: 0.,
                 size: Size::new(Val::Percent(100.0), Val::Px(NAVBAR_HEIGHT)),
                 flex_direction: FlexDirection::RowReverse,
-                max_size: Size::new(Val::Percent(100.0), Val::Auto),
                 margin: Rect {
                     left: Val::Auto,
                     right: Val::Auto,
@@ -127,7 +126,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        max_size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Auto),
+                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
                         ..default()
                     },
                     ..default()
@@ -151,7 +150,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        max_size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Auto),
+                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
                         ..default()
                     },
                     ..default()
@@ -175,7 +174,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        max_size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Auto),
+                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
                         ..default()
                     },
                     ..default()
@@ -199,7 +198,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                        size: Size::new(Val::Percent(100.0), Val::Px(NAVBAR_HEIGHT)),
                         ..default()
                     },
                     color: Color::NONE.into(),
@@ -213,7 +212,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        max_size: Size::new(Val::Auto, Val::Percent(100.0)),
+                        max_size: Size::new(Val::Auto, Val::Px(NAVBAR_HEIGHT)),
                         flex_direction: FlexDirection::Row,
                         justify_content: JustifyContent::FlexStart,
                         ..default()
