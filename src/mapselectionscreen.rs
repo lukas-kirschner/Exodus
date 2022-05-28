@@ -337,25 +337,8 @@ fn load_maps(
     ;
 }
 
-/// Press System for the main buttons only - the ListView buttons are ignored here!
+/// Button Click System
 fn button_press_system(
-    buttons: Query<(&Interaction, &MapSelectionScreenButton), (Changed<Interaction>, With<Button>)>,
-    mut state: ResMut<State<AppState>>,
-) {
-    for (interaction, button) in buttons.iter() {
-        if *interaction == Interaction::Clicked {
-            match button {
-                MapSelectionScreenButton::Back => state
-                    .set(AppState::MainMenu)
-                    .expect("Could not switch back to Main Menu"),
-                _ => {}
-            };
-        }
-    }
-}
-
-/// Buttons System for ListView buttons only
-fn listview_buttons_system(
     mut commands: Commands,
     buttons: Query<(&Interaction, &MapSelectionScreenButton), (Changed<Interaction>, With<Button>)>,
     mut state: ResMut<State<AppState>>,
@@ -364,6 +347,9 @@ fn listview_buttons_system(
     for (interaction, button) in buttons.iter() {
         if *interaction == Interaction::Clicked {
             match button {
+                MapSelectionScreenButton::Back => state
+                    .set(AppState::MainMenu)
+                    .expect("Could not switch back to Main Menu"),
                 MapSelectionScreenButton::Play { map_name } => {
                     //load map and move it out of the maps vector
                     let map_ind = maps.maps.iter().position(|mw| mw.map_name.eq(&*map_name)).expect(&*format!("The map with name {} was not found", map_name));
@@ -379,8 +365,7 @@ fn listview_buttons_system(
                     commands.entity(*entity_id).despawn_recursive();
                 }
                 MapSelectionScreenButton::Edit { map_name } => {}
-                _ => {}
-            }
+            };
         }
     }
 }
@@ -436,9 +421,6 @@ impl Plugin for MapSelectionScreenPlugin {
             )
             .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
                 .with_system(button_press_system)
-            )
-            .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
-                .with_system(listview_buttons_system)
             )
             .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
                 .with_system(mouse_scroll)
