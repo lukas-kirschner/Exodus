@@ -1,5 +1,6 @@
+use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use libexodus::world::GameWorld;
+use libexodus::world::{GameWorld, presets};
 use crate::AppState;
 use crate::uicontrols::{button, button_text, DELETE_TEXT, EDIT_TEXT, MenuMaterials, NAVBAR_BACK_TEXT, navbar_button_container, NAVBAR_HEIGHT, PLAY_TEXT, top_menu_container};
 use crate::game::tilewrapper::MapWrapper;
@@ -75,7 +76,7 @@ fn listview_list_overflownode(materials: &Res<MenuMaterials>) -> NodeBundle {
         style: Style {
             flex_direction: FlexDirection::ColumnReverse,
             align_self: AlignSelf::Center,
-            size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
             overflow: Overflow::Hidden,
             ..default()
         },
@@ -90,7 +91,7 @@ fn listview_list_movingnode(_materials: &Res<MenuMaterials>) -> NodeBundle {
         style: Style {
             flex_direction: FlexDirection::ColumnReverse,
             flex_grow: 1.0,
-            max_size: Size::new(Val::Undefined, Val::Undefined),
+            max_size: Size::new(Val::Percent(100.0), Val::Undefined),
             ..default()
         },
         color: Color::NONE.into(),
@@ -104,8 +105,15 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
         // Panel that contains all the contents for one row in the ListView
         .spawn_bundle(NodeBundle {
             style: Style {
+                flex_shrink: 0.,
+                size: Size::new(Val::Percent(100.0), Val::Px(NAVBAR_HEIGHT)),
                 flex_direction: FlexDirection::RowReverse,
                 max_size: Size::new(Val::Percent(100.0), Val::Auto),
+                margin: Rect {
+                    left: Val::Auto,
+                    right: Val::Auto,
+                    ..default()
+                },
                 ..default()
             },
             color: materials.menu.into(),
@@ -314,7 +322,14 @@ fn load_maps(
         maps.maps.push(MapWrapper {
             map_name: "Debug Map".into(),
             world: GameWorld::exampleworld(),
-        })
+        });
+        // Fill the list to test scrolling
+        for i in 1..=20 {
+            maps.maps.push(MapWrapper {
+                map_name: format!("Empty Test Map {}", i),
+                world: presets::map_with_border(24 + i, i + 3),
+            })
+        }
     }
 
     commands
@@ -370,6 +385,32 @@ fn listview_buttons_system(
     }
 }
 
+/// Scroll the map list with the mouse wheel.
+/// Taken from https://bevyengine.org/examples/ui/ui/
+fn mouse_scroll(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut MapSelectionList, &mut Style, &Children, &Node)>,
+    query_item: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.iter() {
+        for (mut scrolling_list, mut style, children, uinode) in query_list.iter_mut() {
+            let items_height: f32 = children
+                .iter()
+                .map(|entity| query_item.get(*entity).unwrap().size.y)
+                .sum();
+            let panel_height = uinode.size.y;
+            let max_scroll = (items_height - panel_height).max(0.);
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.position.top = Val::Px(scrolling_list.position);
+        }
+    }
+}
+
 /// Cleanup the Map Selection Screen
 fn cleanup(mut commands: Commands, menu_data: Res<MapSelectionScreenData>) {
     commands.entity(menu_data.ui_root).despawn_recursive();
@@ -384,15 +425,23 @@ impl Plugin for MapSelectionScreenPlugin {
             .init_resource::<Maps>()
             .add_system_set(
                 SystemSet::on_enter(AppState::MapSelectionScreen)
-                    .with_system(load_maps)
-                    .with_system(setup),
+                    .with_system(load_maps).label("load_maps"),
+            )
+            .add_system_set(
+                SystemSet::on_enter(AppState::MapSelectionScreen)
+                    .with_system(setup).after("load_maps"),
             )
             .add_system_set(SystemSet::on_exit(AppState::MapSelectionScreen)
                 .with_system(cleanup)
             )
             .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
                 .with_system(button_press_system)
+            )
+            .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
                 .with_system(listview_buttons_system)
+            )
+            .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
+                .with_system(mouse_scroll)
             )
         ;
     }
