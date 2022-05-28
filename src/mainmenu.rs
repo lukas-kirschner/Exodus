@@ -1,36 +1,12 @@
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use crate::{AppState};
-
-struct MenuMaterials {
-    root: UiColor,
-    border: UiColor,
-    menu: UiColor,
-    button: UiColor,
-    button_hovered: UiColor,
-    button_pressed: UiColor,
-    button_text: Color,
-}
+use crate::uicontrols::{button, button_text, MenuMaterials};
 
 struct MainMenuData {
     camera_entity: Entity,
     ui_root: Entity,
 }
-
-impl FromWorld for MenuMaterials {
-    fn from_world(_: &mut World) -> Self {
-        MenuMaterials {
-            root: Color::NONE.into(),
-            border: Color::rgb(0.65, 0.65, 0.65).into(),
-            menu: Color::rgb(0.15, 0.15, 0.15).into(),
-            button: Color::rgb(0.15, 0.15, 0.15).into(),
-            button_hovered: Color::rgb(0.25, 0.25, 0.25).into(),
-            button_pressed: Color::rgb(0.35, 0.75, 0.35).into(),
-            button_text: Color::WHITE,
-        }
-    }
-}
-
 
 fn root(materials: &Res<MenuMaterials>) -> NodeBundle {
     NodeBundle {
@@ -43,38 +19,6 @@ fn root(materials: &Res<MenuMaterials>) -> NodeBundle {
         color: materials.root.clone(),
         ..Default::default()
     }
-}
-
-fn button(materials: &Res<MenuMaterials>) -> ButtonBundle {
-    ButtonBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..Default::default()
-        },
-        color: materials.button.clone(),
-        ..Default::default()
-    }
-}
-
-fn button_text(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>, label: &str) -> TextBundle {
-    return TextBundle {
-        style: Style {
-            margin: Rect::all(Val::Px(10.0)),
-            ..Default::default()
-        },
-        text: Text::with_section(
-            label,
-            TextStyle {
-                font: asset_server.load("fonts/PublicPixel.ttf"),
-                font_size: 20.0,
-                color: materials.button_text.clone(),
-            },
-            Default::default(),
-        ),
-        ..Default::default()
-    };
 }
 
 fn border(materials: &Res<MenuMaterials>) -> NodeBundle {
@@ -130,7 +74,7 @@ fn setup(
                         .with_children(|parent| {
                             parent.spawn_bundle(button(&materials))
                                 .with_children(|parent| {
-                                    parent.spawn_bundle(button_text(&asset_server, &materials, "New Game"));
+                                    parent.spawn_bundle(button_text(&asset_server, &materials, "Maps"));
                                 })
                                 .insert(MainMenuButton::Play);
                             parent.spawn_bundle(button(&materials))
@@ -148,22 +92,6 @@ fn setup(
         });
 }
 
-fn button_system(
-    materials: Res<MenuMaterials>,
-    mut buttons: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut uicolor) in buttons.iter_mut() {
-        match *interaction {
-            Interaction::Clicked => *uicolor = materials.button_pressed.into(),
-            Interaction::Hovered => *uicolor = materials.button_hovered.into(),
-            Interaction::None => *uicolor = materials.button.into(),
-        }
-    }
-}
-
 fn button_press_system(
     buttons: Query<(&Interaction, &MainMenuButton), (Changed<Interaction>, With<Button>)>,
     mut state: ResMut<State<AppState>>,
@@ -173,8 +101,8 @@ fn button_press_system(
         if *interaction == Interaction::Clicked {
             match button {
                 MainMenuButton::Play => state
-                    .set(AppState::Playing)
-                    .expect("Could not switch state to Playing"),
+                    .set(AppState::MapSelectionScreen)
+                    .expect("Could not switch state to Map Selection Screen"),
                 MainMenuButton::Quit => exit.send(AppExit),
             };
         }
@@ -191,11 +119,9 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app.init_resource::<MenuMaterials>()
-            .add_system(button_system)
-            .add_system_set(
-                SystemSet::on_enter(AppState::MainMenu)
-                    .with_system(setup),
+        app
+            .add_system_set(SystemSet::on_enter(AppState::MainMenu)
+                                .with_system(setup),
             )
             .add_system_set(SystemSet::on_update(AppState::MainMenu)
                 .with_system(button_press_system)

@@ -71,8 +71,6 @@ pub fn setup_game_world(
     );
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    // Load the world
-    worldwrapper.set_world(GameWorld::exampleworld());
     let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {

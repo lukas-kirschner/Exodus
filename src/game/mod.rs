@@ -3,7 +3,7 @@ use crate::AppState;
 
 mod constants;
 mod player;
-mod tilewrapper;
+pub mod tilewrapper;
 mod scoreboard;
 mod ui;
 mod world;
