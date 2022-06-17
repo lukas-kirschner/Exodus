@@ -2,7 +2,7 @@ use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use libexodus::world::{GameWorld, presets};
 use crate::AppState;
-use crate::uicontrols::{button, button_text, DELETE_TEXT, EDIT_TEXT, MenuMaterials, NAVBAR_BACK_TEXT, navbar_button_container, NAVBAR_HEIGHT, PLAY_TEXT, top_menu_container};
+use crate::uicontrols::{button, button_text, DELETE_TEXT, EDIT_TEXT, full_screen_menu_root_node, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, navbar_button_container, NAVBAR_HEIGHT, PLAY_TEXT, top_menu_container};
 use crate::game::tilewrapper::MapWrapper;
 
 struct MapSelectionScreenData {
@@ -39,22 +39,6 @@ impl FromWorld for Maps {
 #[derive(Component, Default)]
 struct MapSelectionList {
     position: f32,
-}
-
-//noinspection DuplicatedCode
-/// Initialize a UI root
-fn root(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_direction: FlexDirection::ColumnReverse,
-            ..Default::default()
-        },
-        color: materials.root.clone(),
-        ..Default::default()
-    }
 }
 
 fn listview_container(materials: &Res<MenuMaterials>) -> NodeBundle {
@@ -238,7 +222,7 @@ fn setup(
     let camera_entity = commands.spawn_bundle(UiCameraBundle::default()).id();
 
     let ui_root = commands
-        .spawn_bundle(root(&materials))
+        .spawn_bundle(full_screen_menu_root_node(&materials))
         // NAVBAR
         .with_children(|parent| {
             parent
@@ -404,6 +388,9 @@ impl Plugin for MapSelectionScreenPlugin {
             )
             .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
                 .with_system(mouse_scroll)
+            )
+            .add_system_set(SystemSet::on_update(AppState::MapSelectionScreen)
+                .with_system(menu_esc_control)
             )
         ;
     }

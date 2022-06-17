@@ -14,3 +14,5 @@ pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
 pub const DEAD_PLAYER_ZOOM_SPEED: f32 = 0.1;
 /// The speed a dead player decays
 pub const DEAD_PLAYER_DECAY_SPEED: f32 = 2.0;
+/// The border width of menu panels
+pub const MENU_BORDER_WIDTH:f32 = 8.0;

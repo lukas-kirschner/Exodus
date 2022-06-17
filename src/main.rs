@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::WindowMode;
+use crate::creditsscreen::CreditsScreen;
 use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
@@ -7,6 +8,7 @@ use crate::uicontrols::UiControlsPlugin;
 
 mod game;
 mod mainmenu;
+mod creditsscreen;
 mod uicontrols;
 mod mapselectionscreen;
 
@@ -16,9 +18,10 @@ mod mapselectionscreen;
 
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum AppState {
+pub enum AppState {
     MainMenu,
     MapSelectionScreen,
+    CreditsScreen,
     Playing,
 }
 
@@ -40,5 +43,6 @@ fn main() {
         .add_plugin(GamePlugin)
         .add_plugin(MainMenu)
         .add_plugin(MapSelectionScreenPlugin)
+        .add_plugin(CreditsScreen)
         .run();
 }

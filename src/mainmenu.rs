@@ -1,56 +1,17 @@
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use crate::{AppState};
-use crate::uicontrols::{button, button_text, MenuMaterials};
+use crate::uicontrols::{button, button_text, floating_border, full_screen_menu_root_node, fullscreen_menu_background, MenuMaterials};
 
 struct MainMenuData {
     camera_entity: Entity,
     ui_root: Entity,
 }
 
-fn root(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..Default::default()
-        },
-        color: materials.root.clone(),
-        ..Default::default()
-    }
-}
-
-fn border(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Px(400.0), Val::Auto),
-            border: Rect::all(Val::Px(8.0)),
-            ..Default::default()
-        },
-        color: materials.border.clone(),
-        ..Default::default()
-    }
-}
-
-fn menu_background(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::ColumnReverse,
-            padding: Rect::all(Val::Px(5.0)),
-            ..Default::default()
-        },
-        color: materials.menu.clone(),
-        ..Default::default()
-    }
-}
-
 #[derive(Component)]
 enum MainMenuButton {
     Play,
+    Credits,
     Quit,
 }
 
@@ -62,21 +23,26 @@ fn setup(
     let camera_entity = commands.spawn_bundle(UiCameraBundle::default()).id();
 
     let ui_root = commands
-        .spawn_bundle(root(&materials))
+        .spawn_bundle(full_screen_menu_root_node(&materials))
         .with_children(|parent| {
             // left vertical fill (border)
             parent
-                .spawn_bundle(border(&materials))
+                .spawn_bundle(floating_border(&materials, 400))
                 .with_children(|parent| {
                     // left vertical fill (content)
                     parent
-                        .spawn_bundle(menu_background(&materials))
+                        .spawn_bundle(fullscreen_menu_background(&materials))
                         .with_children(|parent| {
                             parent.spawn_bundle(button(&materials))
                                 .with_children(|parent| {
                                     parent.spawn_bundle(button_text(&asset_server, &materials, "Maps"));
                                 })
                                 .insert(MainMenuButton::Play);
+                            parent.spawn_bundle(button(&materials))
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(button_text(&asset_server, &materials, "Credits"));
+                                })
+                                .insert(MainMenuButton::Credits);
                             parent.spawn_bundle(button(&materials))
                                 .with_children(|parent| {
                                     parent.spawn_bundle(button_text(&asset_server, &materials, "Quit"));
@@ -103,6 +69,9 @@ fn button_press_system(
                 MainMenuButton::Play => state
                     .set(AppState::MapSelectionScreen)
                     .expect("Could not switch state to Map Selection Screen"),
+                MainMenuButton::Credits => state
+                    .set(AppState::CreditsScreen)
+                    .expect("Could not switch state to Credits Screen"),
                 MainMenuButton::Quit => exit.send(AppExit),
             };
         }

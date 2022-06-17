@@ -12,4 +12,5 @@ members = [
 
 [dependencies]
 bevy = "0.7.0"
+indoc = "1.0.4"
 libexodus = { path = "libexodus" }

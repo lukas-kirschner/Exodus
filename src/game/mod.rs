@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::AppState;
 
-mod constants;
+pub mod constants;
 mod player;
 pub mod tilewrapper;
 mod scoreboard;

@@ -1,5 +1,7 @@
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
+use crate::AppState;
+use crate::game::constants::MENU_BORDER_WIDTH;
 
 /// The height of the Navbar
 pub const NAVBAR_HEIGHT: f32 = 32.0;
@@ -32,7 +34,7 @@ impl FromWorld for MenuMaterials {
             button: Color::rgb(0.15, 0.15, 0.15).into(),
             button_hovered: Color::rgb(0.25, 0.25, 0.25).into(),
             button_pressed: Color::rgb(0.35, 0.75, 0.35).into(),
-            navbar: Color::rgb(0.05, 0.05, 0.05).into(),
+            navbar: Color::rgb(0.10, 0.10, 0.10).into(),
             button_text: Color::WHITE,
         }
     }
@@ -68,9 +70,24 @@ pub fn button(materials: &Res<MenuMaterials>) -> ButtonBundle {
     }
 }
 
+/// Create a new Full Screen menu root node
+pub fn full_screen_menu_root_node(materials: &Res<MenuMaterials>) -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            flex_direction: FlexDirection::ColumnReverse,
+            ..Default::default()
+        },
+        color: materials.root.clone(),
+        ..Default::default()
+    }
+}
+
 /// Initialize a new Button Text
 pub fn button_text(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>, label: &str) -> TextBundle {
-    return TextBundle {
+    TextBundle {
         style: Style {
             margin: Rect::all(Val::Px(10.0)),
             justify_content: JustifyContent::Center,
@@ -87,7 +104,45 @@ pub fn button_text(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
             Default::default(),
         ),
         ..Default::default()
-    };
+    }
+}
+
+pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
+    if *app_state.current() != AppState::MainMenu {
+        if keys.just_pressed(KeyCode::Escape) {
+            app_state.set(AppState::MainMenu).expect("Could not go back to Main Menu");
+            keys.reset(KeyCode::Escape);
+        }
+    }
+}
+
+/// Initialize a new background for a fullscreen menu
+pub fn fullscreen_menu_background(materials: &Res<MenuMaterials>) -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::ColumnReverse,
+            padding: Rect::all(Val::Px(5.0)),
+            ..Default::default()
+        },
+        color: materials.menu.clone(),
+        ..Default::default()
+    }
+}
+
+/// Initialize a floating border menu that floats in the center of the screen.
+pub fn floating_border(materials: &Res<MenuMaterials>, float_width: u32) -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            size: Size::new(Val::Px(float_width as f32), Val::Auto),
+            border: Rect::all(Val::Px(MENU_BORDER_WIDTH)),
+            ..Default::default()
+        },
+        color: materials.border.clone(),
+        ..Default::default()
+    }
 }
 
 ///
