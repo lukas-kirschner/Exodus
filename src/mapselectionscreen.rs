@@ -99,6 +99,20 @@ fn listview_list_movingnode(_materials: &Res<MenuMaterials>) -> NodeBundle {
     }
 }
 
+/// Initialize a new map list button
+pub fn map_list_button(materials: &Res<MenuMaterials>) -> ButtonBundle {
+    ButtonBundle {
+        style: Style {
+            size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..Default::default()
+        },
+        color: materials.button.clone(),
+        ..Default::default()
+    }
+}
+
 fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>, parent: &mut ChildBuilder, map_name: &str) {
     let mut rootnode = parent
 
@@ -124,72 +138,39 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
         // Play Button
         .with_children(|parent| {
             parent
-                .spawn_bundle(NodeBundle {
-                    style: Style {
-                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
-                        ..default()
-                    },
-                    ..default()
-                })
+                .spawn_bundle(map_list_button(materials))
                 .with_children(|parent| {
                     parent
-                        .spawn_bundle(button(materials))
-                        .with_children(|parent| {
-                            parent
-                                .spawn_bundle(button_text(asset_server, materials, PLAY_TEXT))
-                            ;
-                        })
-                        .insert(MapSelectionScreenButton::Play { map_name: map_name.into() })
+                        .spawn_bundle(button_text(asset_server, materials, PLAY_TEXT))
                     ;
                 })
+                .insert(MapSelectionScreenButton::Play { map_name: map_name.into() })
             ;
         })
 
         // Edit Button
         .with_children(|parent| {
             parent
-                .spawn_bundle(NodeBundle {
-                    style: Style {
-                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
-                        ..default()
-                    },
-                    ..default()
-                })
+                .spawn_bundle(map_list_button(materials))
                 .with_children(|parent| {
                     parent
-                        .spawn_bundle(button(materials))
-                        .with_children(|parent| {
-                            parent
-                                .spawn_bundle(button_text(asset_server, materials, EDIT_TEXT))
-                            ;
-                        })
-                        .insert(MapSelectionScreenButton::Edit { map_name: map_name.into() })
+                        .spawn_bundle(button_text(asset_server, materials, EDIT_TEXT))
                     ;
                 })
+                .insert(MapSelectionScreenButton::Edit { map_name: map_name.into() })
             ;
         })
 
         // Delete Button
         .with_children(|parent| {
             parent
-                .spawn_bundle(NodeBundle {
-                    style: Style {
-                        size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Px(NAVBAR_HEIGHT)),
-                        ..default()
-                    },
-                    ..default()
-                })
+                .spawn_bundle(map_list_button(materials))
                 .with_children(|parent| {
                     parent
-                        .spawn_bundle(button(materials))
-                        .with_children(|parent| {
-                            parent
-                                .spawn_bundle(button_text(asset_server, materials, DELETE_TEXT))
-                            ;
-                        })
-                        .insert(MapSelectionScreenButton::Delete { map_name: map_name.into(), entity_id: row_id })
+                        .spawn_bundle(button_text(asset_server, materials, DELETE_TEXT))
                     ;
                 })
+                .insert(MapSelectionScreenButton::Delete { map_name: map_name.into(), entity_id: row_id })
             ;
         })
 
