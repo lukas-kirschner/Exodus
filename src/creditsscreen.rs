@@ -18,9 +18,14 @@ enum CreditsScreenButton {
 fn credits() -> String {
     formatdoc! {"
         {program_name} Version {version}
+
+        This program is licensed under a {license}.
+        The sprites were created by dancramp (CC BY 4.0)
+         https://opengameart.org/content/tiny-platform-quest-sprites
         ",
             program_name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION"),
+            license = "MIT License",
     }
 }
 
@@ -36,7 +41,7 @@ fn credits_text(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>)
             credits(),
             TextStyle {
                 font: asset_server.load("fonts/PublicPixel.ttf"),
-                font_size: 20.0,
+                font_size: 10.0,
                 color: materials.button_text.clone(),
             },
             Default::default(),
@@ -77,7 +82,7 @@ fn setup(
                 .spawn_bundle(fullscreen_menu_background(&materials))
                 .with_children(|parent| {
                     parent
-                        .spawn_bundle(floating_border(&materials, 600))
+                        .spawn_bundle(floating_border(&materials, 700))
                         .with_children(|parent| {
                             parent
                                 .spawn_bundle(fullscreen_menu_background(&materials))
