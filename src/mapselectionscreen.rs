@@ -1,7 +1,7 @@
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use libexodus::world::{GameWorld, presets};
-use crate::AppState;
+use crate::{AppState, GameDirectoriesWrapper};
 use crate::uicontrols::{button, button_text, DELETE_TEXT, EDIT_TEXT, full_screen_menu_root_node, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, navbar_button_container, NAVBAR_HEIGHT, PLAY_TEXT, top_menu_container};
 use crate::game::tilewrapper::MapWrapper;
 
@@ -14,11 +14,11 @@ struct MapSelectionScreenData {
 #[derive(Component)]
 enum MapSelectionScreenButton {
     /// Play a map
-    Play { map_name: String },
+    Play { map_uuid: String },
     /// Edit a map
-    Edit { map_name: String },
+    Edit { map_uuid: String },
     /// Delete a map
-    Delete { map_name: String, entity_id: Entity },
+    Delete { map_uuid: String, entity_id: Entity },
     /// Back to Main Menu
     Back,
 }
@@ -97,7 +97,13 @@ pub fn map_list_button(materials: &Res<MenuMaterials>) -> ButtonBundle {
     }
 }
 
-fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>, parent: &mut ChildBuilder, map_name: &str) {
+fn spawn_list_item(
+    asset_server: &Res<AssetServer>,
+    materials: &Res<MenuMaterials>,
+    parent: &mut ChildBuilder,
+    map_name: &str,
+    map_author: &str,
+    map_uuid: String) {
     let mut rootnode = parent
 
         // Panel that contains all the contents for one row in the ListView
@@ -128,7 +134,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
                         .spawn_bundle(button_text(asset_server, materials, PLAY_TEXT))
                     ;
                 })
-                .insert(MapSelectionScreenButton::Play { map_name: map_name.into() })
+                .insert(MapSelectionScreenButton::Play { map_uuid: map_uuid.clone() })
             ;
         })
 
@@ -141,7 +147,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
                         .spawn_bundle(button_text(asset_server, materials, EDIT_TEXT))
                     ;
                 })
-                .insert(MapSelectionScreenButton::Edit { map_name: map_name.into() })
+                .insert(MapSelectionScreenButton::Edit { map_uuid: map_uuid.clone() })
             ;
         })
 
@@ -154,7 +160,7 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
                         .spawn_bundle(button_text(asset_server, materials, DELETE_TEXT))
                     ;
                 })
-                .insert(MapSelectionScreenButton::Delete { map_name: map_name.into(), entity_id: row_id })
+                .insert(MapSelectionScreenButton::Delete { map_uuid: map_uuid.clone(), entity_id: row_id })
             ;
         })
 
@@ -194,15 +200,45 @@ fn spawn_list_item(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterial
                                 align_items: AlignItems::FlexStart,
                                 ..Default::default()
                             },
-                            text: Text::with_section(
-                                map_name,
-                                TextStyle {
-                                    font: asset_server.load("fonts/PublicPixel.ttf"),
-                                    font_size: 20.0,
-                                    color: materials.button_text.clone(),
-                                },
-                                Default::default(),
-                            ),
+                            text:
+                            Text {
+                                sections: vec![
+                                    TextSection {
+                                        value: map_name.into(),
+                                        style: TextStyle {
+                                            font: asset_server.load("fonts/PublicPixel.ttf"),
+                                            font_size: 20.0,
+                                            color: materials.button_text.clone(),
+                                        },
+                                    },
+                                    TextSection {
+                                        value: "  ".into(),
+                                        style: TextStyle {
+                                            font: asset_server.load("fonts/PublicPixel.ttf"),
+                                            font_size: 20.0,
+                                            color: materials.button_text.clone(),
+                                        },
+                                    },
+                                    TextSection {
+                                        value: if map_author.is_empty() { "" } else { "Author: " }.into(),
+                                        style: TextStyle {
+                                            font: asset_server.load("fonts/PublicPixel.ttf"),
+                                            font_size: 10.0,
+                                            color: materials.button_text.clone(),
+                                        },
+                                    },
+                                    TextSection {
+                                        value: map_author.into(),
+                                        style: TextStyle {
+                                            font: asset_server.load("fonts/PublicPixel.ttf"),
+                                            font_size: 10.0,
+                                            color: materials.button_text.clone(),
+                                        },
+                                    },
+                                ],
+                                ..Default::default()
+                            }
+                            ,
                             ..Default::default()
                         })
                     ;
@@ -256,7 +292,7 @@ fn setup(
                                 .with_children(|parent| {
                                     for map in &maps.maps {
                                         // Spawn all maps that are in the resource. The resource MUST be initialized beforehand
-                                        spawn_list_item(&asset_server, &materials, parent, map.map_name.as_str());
+                                        spawn_list_item(&asset_server, &materials, parent, map.name(), map.author(), map.uuid());
                                     }
                                 })
                             ;
@@ -277,28 +313,40 @@ fn setup(
 fn load_maps(
     mut commands: Commands,
     mut maps: ResMut<Maps>,
+    directories: Res<GameDirectoriesWrapper>,
 ) {
     // Delete all maps
     maps.maps = Vec::new();
 
+    // Load all maps from the game's map directory and all subdirectories
+    directories.game_directories.iter_maps()
+        .map(|map_file| {
+            if let Ok(map) = GameWorld::load_from_file(map_file.path())
+                .map_err(|err| eprintln!("Could not load map file at {}! Error: {}", map_file.path().to_str().unwrap_or("<Invalid Path>"), err))
+                .map(|map| {
+                    println!("Successfully loaded map file {}", map_file.path().to_str().unwrap_or("<Invalid Path>"));
+                    map
+                }) {
+                maps.maps.push(MapWrapper {
+                    world: map,
+                })
+            }
+        });
+
     //If we are in debug mode, insert the debug map exampleworld()!
     if cfg!(debug_assertions) {
         maps.maps.push(MapWrapper {
-            map_name: "Debug Map".into(),
             world: GameWorld::exampleworld(),
         });
         // Fill the list to test scrolling
         for i in 1..=20 {
+            let mut map = presets::map_with_border(24 + i, i + 3);
+            map.set_name(format!("Empty {}x{} world", 24 + i, i + 3).as_str());
             maps.maps.push(MapWrapper {
-                map_name: format!("Empty Test Map {}", i),
-                world: presets::map_with_border(24 + i, i + 3),
+                world: map,
             })
         }
     }
-
-    commands
-    // .insert_resource()
-    ;
 }
 
 /// Button Click System
@@ -314,21 +362,21 @@ fn button_press_system(
                 MapSelectionScreenButton::Back => state
                     .set(AppState::MainMenu)
                     .expect("Could not switch back to Main Menu"),
-                MapSelectionScreenButton::Play { map_name } => {
+                MapSelectionScreenButton::Play { map_uuid } => {
                     //load map and move it out of the maps vector
-                    let map_ind = maps.maps.iter().position(|mw| mw.map_name.eq(&*map_name)).expect(&*format!("The map with name {} was not found", map_name));
+                    let map_ind = maps.maps.iter().position(|mw| mw.uuid().eq(&*map_uuid)).expect(&*format!("The map with UUID {} was not found in maps.", map_uuid));
                     let mut mapwrapper = maps.maps.remove(map_ind);
                     commands.insert_resource(mapwrapper);
 
                     state.set(AppState::Playing)
                         .expect("Could not start game");
                 }
-                MapSelectionScreenButton::Delete { map_name, entity_id } => {
+                MapSelectionScreenButton::Delete { map_uuid, entity_id } => {
                     //TODO Delete Map
                     //Delete the ListView Item from the ListView:
                     commands.entity(*entity_id).despawn_recursive();
                 }
-                MapSelectionScreenButton::Edit { map_name } => {}
+                MapSelectionScreenButton::Edit { map_uuid } => {}
             };
         }
     }

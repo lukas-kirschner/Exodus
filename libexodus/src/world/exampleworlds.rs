@@ -11,6 +11,9 @@ impl GameWorld {
         let rows = 10; // Number of rows in the game board
         let mut world: GameWorld = presets::map_with_border(columns, rows);
         world
+            .set_name("Example World")
+            .set_author("Debugger")
+            .set_uuid("badeaffe-e4fe-47af-8ff6-0000c0febabe")
             .set(2, 1, wall())
             .set(1, 1, wall())
             .set(1, 2, player_spawn())

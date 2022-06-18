@@ -1,7 +1,8 @@
+use serde::{Serialize, Deserialize};
 use crate::directions::FromDirection;
 use crate::directions::FromDirection::{FROMEAST, FROMNORTH, FROMSOUTH, FROMWEST};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TileKind {
     ///
     /// A tile that cannot interact with the player in any way
@@ -26,7 +27,7 @@ pub enum TileKind {
     LADDER,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Tile {
     ///
     /// The texture index in the tile atlas that is used as sprite for this tile

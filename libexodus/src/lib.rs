@@ -3,6 +3,7 @@ pub mod tiles;
 pub mod player;
 pub mod movement;
 pub mod directions;
+pub mod directories;
 
 #[cfg(test)]
 mod tests {

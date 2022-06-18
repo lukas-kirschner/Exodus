@@ -21,14 +21,27 @@ impl Plugin for CoinPlugin {
 ///
 /// A wrapper around a GameWorld
 pub struct MapWrapper<> {
-    pub map_name: String,
     pub world: GameWorld,
+}
+
+impl MapWrapper {
+    /// Get the name of the world
+    pub fn name(&self) -> &str {
+        self.world.get_name()
+    }
+    /// Get the author name of the world
+    pub fn author(&self) -> &str {
+        self.world.get_author()
+    }
+    /// Get the UUID of this world
+    pub fn uuid(&self) -> String {
+        self.world.uuid()
+    }
 }
 
 impl FromWorld for MapWrapper {
     fn from_world(_: &mut World) -> Self {
         MapWrapper {
-            map_name: "Empty Map".into(),
             world: presets::map_with_border(24, 10),
         }
     }

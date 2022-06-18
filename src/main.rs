@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::WindowMode;
+use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
 use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
@@ -25,6 +26,18 @@ pub enum AppState {
     Playing,
 }
 
+struct GameDirectoriesWrapper {
+    pub game_directories: GameDirectories,
+}
+
+impl FromWorld for GameDirectoriesWrapper {
+    fn from_world(world: &mut World) -> Self {
+        GameDirectoriesWrapper {
+            game_directories: GameDirectories::from_system_config().map_err(|err| format!("Invalid system configuration! Error: {}", err)).unwrap()
+        }
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
@@ -37,6 +50,7 @@ fn main() {
             mode: WindowMode::Windowed,
             ..Default::default()
         })
+        .init_resource::<GameDirectoriesWrapper>()
         .add_state(AppState::MainMenu)
         .add_plugins(DefaultPlugins)
         .add_plugin(UiControlsPlugin)
