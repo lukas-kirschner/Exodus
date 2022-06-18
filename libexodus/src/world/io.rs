@@ -18,9 +18,7 @@ impl GameWorld {
     }
     /// Save the map to the given file.
     pub fn save_to_file(&self, file: &Path) -> std::io::Result<()> {
-        let mut file: fs::File = fs::File::open(file)?;
-        let mut buf = BufWriter::new(file);
-        serde_json::to_writer(buf, self)?;
+        std::fs::write(file, serde_json::to_string_pretty(self)?);
         Ok(())
     }
 }

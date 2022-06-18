@@ -320,7 +320,7 @@ fn load_maps(
 
     // Load all maps from the game's map directory and all subdirectories
     directories.game_directories.iter_maps()
-        .map(|map_file| {
+        .for_each(|map_file| {
             if let Ok(map) = GameWorld::load_from_file(map_file.path())
                 .map_err(|err| eprintln!("Could not load map file at {}! Error: {}", map_file.path().to_str().unwrap_or("<Invalid Path>"), err))
                 .map(|map| {
@@ -355,6 +355,7 @@ fn button_press_system(
     buttons: Query<(&Interaction, &MapSelectionScreenButton), (Changed<Interaction>, With<Button>)>,
     mut state: ResMut<State<AppState>>,
     mut maps: ResMut<Maps>,
+    directories: Res<GameDirectoriesWrapper>,
 ) {
     for (interaction, button) in buttons.iter() {
         if *interaction == Interaction::Clicked {
@@ -376,7 +377,10 @@ fn button_press_system(
                     //Delete the ListView Item from the ListView:
                     commands.entity(*entity_id).despawn_recursive();
                 }
-                MapSelectionScreenButton::Edit { map_uuid } => {}
+                MapSelectionScreenButton::Edit { map_uuid } => {
+                    let map_ind = maps.maps.iter().position(|mw| mw.uuid().eq(&*map_uuid)).expect(&*format!("The map with UUID {} was not found in maps.", map_uuid));
+                    maps.maps[map_ind].world.save_to_file(directories.game_directories.path_from_mapname(maps.maps[map_ind].world.get_name()).unwrap().as_path()).unwrap(); // TODO
+                }
             };
         }
     }

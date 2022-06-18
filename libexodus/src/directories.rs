@@ -28,7 +28,7 @@ impl Error for InvalidSystemConfigurationError {
 }
 
 #[derive(Debug)]
-enum InvalidMapNameError {
+pub enum InvalidMapNameError {
     EmptyName
 }
 
@@ -82,20 +82,32 @@ impl GameDirectories {
             }).ok())
             .filter(|file| {
                 let meta = metadata(file.path());
+                if cfg!(debug_assertions) {
+                    meta.as_ref().map_err(|err| {
+                        println!("Skipped file {} because meta returned an error: {}", file.path().to_str().unwrap(), &err);
+                        err
+                    });
+                }
                 meta.is_ok() && meta.unwrap().is_file()
             })
             .filter(|file| {
-                file.path().extension()
+                let ret = file.path().extension()
                     .and_then(|s| Some(s.to_ascii_lowercase()))
                     .unwrap_or("".into())
-                    == GameDirectories::MAP_FILE_SUFFIX.to_ascii_lowercase().as_str()
+                    == GameDirectories::MAP_FILE_SUFFIX.to_ascii_lowercase().as_str();
+                if cfg!(debug_assertions) {
+                    if !ret {
+                        println!("Skipped {} because its file extension did not match.", file.path().to_str().unwrap());
+                    }
+                }
+                ret
             })
     }
     /// Get the path of a map with the given name.
     /// Automatically converts the map name to a file name by replacing whitespaces with underscores
     ///  and converting all printable characters to lower-case.
     /// If the file name that results from converting the name is invalid, an error is returned.
-    fn path_from_mapname(self: &Self, map_name: &str) -> Result<PathBuf, InvalidMapNameError> {
+    pub fn path_from_mapname(self: &Self, map_name: &str) -> Result<PathBuf, InvalidMapNameError> {
         let map_file_name: String = map_name.trim().chars().map(|c| {
             if c.is_whitespace() {
                 '_'
