@@ -1,5 +1,7 @@
+use std::fs;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
+use indoc::printdoc;
 use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
 use crate::game::GamePlugin;
@@ -38,6 +40,25 @@ impl FromWorld for GameDirectoriesWrapper {
     }
 }
 
+/// Main init method for the game.
+/// This method ensures that all necessary directories actually exist and are writable.
+fn game_init(directories: Res<GameDirectoriesWrapper>) {
+    if !directories.game_directories.maps_dir.as_path().exists() {
+        fs::create_dir_all(&directories.game_directories.maps_dir);
+    }
+    if !directories.game_directories.config_dir.as_path().exists() {
+        fs::create_dir_all(&directories.game_directories.config_dir);
+    }
+    printdoc! {"
+    Using directory structure:
+        Maps directory: {maps_dir}
+        Config Directory: {config_dir}
+    ",
+        maps_dir = &directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"),
+        config_dir = &directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>")
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
@@ -51,6 +72,7 @@ fn main() {
             ..Default::default()
         })
         .init_resource::<GameDirectoriesWrapper>()
+        .add_startup_system(game_init)
         .add_state(AppState::MainMenu)
         .add_plugins(DefaultPlugins)
         .add_plugin(UiControlsPlugin)
