@@ -311,7 +311,6 @@ fn setup(
 
 /// Load all maps from the Map Directory. This might take a while, depending on how many maps there are in the maps folder
 fn load_maps(
-    mut commands: Commands,
     mut maps: ResMut<Maps>,
     directories: Res<GameDirectoriesWrapper>,
 ) {
@@ -366,7 +365,7 @@ fn button_press_system(
                 MapSelectionScreenButton::Play { map_uuid } => {
                     //load map and move it out of the maps vector
                     let map_ind = maps.maps.iter().position(|mw| mw.uuid().eq(&*map_uuid)).expect(&*format!("The map with UUID {} was not found in maps.", map_uuid));
-                    let mut mapwrapper = maps.maps.remove(map_ind);
+                    let mapwrapper = maps.maps.remove(map_ind);
                     commands.insert_resource(mapwrapper);
 
                     state.set(AppState::Playing)

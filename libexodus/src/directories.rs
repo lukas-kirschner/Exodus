@@ -82,12 +82,6 @@ impl GameDirectories {
             }).ok())
             .filter(|file| {
                 let meta = metadata(file.path());
-                if cfg!(debug_assertions) {
-                    meta.as_ref().map_err(|err| {
-                        println!("Skipped file {} because meta returned an error: {}", file.path().to_str().unwrap(), &err);
-                        err
-                    });
-                }
                 meta.is_ok() && meta.unwrap().is_file()
             })
             .filter(|file| {

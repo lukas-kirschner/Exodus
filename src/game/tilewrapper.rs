@@ -48,7 +48,7 @@ impl FromWorld for MapWrapper {
 }
 
 impl MapWrapper {
-    pub fn set_world(&mut self, world: GameWorld) {
+    pub fn _set_world(&mut self, world: GameWorld) {
         self.world = world;
     }
 }

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use uuid::{Uuid, uuid};
+use uuid::Uuid;
 use crate::tiles;
 use crate::tiles::{Tile, TileKind};
 

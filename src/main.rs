@@ -33,7 +33,7 @@ struct GameDirectoriesWrapper {
 }
 
 impl FromWorld for GameDirectoriesWrapper {
-    fn from_world(world: &mut World) -> Self {
+    fn from_world(_: &mut World) -> Self {
         GameDirectoriesWrapper {
             game_directories: GameDirectories::from_system_config().map_err(|err| format!("Invalid system configuration! Error: {}", err)).unwrap()
         }
@@ -44,10 +44,12 @@ impl FromWorld for GameDirectoriesWrapper {
 /// This method ensures that all necessary directories actually exist and are writable.
 fn game_init(directories: Res<GameDirectoriesWrapper>) {
     if !directories.game_directories.maps_dir.as_path().exists() {
-        fs::create_dir_all(&directories.game_directories.maps_dir);
+        fs::create_dir_all(&directories.game_directories.maps_dir)
+            .expect(format!("Could not create the map directory at {}!", directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
     }
     if !directories.game_directories.config_dir.as_path().exists() {
-        fs::create_dir_all(&directories.game_directories.config_dir);
+        fs::create_dir_all(&directories.game_directories.config_dir)
+        .expect(format!("Could not create the config directory at {}!", directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
     }
     printdoc! {"
     Using directory structure:
