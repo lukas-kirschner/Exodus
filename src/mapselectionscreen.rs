@@ -1,9 +1,8 @@
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::uicontrols::{button, button_text, DELETE_TEXT, EDIT_TEXT, full_screen_menu_root_node, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, navbar_button_container, NAVBAR_HEIGHT, PLAY_TEXT, top_menu_container};
+use crate::uicontrols::{DELETE_TEXT, EDIT_TEXT, menu_esc_control, NAVBAR_BACK_TEXT, NAVBAR_HEIGHT, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
 struct Maps {
@@ -106,7 +105,7 @@ fn map_selection_screen_ui(
     mut commands: Commands,
     mut egui_ctx: ResMut<EguiContext>,
     mut state: ResMut<State<AppState>>,
-    mut maps: ResMut<Maps>,
+    maps: Res<Maps>,
 ) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
         ui.set_height(NAVBAR_HEIGHT);
