@@ -1,6 +1,7 @@
 use std::fs;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
+use bevy_egui::EguiPlugin;
 use indoc::printdoc;
 use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
@@ -49,7 +50,7 @@ fn game_init(directories: Res<GameDirectoriesWrapper>) {
     }
     if !directories.game_directories.config_dir.as_path().exists() {
         fs::create_dir_all(&directories.game_directories.config_dir)
-        .expect(format!("Could not create the config directory at {}!", directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
+            .expect(format!("Could not create the config directory at {}!", directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
     }
     printdoc! {"
     Using directory structure:
@@ -77,6 +78,7 @@ fn main() {
         .add_startup_system(game_init)
         .add_state(AppState::MainMenu)
         .add_plugins(DefaultPlugins)
+        .add_plugin(EguiPlugin)
         .add_plugin(UiControlsPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(MainMenu)
