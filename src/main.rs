@@ -1,14 +1,15 @@
+use std::borrow::BorrowMut;
 use std::fs;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
-use bevy_egui::EguiPlugin;
+use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
 use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
 use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::UiControlsPlugin;
+use crate::uicontrols::{egui_fonts, UiControlsPlugin};
 
 mod game;
 mod mainmenu;
@@ -43,7 +44,10 @@ impl FromWorld for GameDirectoriesWrapper {
 
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
-fn game_init(directories: Res<GameDirectoriesWrapper>) {
+fn game_init(
+    directories: Res<GameDirectoriesWrapper>,
+    mut ctx: ResMut<EguiContext>,
+) {
     if !directories.game_directories.maps_dir.as_path().exists() {
         fs::create_dir_all(&directories.game_directories.maps_dir)
             .expect(format!("Could not create the map directory at {}!", directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
@@ -60,6 +64,8 @@ fn game_init(directories: Res<GameDirectoriesWrapper>) {
         maps_dir = &directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"),
         config_dir = &directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>")
     }
+    // Initialize Styling and fonts for egui
+    egui_fonts(ctx.ctx_mut());
 }
 
 fn main() {

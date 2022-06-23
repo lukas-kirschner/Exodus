@@ -1,5 +1,8 @@
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
+use bevy_egui::{egui, EguiContext};
+use bevy_egui::egui::{FontDefinitions, FontFamily, FontId};
+use bevy_egui::egui::FontFamily::{Monospace, Proportional};
 use crate::AppState;
 use crate::game::constants::MENU_BORDER_WIDTH;
 
@@ -40,73 +43,6 @@ impl FromWorld for MenuMaterials {
     }
 }
 
-fn button_system(
-    materials: Res<MenuMaterials>,
-    mut buttons: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut uicolor) in buttons.iter_mut() {
-        match *interaction {
-            Interaction::Clicked => *uicolor = materials.button_pressed.into(),
-            Interaction::Hovered => *uicolor = materials.button_hovered.into(),
-            Interaction::None => *uicolor = materials.button.into(),
-        }
-    }
-}
-
-/// Initialize a new Button with 100% size
-pub fn button(materials: &Res<MenuMaterials>) -> ButtonBundle {
-    ButtonBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..Default::default()
-        },
-        color: materials.button.clone(),
-        ..Default::default()
-    }
-}
-
-/// Create a new Full Screen menu root node
-pub fn full_screen_menu_root_node(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_direction: FlexDirection::ColumnReverse,
-            ..Default::default()
-        },
-        color: materials.root.clone(),
-        ..Default::default()
-    }
-}
-
-/// Initialize a new Button Text
-pub fn button_text(asset_server: &Res<AssetServer>, materials: &Res<MenuMaterials>, label: &str) -> TextBundle {
-    TextBundle {
-        style: Style {
-            margin: Rect::all(Val::Px(10.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..Default::default()
-        },
-        text: Text::with_section(
-            label,
-            TextStyle {
-                font: asset_server.load("fonts/PublicPixel.ttf"),
-                font_size: 20.0,
-                color: materials.button_text.clone(),
-            },
-            Default::default(),
-        ),
-        ..Default::default()
-    }
-}
-
 pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
     if *app_state.current() != AppState::MainMenu {
         if keys.just_pressed(KeyCode::Escape) {
@@ -116,62 +52,55 @@ pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<
     }
 }
 
-/// Initialize a new background for a fullscreen menu
-pub fn fullscreen_menu_background(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::ColumnReverse,
-            padding: Rect::all(Val::Px(5.0)),
-            ..Default::default()
-        },
-        color: materials.menu.clone(),
-        ..Default::default()
-    }
+pub fn egui_fonts(ctx: &egui::Context) -> () {
+    let mut fonts = egui::FontDefinitions::default();
+    fonts.font_data.insert("exodus".to_owned(),
+                           egui::FontData::from_static(include_bytes!("../assets/fonts/PublicPixel.ttf")));
+    fonts.families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "exodus".to_owned());
+    fonts.families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .push("exodus".to_owned());
+    ctx.set_fonts(fonts);
+
+    let mut style = (*ctx.style()).clone();
+    style.text_styles = [
+        (egui::TextStyle::Heading, FontId::new(30.0, Proportional)),
+        (egui::TextStyle::Name("Heading2".into()), FontId::new(25.0, Proportional)),
+        (egui::TextStyle::Name("Context".into()), FontId::new(23.0, Proportional)),
+        (egui::TextStyle::Body, FontId::new(18.0, Proportional)),
+        (egui::TextStyle::Monospace, FontId::new(16.0, Proportional)),
+        (egui::TextStyle::Button, FontId::new(20.0, Proportional)),
+        (egui::TextStyle::Small, FontId::new(10.0, Proportional)),
+    ]
+        .into();
+    ctx.set_style(style);
 }
 
-/// Initialize a floating border menu that floats in the center of the screen.
-pub fn floating_border(materials: &Res<MenuMaterials>, float_width: u32) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Px(float_width as f32), Val::Auto),
-            border: Rect::all(Val::Px(MENU_BORDER_WIDTH)),
-            ..Default::default()
-        },
-        color: materials.border.clone(),
-        ..Default::default()
-    }
-}
+pub fn add_navbar(
+    mut egui_ctx: &mut ResMut<EguiContext>,
+    mut state: &mut ResMut<State<AppState>>,
+) {
+    egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
+        ui.set_height(NAVBAR_HEIGHT);
+        ui.with_layout(egui::Layout::left_to_right(), |ui| {
+            ui.scope(|ui| {
+                ui.set_width(NAVBAR_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let back_button = ui.button(NAVBAR_BACK_TEXT);
 
-///
-/// Initialize a Top Menu Bar, which is a navigation bar that can be filled with navigation buttons.
-/// This bar has a fixed height and a variable width.
-pub fn top_menu_container(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Px(NAVBAR_HEIGHT)),
-            justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::FlexStart,
-            ..Default::default()
-        },
-        color: materials.navbar.into(),
-        ..Default::default()
-    }
-}
-
-pub fn navbar_button_container(materials: &Res<MenuMaterials>) -> NodeBundle {
-    NodeBundle {
-        style: Style {
-            size: Size::new(Val::Px(NAVBAR_HEIGHT), Val::Auto),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..Default::default()
-        },
-        color: materials.navbar.clone(),
-        ..Default::default()
-    }
+                    if back_button.clicked() {
+                        state
+                            .set(AppState::MainMenu)
+                            .expect("Could not switch back to Main Menu");
+                    }
+                });
+            });
+        });
+    });
 }
 
 pub struct UiControlsPlugin;
@@ -180,7 +109,6 @@ impl Plugin for UiControlsPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<MenuMaterials>()
-            .add_system(button_system)
         ;
     }
 }

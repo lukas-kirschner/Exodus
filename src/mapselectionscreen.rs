@@ -1,8 +1,9 @@
+use std::borrow::BorrowMut;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::uicontrols::{DELETE_TEXT, EDIT_TEXT, menu_esc_control, NAVBAR_BACK_TEXT, NAVBAR_HEIGHT, PLAY_TEXT};
+use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, egui_fonts, menu_esc_control, NAVBAR_BACK_TEXT, NAVBAR_HEIGHT, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
 struct Maps {
@@ -107,23 +108,7 @@ fn map_selection_screen_ui(
     mut state: ResMut<State<AppState>>,
     maps: Res<Maps>,
 ) {
-    egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
-        ui.set_height(NAVBAR_HEIGHT);
-        ui.with_layout(egui::Layout::left_to_right(), |ui| {
-            ui.scope(|ui| {
-                ui.set_width(NAVBAR_HEIGHT);
-                ui.centered_and_justified(|ui| {
-                    let back_button = ui.button(NAVBAR_BACK_TEXT);
-
-                    if back_button.clicked() {
-                        state
-                            .set(AppState::MainMenu)
-                            .expect("Could not switch back to Main Menu");
-                    }
-                });
-            });
-        });
-    });
+    add_navbar(&mut egui_ctx, &mut state);
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         ui.centered_and_justified(|ui| {
