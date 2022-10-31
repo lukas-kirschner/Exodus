@@ -1,8 +1,10 @@
 use std::borrow::BorrowMut;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
+use bevy_egui::egui::Align;
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
+use crate::game::scoreboard::Scoreboard;
 use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, egui_fonts, menu_esc_control, NAVBAR_BACK_TEXT, NAVBAR_HEIGHT, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
@@ -118,11 +120,11 @@ fn map_selection_screen_ui(
                         for (i, map) in maps.maps.iter().enumerate() {
                             ui.scope(|ui| {
                                 ui.set_height(NAVBAR_HEIGHT);
-                                ui.with_layout(egui::Layout::left_to_right(), |ui| {
+                                ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
                                     ui.label(map.world.get_name());
                                     ui.label(" ");
                                     ui.label(map.world.get_author());
-                                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                                    ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
                                         ui.scope(|ui| {
                                             ui.set_height(NAVBAR_HEIGHT);
                                             ui.set_width(NAVBAR_HEIGHT);

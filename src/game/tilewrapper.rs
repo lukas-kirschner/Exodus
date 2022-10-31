@@ -11,6 +11,8 @@ pub struct CoinPlugin;
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(reset_score).label("reset_score"))
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(coin_collision).after("player_movement")
             )
@@ -76,9 +78,16 @@ pub fn coin_collision(
             let coin_pos = coin_trans.translation;
             if player_pos.distance(coin_pos) <= COIN_PICKUP_DISTANCE {
                 // The player picks up the coin
-                scoreboard.scores += coin.coin_value;
+                scoreboard.coins += coin.coin_value;
                 commands.entity(coin_entity).despawn_recursive();
             }
         }
     }
+}
+
+fn reset_score(
+    mut scoreboard: ResMut<Scoreboard>
+) {
+    scoreboard.coins = 0;
+    scoreboard.moves = 0;
 }

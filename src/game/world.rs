@@ -27,14 +27,16 @@ fn setup_camera(
         window_height_pixels as f32 / map_height_pixels_plus_ui as f32
     };
 
-    let mut camera = OrthographicCameraBundle::new_2d();
-    camera.orthographic_projection = OrthographicProjection {
-        far: 1000.0,
-        depth_calculation: DepthCalculation::ZDifference,
-        scaling_mode: ScalingMode::WindowSize,
+    let mut camera = Camera2dBundle{
+        projection: OrthographicProjection{
+            far: 1000.0,
+            depth_calculation: DepthCalculation::ZDifference,
+            scaling_mode: ScalingMode::WindowSize,
+            ..default()
+        }.into(),
+        transform: Transform::from_scale(Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32))),
         ..default()
     };
-    camera.transform.scale = Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32));
     // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
     camera.transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5, (map.world.height() as f32 / 2.) - 0.5, 0.);
     commands.spawn_bundle(camera);

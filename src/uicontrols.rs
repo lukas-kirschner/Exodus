@@ -1,7 +1,7 @@
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{FontDefinitions, FontFamily, FontId};
+use bevy_egui::egui::{Align, FontDefinitions, FontFamily, FontId};
 use bevy_egui::egui::FontFamily::{Monospace, Proportional};
 use crate::AppState;
 use crate::game::constants::MENU_BORDER_WIDTH;
@@ -86,7 +86,7 @@ pub fn add_navbar(
 ) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
         ui.set_height(NAVBAR_HEIGHT);
-        ui.with_layout(egui::Layout::left_to_right(), |ui| {
+        ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
             ui.scope(|ui| {
                 ui.set_width(NAVBAR_HEIGHT);
                 ui.centered_and_justified(|ui| {

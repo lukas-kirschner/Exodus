@@ -4,7 +4,7 @@ use crate::AppState;
 pub mod constants;
 mod player;
 pub mod tilewrapper;
-mod scoreboard;
+pub mod scoreboard;
 mod ui;
 mod world;
 

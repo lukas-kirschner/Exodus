@@ -11,7 +11,7 @@ members = [
 ]
 
 [dependencies]
-bevy = "0.7.0"
+bevy = "0.8.1"
 indoc = "1.0.4"
 libexodus = { path = "libexodus" }
-bevy_egui = { version = "0.14.0", default-features = false }
+bevy_egui = { version = "0.16.1", default-features = false }

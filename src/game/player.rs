@@ -16,7 +16,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(AppState::Playing)
-                .with_system(setup_player).after("world").label("player")
+                .with_system(setup_player).after("world").after("reset_score").label("player")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(keyboard_controls)

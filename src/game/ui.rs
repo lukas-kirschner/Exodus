@@ -29,7 +29,7 @@ pub fn setup_game_ui(
     asset_server: Res<AssetServer>,
 ) {
     //Spawn UI Camera
-    commands.spawn_bundle(UiCameraBundle::default());
+    // commands.spawn_bundle(UiCameraBundle::default());
 
     //Initialize Coin Counter
     commands.spawn_bundle(TextBundle {
@@ -72,7 +72,7 @@ pub fn setup_game_ui(
         },
         style: Style {
             position_type: PositionType::Absolute,
-            position: Rect {
+            position: UiRect {
                 top: Val::Px(0.0),
                 bottom: Val::Px(0.0),
                 ..Default::default()
@@ -88,7 +88,7 @@ pub fn scoreboard_ui_system(
     mut textobjects: Query<&mut Text, With<ScoreboardUICounter>>,
 ) {
     for mut text in textobjects.iter_mut() {
-        text.sections[1].value = scoreboard.scores.to_string();
+        text.sections[1].value = scoreboard.coins.to_string();
         text.sections[3].value = scoreboard.moves.to_string();
     }
 }
