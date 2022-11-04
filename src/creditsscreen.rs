@@ -2,7 +2,7 @@ use std::borrow::BorrowMut;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{Frame, RichText};
+use bevy_egui::egui::{Frame, RichText, TextBuffer};
 use indoc::formatdoc;
 use crate::AppState;
 use crate::uicontrols::{add_navbar, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, UIMARGIN};
@@ -20,7 +20,7 @@ enum CreditsScreenButton {
 }
 
 fn credits() -> String {
-    formatdoc! {"
+    let mut ret: String = formatdoc! {"
         {program_name} Version {version}
         based on the \"Space Exodus\" Psion EPOC game
         by David Sansome (2001)
@@ -32,7 +32,13 @@ fn credits() -> String {
             program_name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION"),
             license = "MIT License",
+    };
+    if cfg!(debug_assertions) {
+        ret.push_str(format!("\nDebug Build {build} ({date})",
+                             build = env!("GIT_SHORTHASH"),
+                             date = env!("GIT_SHORTDATE")).as_str());
     }
+    ret
 }
 
 /// Main Menu main routine
