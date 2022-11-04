@@ -5,7 +5,7 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::{Frame, RichText};
 use indoc::formatdoc;
 use crate::AppState;
-use crate::uicontrols::{add_navbar, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT};
+use crate::uicontrols::{add_navbar, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, UIMARGIN};
 
 pub struct CreditsScreen;
 
@@ -22,6 +22,8 @@ enum CreditsScreenButton {
 fn credits() -> String {
     formatdoc! {"
         {program_name} Version {version}
+        based on the \"Space Exodus\" Psion EPOC game
+        by David Sansome (2001)
 
         This program is licensed under a {license}.
         The sprites were created by dancramp (CC BY 4.0)
@@ -48,6 +50,9 @@ fn credits_screen_ui(
                     ui.scope(|ui| {
                         ui.set_width(600.0);
                         ui.vertical_centered_justified(|ui| {
+                            ui.scope(|ui| {
+                                ui.set_height(UIMARGIN);
+                            });
                             ui.heading(format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")).as_str());
                             ui.separator();
                             ui.label(RichText::new(credits()).text_style(egui::TextStyle::Small));
