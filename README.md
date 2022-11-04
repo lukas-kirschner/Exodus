@@ -8,9 +8,9 @@ the [Bevy](https://bevyengine.org/) engine.
 
 The original EPOC game can be downloaded under the following links:
 
-Psion Revo | Psion 5mx
-------------|-----------
-[Download](https://archive.org/details/tucows_55899_Space_Exodus_Revo_version) | [Download](https://archive.org/details/tucows_45515_Space_Exodus)
+|  Psion Revo                                                                    | Psion 5mx|
+|--------------------------------------------------------------------------------|-----------|
+| [Download](https://archive.org/details/tucows_55899_Space_Exodus_Revo_version) | [Download](https://archive.org/details/tucows_45515_Space_Exodus)|
 
 ## Compilation Instructions
 
@@ -37,10 +37,10 @@ collecting coins.
 
 ### Controls
 
-Key | Use
-----|-----
-Arrow Left/Arrow Right | Move the player left or right
-Arrow Up               | Jump up or ascend on a ladder
-Arrow Down             | Descend on a ladder
-Q/W                    | Jump left or right
-Esc                    | Return to the menu screen
+| Key                    | Use|
+|------------------------|-----|
+| Arrow Left/Arrow Right | Move the player left or right|
+| Arrow Up               | Jump up or ascend on a ladder|
+| Arrow Down             | Descend on a ladder|
+| Q/W                    | Jump left or right|
+| Esc                    | Return to the menu screen|
