@@ -24,3 +24,23 @@ Then, you can build the game by running `cargo build` and `cargo run` in the clo
 
 As soon as the game is ready for a first release, I will provide pre-compiled artifacts here which can be run
 effortlessly without installing any additional software.
+
+## How to play
+
+The game is currently in a "Prototype" state, which means that the basic game functionality is working and can already
+be tested.
+There are currently plenty of graphics glitches and the sprites will probably change before the first release of the
+game is stable.
+Feel free to test the game yourself, but do not expect a satisfying experience.
+Furthermore, the game currently has no objective or goal, you can only try out some debug maps and move around,
+collecting coins.
+
+### Controls
+
+Key | Use
+----|-----
+Arrow Left/Arrow Right | Move the player left or right
+Arrow Up               | Jump up or ascend on a ladder
+Arrow Down             | Descend on a ladder
+Q/W                    | Jump left or right
+Esc                    | Return to the menu screen
