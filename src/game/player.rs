@@ -319,6 +319,11 @@ pub fn keyboard_controls(
                         target: (cur_x - 1, cur_y + 2),
                         is_manual: true,
                     });
+                    player.push_movement_queue(Movement {
+                        velocity: (-vx, 0.),
+                        target: (cur_x - 2, cur_y + 2),
+                        is_manual: true,
+                    });
                 } else if keyboard_input.just_pressed(KeyCode::W) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
@@ -334,6 +339,11 @@ pub fn keyboard_controls(
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y + 2),
+                        is_manual: true,
+                    });
+                    player.push_movement_queue(Movement {
+                        velocity: (vx, 0.),
+                        target: (cur_x + 2, cur_y + 2),
                         is_manual: true,
                     });
                 }
