@@ -48,6 +48,9 @@ fn load_maps(
         maps.maps.push(MapWrapper {
             world: GameWorld::exampleworld(),
         });
+        maps.maps.push(MapWrapper {
+            world: GameWorld::showcaseworld(),
+        });
         // Fill the list to test scrolling
         for i in 1..=20 {
             let mut map = presets::map_with_border(24 + i, i + 3);
