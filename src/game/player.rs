@@ -156,7 +156,7 @@ pub fn player_movement(
             if transform.translation.x == target_x && transform.translation.y == target_y {
                 // Check for deadly collision and kill the player, if one has occurred
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
-                    match block.kind { // Handle special collision events here
+                    match block.kind() { // Handle special collision events here
                         TileKind::AIR => {}
                         TileKind::SOLID => {}
                         TileKind::DEADLY { .. } => {
@@ -205,7 +205,7 @@ pub fn player_movement(
                 }
             }
             if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32) {
-                if let TileKind::LADDER = block.kind {
+                if let TileKind::LADDER = block.kind() {
                     player.clear_movement_queue(); // We don't want any gravity pulling the player off a ladder
                 }
             }

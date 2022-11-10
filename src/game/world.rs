@@ -27,8 +27,8 @@ fn setup_camera(
         window_height_pixels as f32 / map_height_pixels_plus_ui as f32
     };
 
-    let mut camera = Camera2dBundle{
-        projection: OrthographicProjection{
+    let mut camera = Camera2dBundle {
+        projection: OrthographicProjection {
             far: 1000.0,
             depth_calculation: DepthCalculation::ZDifference,
             scaling_mode: ScalingMode::WindowSize,
@@ -53,7 +53,26 @@ impl Plugin for WorldPlugin {
             .add_system_set(SystemSet::on_enter(AppState::Playing)
                 .with_system(setup_camera).after("world").label("camera")
             )
+            // Map Editor needs a world as well:
+            .add_system_set(SystemSet::on_enter(AppState::MapEditor)
+                .with_system(setup_game_world).label("world")
+            )
+            .add_system_set(SystemSet::on_enter(AppState::MapEditor)
+                .with_system(setup_camera).after("world").label("camera")
+            )
         ;
+    }
+}
+
+pub struct MapTextureAtlasHandle {
+    pub handle: Handle<TextureAtlas>,
+}
+
+impl FromWorld for MapTextureAtlasHandle {
+    fn from_world(_: &mut World) -> Self {
+        MapTextureAtlasHandle {
+            handle: Handle::default()
+        }
     }
 }
 
@@ -72,6 +91,7 @@ pub fn setup_game_world(
         16,
     );
     let atlas_handle = texture_atlases.add(texture_atlas);
+    commands.insert_resource(MapTextureAtlasHandle { handle: atlas_handle.clone() });
 
     let world: &mut GameWorld = &mut worldwrapper.world;
 
@@ -85,10 +105,10 @@ pub fn setup_game_world(
                 0.0,
             );
             let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
-            if let Some(index) = tile.atlas_index {
+            if let Some(index) = tile.atlas_index() {
                 let mut bundle = commands
                     .spawn_bundle(SpriteSheetBundle {
-                        sprite: TextureAtlasSprite::new(index),
+                        sprite: TextureAtlasSprite::new(index as usize),
                         texture_atlas: atlas_handle.clone(),
                         transform: Transform {
                             translation: tile_position,
@@ -98,7 +118,7 @@ pub fn setup_game_world(
                         ..Default::default()
                     });
                 // Insert wrappers so we can despawn the whole map later
-                match tile.kind {
+                match tile.kind() {
                     TileKind::COIN => {
                         bundle.insert(CoinWrapper { coin_value: 1 });
                     }

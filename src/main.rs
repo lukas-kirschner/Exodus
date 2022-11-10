@@ -1,6 +1,7 @@
 use std::borrow::BorrowMut;
 use std::fs;
 use bevy::prelude::*;
+use bevy::render::texture::{ImagePlugin, ImageSettings};
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
@@ -8,6 +9,7 @@ use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
 use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
+use crate::mapeditor::MapEditorPlugin;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
 use crate::uicontrols::{egui_fonts, UiControlsPlugin};
 
@@ -16,6 +18,7 @@ mod mainmenu;
 mod creditsscreen;
 mod uicontrols;
 mod mapselectionscreen;
+mod mapeditor;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -28,6 +31,8 @@ pub enum AppState {
     MapSelectionScreen,
     CreditsScreen,
     Playing,
+    MapEditor,
+    Loading,
 }
 
 struct GameDirectoriesWrapper {
@@ -83,6 +88,7 @@ fn main() {
         .init_resource::<GameDirectoriesWrapper>()
         .add_startup_system(game_init)
         .add_state(AppState::MainMenu)
+        .insert_resource(ImageSettings::default_nearest())
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
         .add_plugin(UiControlsPlugin)
@@ -90,5 +96,6 @@ fn main() {
         .add_plugin(MainMenu)
         .add_plugin(MapSelectionScreenPlugin)
         .add_plugin(CreditsScreen)
+        .add_plugin(MapEditorPlugin)
         .run();
 }

@@ -94,9 +94,10 @@ fn map_selection_screen_execute_event_queue(
             commands.insert_resource(MapSelectionScreenAction::NONE)
         }
         MapSelectionScreenAction::EDIT { map_index } => {
-            //TODO Launch Map Editor
-            // Test Saving the map to file
-            maps.maps[map_index].world.save_to_file(directories.game_directories.path_from_mapname(maps.maps[map_index].world.get_name()).unwrap().as_path()).unwrap();
+            let mapwrapper = maps.maps.remove(map_index);
+            commands.insert_resource(mapwrapper);
+            state.set(AppState::MapEditor)
+                .expect("Could not start map editor");
             commands.insert_resource(MapSelectionScreenAction::NONE)
         }
         MapSelectionScreenAction::NONE => {}

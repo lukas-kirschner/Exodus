@@ -27,7 +27,7 @@ impl GameWorld {
         assert! {width > 0};
         assert! {height > 0};
         Self {
-            data: vec![vec![tiles::air(); height]; width],
+            data: vec![vec![Tile::AIR; height]; width],
             playerspawn: (1, 1), // Default spawn point is (1,1)
             name: "New World".to_string(),
             author: "".to_string(),
@@ -65,7 +65,7 @@ impl GameWorld {
     /// Set the tile at the given coordinate to the given value.
     pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
         self.data[x][y] = tile;
-        match &self.data[x][y].kind {
+        match &self.data[x][y].kind() {
             TileKind::AIR => {}
             TileKind::SOLID => {}
             TileKind::DEADLY { .. } => {
