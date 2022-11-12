@@ -4,7 +4,7 @@ use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::TileKind;
-use crate::AppState;
+use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
@@ -61,8 +61,7 @@ pub fn despawn_dead_player(
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
-    asset_server: Res<AssetServer>,
-    texture_atlases: ResMut<Assets<TextureAtlas>>,
+    currentMapTextureHandle: Res<CurrentMapTextureAtlasHandle>,
     coin_query: Query<Entity, With<CoinWrapper>>,
     tiles_query: Query<Entity, With<TileWrapper>>,
 ) {
@@ -74,7 +73,7 @@ pub fn despawn_dead_player(
             // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             scoreboard.reset();
-            reset_world(commands, asset_server, texture_atlases, worldwrapper, coin_query, tiles_query);
+            reset_world(commands, worldwrapper, coin_query, tiles_query, currentMapTextureHandle);
             return;
         }
         sprite.color.set_a(new_a);
@@ -237,18 +236,10 @@ fn respawn_player(
 
 pub fn setup_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    current_texture_atlas: Res<CurrentPlayerTextureAtlasHandle>,
     worldwrapper: ResMut<MapWrapper>,
 ) {
-    let texture_atlas_player = TextureAtlas::from_grid(
-        asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
-        Vec2::splat(TEXTURE_SIZE as f32),
-        16,
-        16,
-    );
-    let atlas_handle_player = texture_atlases.add(texture_atlas_player);
-    respawn_player(&mut commands, atlas_handle_player, &worldwrapper);
+    respawn_player(&mut commands, (*current_texture_atlas).handle.clone(), &worldwrapper);
 }
 
 pub fn keyboard_controls(

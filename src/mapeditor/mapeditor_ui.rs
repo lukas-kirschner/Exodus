@@ -9,7 +9,6 @@ use libexodus::tiles::Tile::WALL;
 use strum::{IntoEnumIterator};
 use crate::AppState;
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::MapTextureAtlasHandle;
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
 
@@ -75,9 +74,7 @@ impl FromWorld for EguiButtonTextures {
 
 fn mapeditor_ui(
     mut egui_ctx: ResMut<EguiContext>,
-    mut state: ResMut<State<AppState>>,
     mut selected_tile: ResMut<SelectedTile>,
-    texture_atlas_handle: Res<MapTextureAtlasHandle>,
 ) {
     let mut selected: Tile = WALL;
     egui::TopBottomPanel::bottom("")

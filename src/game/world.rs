@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
-use crate::AppState;
+use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE};
 use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
 
@@ -64,35 +64,12 @@ impl Plugin for WorldPlugin {
     }
 }
 
-pub struct MapTextureAtlasHandle {
-    pub handle: Handle<TextureAtlas>,
-}
-
-impl FromWorld for MapTextureAtlasHandle {
-    fn from_world(_: &mut World) -> Self {
-        MapTextureAtlasHandle {
-            handle: Handle::default()
-        }
-    }
-}
 
 pub fn setup_game_world(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut worldwrapper: ResMut<MapWrapper>,
+    the_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
 ) {
-
-    // Load Texture Atlas
-    let texture_atlas = TextureAtlas::from_grid(
-        asset_server.load("textures/Tiny_Platform_Quest_Tiles.png"),
-        Vec2::splat(TEXTURE_SIZE as f32),
-        16,
-        16,
-    );
-    let atlas_handle = texture_atlases.add(texture_atlas);
-    commands.insert_resource(MapTextureAtlasHandle { handle: atlas_handle.clone() });
-
     let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {
@@ -109,7 +86,7 @@ pub fn setup_game_world(
                 let mut bundle = commands
                     .spawn_bundle(SpriteSheetBundle {
                         sprite: TextureAtlasSprite::new(index as usize),
-                        texture_atlas: atlas_handle.clone(),
+                        texture_atlas: (*the_atlas_handle).handle.clone(),
                         transform: Transform {
                             translation: tile_position,
                             scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
@@ -135,11 +112,10 @@ pub fn setup_game_world(
 /// Delete everything world-related and respawn the world, including coins
 pub fn reset_world(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    texture_atlases: ResMut<Assets<TextureAtlas>>,
     worldwrapper: ResMut<MapWrapper>,
     coin_query: Query<Entity, With<CoinWrapper>>,
     tiles_query: Query<Entity, With<TileWrapper>>,
+    the_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
 ) {
     for entity in coin_query.iter() {
         commands.entity(entity).despawn_recursive();
@@ -147,5 +123,5 @@ pub fn reset_world(
     for entity in tiles_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
-    setup_game_world(commands, asset_server, texture_atlases, worldwrapper);
+    setup_game_world(commands, worldwrapper, the_atlas_handle);
 }
