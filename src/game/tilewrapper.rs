@@ -5,6 +5,7 @@ use crate::AppState;
 use crate::game::constants::COIN_PICKUP_DISTANCE;
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
+use crate::util::dist_2d;
 
 pub struct CoinPlugin;
 
@@ -73,10 +74,11 @@ pub fn coin_collision(
     mut scoreboard: ResMut<Scoreboard>,
 ) {
     for (_player, player_trans) in players.iter() {
-        let player_pos = player_trans.translation;
+        let player_pos: Vec3 = player_trans.translation;
         for (coin_entity, coin_trans, coin) in coin_query.iter_mut() {
-            let coin_pos = coin_trans.translation;
-            if player_pos.distance(coin_pos) <= COIN_PICKUP_DISTANCE {
+            let coin_pos: Vec3 = coin_trans.translation;
+            let dist = dist_2d(&player_pos, &coin_pos);
+            if dist <= COIN_PICKUP_DISTANCE {
                 // The player picks up the coin
                 scoreboard.coins += coin.coin_value;
                 commands.entity(coin_entity).despawn_recursive();

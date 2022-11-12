@@ -3,7 +3,7 @@ use libexodus::tiles::TileKind;
 use libexodus::world::GameWorld;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use crate::{AppState, CurrentMapTextureAtlasHandle};
-use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE};
+use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
 use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
 
 
@@ -79,7 +79,7 @@ pub fn setup_game_world(
             let tile_position = Vec3::new(
                 x as f32,
                 y as f32,
-                0.0,
+                WORLD_Z,
             );
             let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
             if let Some(index) = tile.atlas_index() {

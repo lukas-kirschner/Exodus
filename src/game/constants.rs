@@ -2,6 +2,10 @@
 pub const TILE_SIZE: f32 = 1.0;
 /// Texture size in pixels
 pub const TEXTURE_SIZE: usize = 32;
+/// The Player's Z coordinate
+pub const PLAYER_Z: f32 = 0.0;
+/// The World Tiles' Z coordinate
+pub const WORLD_Z: f32 = -1.0;
 /// The speed of the player movement
 pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins

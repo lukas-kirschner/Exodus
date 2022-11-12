@@ -21,6 +21,7 @@ mod creditsscreen;
 mod uicontrols;
 mod mapselectionscreen;
 mod mapeditor;
+mod util;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
