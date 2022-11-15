@@ -114,7 +114,7 @@ fn mapeditor_ui(
     mut selected_tile: ResMut<SelectedTile>,
     egui_textures: Res<EguiButtonTextures>,
 ) {
-    egui::TopBottomPanel::bottom("")
+    egui::TopBottomPanel::top("")
         .resizable(false)
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
