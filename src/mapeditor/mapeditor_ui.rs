@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::iter::Map;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{TextureId, Widget};
+use bevy_egui::egui::{TextureId, Ui, Widget};
 use libexodus::tiles::{AtlasIndex, Tile};
 use strum::{IntoEnumIterator};
 use crate::{AppState, CurrentMapTextureAtlasHandle};
@@ -38,7 +38,7 @@ impl FromWorld for SelectedTile {
 }
 
 struct EguiButtonTextures {
-    textures: HashMap<AtlasIndex, egui::Image>,
+    textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
 }
 
 impl FromWorld for EguiButtonTextures {
@@ -72,7 +72,7 @@ fn atlas_to_egui_textures(
             let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
             // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
             let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
-            textures.insert(atlas_index, egui::Image::new(tex, rect_vec2).uv(uv));
+            textures.insert(atlas_index, (tex, rect_vec2, uv));
         }
     }
     commands.insert_resource(EguiButtonTextures {
@@ -80,24 +80,44 @@ fn atlas_to_egui_textures(
     });
 }
 
+fn tile_kind_selector_button_for(
+    ui: &mut Ui,
+    egui_textures: &EguiButtonTextures,
+    tile: &Tile,
+    mut selected_tile: &mut ResMut<SelectedTile>,
+) {
+    let button =
+        if let Some(atlas_index) = tile.atlas_index() {
+            let (id, size, uv) = egui_textures.textures.get(&atlas_index)
+                .expect(format!("Textures for {:?} were not loaded as Egui textures!", tile).as_str())
+                ;
+            ui.add_enabled(selected_tile.tile != *tile, egui::ImageButton::new(*id, *size).uv(*uv))
+        } else {
+            ui.add_enabled(selected_tile.tile != *tile, egui::Button::new(""))
+        }
+            .on_hover_text(tile.to_string())
+        ;
+    if button.clicked() {
+        selected_tile.tile = tile.clone();
+    }
+}
+
 fn mapeditor_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut selected_tile: ResMut<SelectedTile>,
     egui_textures: Res<EguiButtonTextures>,
 ) {
-    let mut selected: Tile = Tile::WALL;
     egui::TopBottomPanel::bottom("")
         .resizable(false)
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
-                let btn_spikes_state = egui_textures.textures.get(&Tile::WALL.atlas_index().expect("Wall needs a sprite")).unwrap().ui(ui);
-                egui::ComboBox::from_label("Spikes")
-                    .selected_text(format!("{:?}", selected))
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut selected, Tile::SPIKES, Tile::SPIKES.to_string());
-                    });
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::AIR, &mut selected_tile);
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALL, &mut selected_tile);
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKES, &mut selected_tile);
+                ui.separator();
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile);
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile);
             });
         });
-    selected_tile.tile = selected.clone();
 }
