@@ -7,6 +7,7 @@ use bevy_egui::egui::{TextureId, Ui, Widget};
 use libexodus::tiles::{AtlasIndex, Tile};
 use strum::{IntoEnumIterator};
 use crate::{AppState, CurrentMapTextureAtlasHandle};
+use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
@@ -73,8 +74,11 @@ fn atlas_to_egui_textures(
             // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
             let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
             textures.insert(atlas_index, (tex, rect_vec2, uv));
+            // TODO if the button size is smaller than the texture size, Egui textures need to be resized here
         }
     }
+    // The Player Spawn needs a special texture, since it comes from a different atlas:
+    //TODO add Player Texture for Player Spawn
     commands.insert_resource(EguiButtonTextures {
         textures,
     });
@@ -86,20 +90,23 @@ fn tile_kind_selector_button_for(
     tile: &Tile,
     mut selected_tile: &mut ResMut<SelectedTile>,
 ) {
-    let button =
-        if let Some(atlas_index) = tile.atlas_index() {
-            let (id, size, uv) = egui_textures.textures.get(&atlas_index)
-                .expect(format!("Textures for {:?} were not loaded as Egui textures!", tile).as_str())
-                ;
-            ui.add_enabled(selected_tile.tile != *tile, egui::ImageButton::new(*id, *size).uv(*uv))
-        } else {
-            ui.add_enabled(selected_tile.tile != *tile, egui::Button::new(""))
+    ui.add_enabled_ui(selected_tile.tile != *tile, |ui| {
+        let button =
+            if let Some(atlas_index) = tile.atlas_index() {
+                let (id, size, uv) = egui_textures.textures.get(&atlas_index)
+                    .expect(format!("Textures for {:?} were not loaded as Egui textures!", tile).as_str())
+                    ;
+                ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
+            } else {
+                ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
+            }
+                .on_hover_text(tile.to_string())
+                .on_disabled_hover_text(format!("{} (currently selected)", tile)) // unfortunately there is no on_disabled_hover_text_at_pointer
+            ;
+        if button.clicked() {
+            selected_tile.tile = tile.clone();
         }
-            .on_hover_text(tile.to_string())
-        ;
-    if button.clicked() {
-        selected_tile.tile = tile.clone();
-    }
+    });
 }
 
 fn mapeditor_ui(
@@ -115,9 +122,38 @@ fn mapeditor_ui(
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::AIR, &mut selected_tile);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALL, &mut selected_tile);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKES, &mut selected_tile);
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESALT, &mut selected_tile);
                 ui.separator();
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile);
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::LADDER, &mut selected_tile);
+                ui.separator();
+                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile);
+                ui.scope(|ui| {
+                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                    ui.centered_and_justified(|ui| {
+                        ui.menu_button("w", |ui| { // TODO Icon on a Menu Button?
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile);
+                        }).response.on_hover_text("Select a wall spike edge");
+                    });
+                });
+                ui.scope(|ui| {
+                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                    ui.centered_and_justified(|ui| {
+                        ui.menu_button("W", |ui| {
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile);
+                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile);
+                        }).response.on_hover_text("Select a wall spike corner");
+                    });
+                });
             });
         });
 }
