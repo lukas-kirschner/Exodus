@@ -4,12 +4,14 @@ use libexodus::tiles::Tile;
 use crate::AppState;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::WorldPlugin;
+use crate::mapeditor::edit_world::EditWorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
 use crate::mapeditor::preview_tile::MapEditorPreviewTilePlugin;
 
 mod mapeditor_ui;
 mod player_spawn;
 mod preview_tile;
+mod edit_world;
 
 pub struct SelectedTile {
     pub tile: Tile,
@@ -30,6 +32,7 @@ impl Plugin for MapEditorPlugin {
             // The world plugin is already added here. Adding it twice causes an error
             .add_plugin(MapEditorUiPlugin)
             .add_plugin(MapEditorPreviewTilePlugin)
+            .add_plugin(EditWorldPlugin)
         ;
     }
 }
