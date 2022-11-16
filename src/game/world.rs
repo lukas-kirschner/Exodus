@@ -1,5 +1,6 @@
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
-use libexodus::tiles::TileKind;
+use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use bevy::render::camera::{DepthCalculation, ScalingMode};
 use crate::{AppState, CurrentMapTextureAtlasHandle};
@@ -64,6 +65,39 @@ impl Plugin for WorldPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct WorldTile;
+
+/// Spawn a single tile at the given position
+pub fn spawn_tile(
+    commands: &mut Commands,
+    map_texture_atlas: &CurrentMapTextureAtlasHandle,
+    atlas_index: usize,
+    tile_position: &Vec2,
+    tile: &Tile,
+) {
+    let mut bundle: EntityCommands = commands
+        .spawn_bundle(SpriteSheetBundle {
+            sprite: TextureAtlasSprite::new(atlas_index),
+            texture_atlas: map_texture_atlas.handle.clone(),
+            transform: Transform {
+                translation: tile_position.extend(WORLD_Z),
+                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                ..default()
+            },
+            ..Default::default()
+        });
+    bundle.insert(WorldTile); // WorldTiles are attached to each world tile, while TileWrappers are only attached to non-interactive world tiles.
+    // Insert wrappers so we can despawn the whole map later
+    match tile.kind() {
+        TileKind::COIN => {
+            bundle.insert(CoinWrapper { coin_value: 1 });
+        }
+        _ => {
+            bundle.insert(TileWrapper);
+        }
+    }
+}
 
 pub fn setup_game_world(
     mut commands: Commands,
@@ -76,33 +110,13 @@ pub fn setup_game_world(
         let y = row as f32 * (TILE_SIZE);
         for col in 0..world.width() {
             let x = col as f32 * (TILE_SIZE);
-            let tile_position = Vec3::new(
+            let tile_position = Vec2::new(
                 x as f32,
                 y as f32,
-                WORLD_Z,
             );
             let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
             if let Some(index) = tile.atlas_index() {
-                let mut bundle = commands
-                    .spawn_bundle(SpriteSheetBundle {
-                        sprite: TextureAtlasSprite::new(index as usize),
-                        texture_atlas: (*the_atlas_handle).handle.clone(),
-                        transform: Transform {
-                            translation: tile_position,
-                            scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
-                            ..default()
-                        },
-                        ..Default::default()
-                    });
-                // Insert wrappers so we can despawn the whole map later
-                match tile.kind() {
-                    TileKind::COIN => {
-                        bundle.insert(CoinWrapper { coin_value: 1 });
-                    }
-                    _ => {
-                        bundle.insert(TileWrapper {});
-                    }
-                }
+                spawn_tile(&mut commands, &*the_atlas_handle, index, &tile_position, tile);
             }
         }
     }

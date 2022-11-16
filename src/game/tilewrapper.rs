@@ -65,7 +65,7 @@ pub struct CoinWrapper<> {
 
 /// A wrapper for any other map tile
 #[derive(Component)]
-pub struct TileWrapper<> {}
+pub struct TileWrapper;
 
 pub fn coin_collision(
     mut commands: Commands,
