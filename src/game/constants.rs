@@ -9,9 +9,9 @@ pub const WORLD_Z: f32 = -2.0;
 /// The Map Editor Preview Tiles' Z coordinate
 pub const MAPEDITOR_PREVIEWTILE_Z: f32 = 0.0;
 /// The Map Editor Preview Tiles' Alpha value [0.0,1.0]
-pub const MAPEDITOR_PREVIEWTILE_ALPHA: f32 = 0.75;
+pub const MAPEDITOR_PREVIEWTILE_ALPHA: f32 = 0.40;
 /// The Map Editor Preview Tiles' Air Texture Atlas Index
-pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 45;
+pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 43;
 /// The speed of the player movement
 pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins
