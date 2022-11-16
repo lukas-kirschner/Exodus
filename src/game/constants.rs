@@ -3,9 +3,15 @@ pub const TILE_SIZE: f32 = 1.0;
 /// Texture size in pixels
 pub const TEXTURE_SIZE: usize = 32;
 /// The Player's Z coordinate
-pub const PLAYER_Z: f32 = 0.0;
+pub const PLAYER_Z: f32 = -1.0;
 /// The World Tiles' Z coordinate
-pub const WORLD_Z: f32 = -1.0;
+pub const WORLD_Z: f32 = -2.0;
+/// The Map Editor Preview Tiles' Z coordinate
+pub const MAPEDITOR_PREVIEWTILE_Z: f32 = 0.0;
+/// The Map Editor Preview Tiles' Alpha value [0.0,1.0]
+pub const MAPEDITOR_PREVIEWTILE_ALPHA: f32 = 0.75;
+/// The Map Editor Preview Tiles' Air Texture Atlas Index
+pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 45;
 /// The speed of the player movement
 pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins

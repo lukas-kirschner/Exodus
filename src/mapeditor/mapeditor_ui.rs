@@ -2,6 +2,7 @@ use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::iter::Map;
 use bevy::prelude::*;
+use bevy::render::camera::RenderTarget;
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::{TextureId, Ui, Widget};
 use libexodus::tiles::{AtlasIndex, Tile};
@@ -10,6 +11,7 @@ use libexodus::player::Player;
 use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
+use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 use crate::mapeditor::player_spawn::{init_player_spawn, PlayerSpawnComponent};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
@@ -30,16 +32,6 @@ impl Plugin for MapEditorUiPlugin {
                 .with_system(mapeditor_ui)
             )
         ;
-    }
-}
-
-struct SelectedTile {
-    pub tile: Tile,
-}
-
-impl FromWorld for SelectedTile {
-    fn from_world(_: &mut World) -> Self {
-        SelectedTile { tile: Tile::AIR }
     }
 }
 
