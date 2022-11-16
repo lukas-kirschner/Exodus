@@ -9,6 +9,7 @@ use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PR
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::mapeditor::player_spawn::PlayerSpawnComponent;
 
 pub struct EditWorldPlugin;
 
@@ -17,6 +18,9 @@ impl Plugin for EditWorldPlugin {
         app
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
                 .with_system(mouse_down_handler)
+            )
+            .add_system_set(SystemSet::on_update(AppState::MapEditor)
+                .with_system(mouse_down_handler_playerspawn)
             )
         ;
     }
@@ -113,6 +117,26 @@ fn mouse_down_handler(
                 if *current_world_tile != Tile::AIR {
                     replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &Tile::AIR, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
                 }
+            }
+        }
+    }
+}
+
+fn mouse_down_handler_playerspawn(
+    wnds: Res<Windows>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+    mut map: ResMut<MapWrapper>,
+    buttons: Res<Input<MouseButton>>,
+    current_tile: Res<SelectedTile>,
+    mut player_spawn_query: Query<(&mut Transform), With<PlayerSpawnComponent>>,
+) {
+    if current_tile.tile == Tile::PLAYERSPAWN {
+        let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
+        if buttons.pressed(MouseButton::Left) {
+            if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+                let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
+                translation.x = world_x as f32;
+                translation.y = world_y as f32;
             }
         }
     }
