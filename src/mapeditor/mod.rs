@@ -5,6 +5,7 @@ use crate::game::world::WorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
 
 mod mapeditor_ui;
+mod player_spawn;
 
 pub struct MapEditorPlugin;
 
