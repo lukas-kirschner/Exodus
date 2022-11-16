@@ -98,12 +98,20 @@ fn mouse_down_handler(
     mut tile_entity_query: Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
     atlas: Res<CurrentMapTextureAtlasHandle>,
 ) {
+    let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
     if buttons.pressed(MouseButton::Left) {
-        let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
                     replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &current_tile.tile, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
+                }
+            }
+        }
+    } else if buttons.pressed(MouseButton::Right) { // On Right Click, replace the current tile with air
+        if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+            if let Some(current_world_tile) = map.world.get(world_x, world_y) {
+                if *current_world_tile != Tile::AIR {
+                    replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &Tile::AIR, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
                 }
             }
         }
