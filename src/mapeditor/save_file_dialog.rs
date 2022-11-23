@@ -1,15 +1,17 @@
 use std::borrow::BorrowMut;
 use bevy_egui::egui;
 use bevy_egui::egui::{Align, Ui};
+use libexodus::directories::GameDirectories;
 use libexodus::world::GameWorld;
 use crate::mapeditor::mapeditor_ui::EguiButtonTextures;
-use crate::World;
+use crate::{GameDirectoriesWrapper, World};
 
 pub trait UIDialog {
     fn dialog_title(&self) -> &str;
     fn draw(&mut self,
             ui: &mut Ui,
             egui_textures: &EguiButtonTextures,
+            directories: &GameDirectories,
     );
     fn is_done(&self) -> bool;
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog>;
@@ -64,6 +66,7 @@ impl UIDialog for SaveFileDialog {
     fn draw(&mut self,
             ui: &mut Ui,
             egui_textures: &EguiButtonTextures,
+            directories: &GameDirectories,
     ) {
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::CHOOSING, |ui| {
@@ -79,6 +82,8 @@ impl UIDialog for SaveFileDialog {
                         let save = ui.button("Save");
                         if save.clicked() {
                             //TODO Save map
+                            let map_dir = directories.path_from_userinput(self.file_name.as_str());
+                            println!("{:?}", map_dir);
                             self.state = SaveFileDialogState::DONE;
                         }
                     });

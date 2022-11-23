@@ -29,14 +29,16 @@ impl Error for InvalidSystemConfigurationError {
 
 #[derive(Debug)]
 pub enum InvalidMapNameError {
-    EmptyName
+    EmptyName,
+    InvalidCharacter { c: char },
 }
 
 impl fmt::Display for InvalidMapNameError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            InvalidMapNameError::EmptyName => { "Empty file name!" }
-        })
+        match self {
+            InvalidMapNameError::EmptyName => { write!(f, "Empty file name!") }
+            InvalidMapNameError::InvalidCharacter { c } => { write!(f, "Invalid character in map file name: {}", c) }
+        }
     }
 }
 
@@ -113,6 +115,38 @@ impl GameDirectories {
             return Err(InvalidMapNameError::EmptyName);
         }
         let map_folder: PathBuf = self.maps_dir.join(format!("{}.{}", map_file_name, GameDirectories::MAP_FILE_SUFFIX));
+        Ok(map_folder)
+    }
+
+    /// Get the path of a map with the given user input path.
+    /// The user input is sanitized and resolved as subdirectory of the maps folder.
+    /// If the file name that results from converting the name is invalid, an error is returned.
+    pub fn path_from_userinput(self: &Self, user_input: &str) -> Result<PathBuf, InvalidMapNameError> {
+        let user_input_t = user_input.trim();
+        let map_subdir_name: Result<String, InvalidMapNameError> = user_input_t.chars().map(|c: char| {
+            match c {
+                // see https://is.gd/VLNWIM
+                // TODO This needs to be changed once we support subdirectories
+                '<' | '>' | ':' | '"' | '|' | '/' | '\\' | '?' | '*' => Err(InvalidMapNameError::InvalidCharacter { c }),
+                _ => {
+                    if c.is_whitespace() {
+                        Ok('_')
+                    } else {
+                        Ok(c.to_ascii_lowercase())
+                    }
+                }
+            }
+        }).collect();
+        let map_subdir_name: String = map_subdir_name?;
+        let map_file_name: String = if map_subdir_name.as_str().ends_with(format!(".{}", GameDirectories::MAP_FILE_SUFFIX).as_str()) {
+            map_subdir_name.to_string()
+        } else {
+            format!("{}.{}", map_subdir_name, GameDirectories::MAP_FILE_SUFFIX).to_string()
+        };
+        if map_file_name.is_empty() {
+            return Err(InvalidMapNameError::EmptyName);
+        }
+        let map_folder: PathBuf = self.maps_dir.join(map_file_name);
         Ok(map_folder)
     }
 }

@@ -10,7 +10,7 @@ use bevy_egui::egui::{TextureId, Ui, Widget};
 use libexodus::tiles::{AtlasIndex, Tile};
 use strum::{IntoEnumIterator};
 use libexodus::player::Player;
-use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
+use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, GameDirectoriesWrapper};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -223,12 +223,13 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
                     mut state: ResMut<State<AppState>>,
                     mut commands: Commands,
                     mut worldwrapper: ResMut<MapWrapper>,
+                    directories: Res<GameDirectoriesWrapper>,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
         .collapsible(false)
         .show(egui_ctx.ctx_mut(), |ui| {
-            dialog.ui_dialog.draw(ui, &*egui_textures);
+            dialog.ui_dialog.draw(ui, &*egui_textures, &directories.game_directories);
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {

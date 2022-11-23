@@ -39,7 +39,7 @@ pub enum AppState {
     Loading,
 }
 
-struct GameDirectoriesWrapper {
+pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
 }
 
@@ -89,6 +89,7 @@ impl FromWorld for RpgSpriteHandles {
         }
     }
 }
+
 pub struct PlayerSpriteHandles {
     // TODO Change to include metadata of textures
     handles: Vec<HandleUntyped>,
@@ -124,6 +125,7 @@ impl FromWorld for CurrentMapTextureAtlasHandle {
         }
     }
 }
+
 pub struct CurrentPlayerTextureAtlasHandle {
     pub handle: Handle<TextureAtlas>,
 }
