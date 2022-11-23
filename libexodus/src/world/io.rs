@@ -1,6 +1,6 @@
 use std::{fs};
 use std::io::{BufReader};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use crate::world::GameWorld;
 
 ///
@@ -10,15 +10,13 @@ use crate::world::GameWorld;
 impl GameWorld {
     /// Load a map from the given file.
     pub fn load_from_file(file: &Path) -> std::io::Result<Self> {
-        let filepath = file.to_str();
+        let filepath = file.clone();
         let file = fs::File::open(file)?;
         let buf = BufReader::new(file);
         let mut deserialized: Self = serde_json::from_reader(buf)?;
-        if let Some(fname) = filepath {
-            deserialized.set_filename(fname);
-        } else {
-            deserialized.remove_filename();
-        }
+        let mut p = PathBuf::new();
+        p.push(filepath);
+        deserialized.set_filename(p);
         Ok(deserialized)
     }
     /// Save the map to the given file.

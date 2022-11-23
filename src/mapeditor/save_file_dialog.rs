@@ -1,4 +1,6 @@
 use std::borrow::BorrowMut;
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
 use bevy_egui::egui;
 use bevy_egui::egui::{Align, Ui};
 use libexodus::directories::GameDirectories;
@@ -25,30 +27,34 @@ enum SaveFileDialogState {
 }
 
 pub struct SaveFileDialog {
+    /// The file name that is shown to the user
     file_name: String,
     map_title: String,
     map_author: String,
     uuid: String,
     world_to_save: GameWorld,
     state: SaveFileDialogState,
+    /// The finalized file path that is created as soon as the user presses the Save button
+    file_path: Option<PathBuf>,
 
 }
 
 impl SaveFileDialog {
     /// Instantiate a new SaveFileDialog from the given world
-    pub fn new(world: &GameWorld, filename: &str, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
+    pub fn new(world: &GameWorld, filename: Option<&Path>, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
         SaveFileDialog {
-            file_name: String::from(filename),
+            file_name: String::from(filename.map(|p| { p.file_name().unwrap_or(OsStr::new("")) }).unwrap_or(OsStr::new("")).to_str().unwrap_or("")),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
             uuid: String::from(uuid),
             world_to_save: world.clone(),
             state: SaveFileDialogState::CHOOSING,
+            file_path: None,
         }
     }
-
-    pub fn get_filename(&self) -> &str {
-        self.file_name.as_str()
+    /// Resolve the file name and return the full path
+    pub fn get_filename(&self) -> Option<PathBuf> {
+        self.file_path.clone()
     }
     pub fn get_map_title(&self) -> &str {
         self.map_title.as_str()
@@ -84,6 +90,9 @@ impl UIDialog for SaveFileDialog {
                             //TODO Save map
                             let map_dir = directories.path_from_userinput(self.file_name.as_str());
                             println!("{:?}", map_dir);
+                            if let Ok(path) = map_dir {
+                                self.file_path = Some(path);
+                            }
                             self.state = SaveFileDialogState::DONE;
                         }
                     });

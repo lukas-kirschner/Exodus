@@ -1,3 +1,4 @@
+use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::tiles;
@@ -21,7 +22,7 @@ pub struct GameWorld {
     /// The coordinates of the player spawn
     playerspawn: (usize, usize),
     /// The file name of this world, if any file name has been set
-    filename: Option<String>,
+    filename: Option<PathBuf>,
 }
 
 impl GameWorld {
@@ -51,15 +52,15 @@ impl GameWorld {
         self.name.as_str()
     }
     /// Get the last set file name for this map, or None if it has been created new
-    pub fn get_filename(&self) -> Option<&str> {
+    pub fn get_filename(&self) -> Option<&Path> {
         match &self.filename {
             None => None,
-            Some(filename) => Some(filename.as_str())
+            Some(filename) => Some(filename.as_path())
         }
     }
     /// Set the last used file name of this map
-    pub fn set_filename(&mut self, new_filename: &str) {
-        self.filename = Some(new_filename.to_string());
+    pub fn set_filename(&mut self, new_filename: PathBuf) {
+        self.filename = Some(new_filename);
     }
     /// Remove the file name of this map
     pub fn remove_filename(&mut self) {

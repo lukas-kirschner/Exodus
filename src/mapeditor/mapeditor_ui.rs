@@ -166,7 +166,7 @@ fn mapeditor_ui(
                             commands.insert_resource(MapEditorDialogResource {
                                 ui_dialog: Box::new(SaveFileDialog::new(
                                     &worldwrapper.world,
-                                    worldwrapper.world.get_filename().unwrap_or(""),
+                                    worldwrapper.world.get_filename(),
                                     worldwrapper.world.get_name(),
                                     worldwrapper.world.get_author(),
                                     worldwrapper.world.uuid().as_str(),
@@ -233,7 +233,9 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {
-            worldwrapper.world.set_filename(save_dialog.get_filename());
+            if let Some(upd_fname) = save_dialog.get_filename() {
+                worldwrapper.world.set_filename(upd_fname);
+            }
             worldwrapper.world.set_name(save_dialog.get_map_title());
             worldwrapper.world.set_author(save_dialog.get_map_author());
         }
