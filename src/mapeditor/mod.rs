@@ -12,6 +12,7 @@ mod mapeditor_ui;
 mod player_spawn;
 mod preview_tile;
 mod edit_world;
+mod save_file_dialog;
 
 pub struct SelectedTile {
     pub tile: Tile,

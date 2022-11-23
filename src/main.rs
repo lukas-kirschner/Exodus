@@ -35,6 +35,7 @@ pub enum AppState {
     CreditsScreen,
     Playing,
     MapEditor,
+    MapEditorDialog,
     Loading,
 }
 

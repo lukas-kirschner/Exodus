@@ -1,6 +1,8 @@
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::iter::Map;
+use std::rc::Rc;
+use std::sync::Arc;
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy_egui::{egui, EguiContext};
@@ -13,6 +15,7 @@ use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 use crate::mapeditor::player_spawn::{init_player_spawn, PlayerSpawnComponent};
+use crate::mapeditor::save_file_dialog::{SaveFileDialog, UIDialog};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
 
@@ -31,11 +34,15 @@ impl Plugin for MapEditorUiPlugin {
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
                 .with_system(mapeditor_ui)
             )
+            .add_system_set(SystemSet::on_update(AppState::MapEditorDialog)
+                .with_system(mapeditor_dialog)
+            )
         ;
     }
 }
 
-struct EguiButtonTextures {
+
+pub struct EguiButtonTextures {
     textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
     player_textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
 }
@@ -47,6 +54,10 @@ impl FromWorld for EguiButtonTextures {
             player_textures: HashMap::new(),
         }
     }
+}
+
+struct MapEditorDialogResource {
+    ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }
 
 fn convert(
@@ -128,10 +139,13 @@ fn tile_kind_selector_button_for(
 }
 
 fn mapeditor_ui(
+    mut commands: Commands,
     mut egui_ctx: ResMut<EguiContext>,
     mut selected_tile: ResMut<SelectedTile>,
     egui_textures: Res<EguiButtonTextures>,
     player: Query<&PlayerSpawnComponent>,
+    mut state: ResMut<State<AppState>>,
+    mut worldwrapper: ResMut<MapWrapper>,
 ) {
     let player_it = player.iter().next().expect("There was no Player Spawn set up");
     egui::TopBottomPanel::top("")
@@ -139,6 +153,22 @@ fn mapeditor_ui(
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
+                // Save Button
+                ui.scope(|ui| {
+                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                    ui.centered_and_justified(|ui| {
+                        let sbutton = ui.button("S").on_hover_text("Save Map or Set Map Properties");
+                        if sbutton.clicked() {
+                            commands.insert_resource(MapEditorDialogResource {
+                                ui_dialog: Box::new(SaveFileDialog::new(&worldwrapper.world)),
+                            });
+                            state.set(AppState::MapEditorDialog).expect("Could not open save dialog!");
+                        }
+                    });
+                });
+                ui.separator();
+                // Buttons for the different tiles
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::AIR, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALL, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKES, &mut selected_tile, player_it);
@@ -176,4 +206,21 @@ fn mapeditor_ui(
                 });
             });
         });
+}
+
+fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
+                    egui_textures: Res<EguiButtonTextures>,
+                    mut dialog: ResMut<MapEditorDialogResource>,
+                    mut state: ResMut<State<AppState>>,
+                    mut commands: Commands,
+) {
+    egui::Window::new(dialog.ui_dialog.dialog_title())
+        .resizable(false)
+        .collapsible(false)
+        .show(egui_ctx.ctx_mut(), |ui| {
+            dialog.ui_dialog.draw(ui, &*egui_textures);
+        });
+    if dialog.ui_dialog.is_done() {
+        state.set(AppState::MapEditor);
+    }
 }
