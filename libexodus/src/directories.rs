@@ -138,14 +138,14 @@ impl GameDirectories {
             }
         }).collect();
         let map_subdir_name: String = map_subdir_name?;
+        if map_subdir_name.is_empty() {
+            return Err(InvalidMapNameError::EmptyName);
+        }
         let map_file_name: String = if map_subdir_name.as_str().ends_with(format!(".{}", GameDirectories::MAP_FILE_SUFFIX).as_str()) {
             map_subdir_name.to_string()
         } else {
             format!("{}.{}", map_subdir_name, GameDirectories::MAP_FILE_SUFFIX).to_string()
         };
-        if map_file_name.is_empty() {
-            return Err(InvalidMapNameError::EmptyName);
-        }
         let map_folder: PathBuf = self.maps_dir.join(map_file_name);
         Ok(map_folder)
     }

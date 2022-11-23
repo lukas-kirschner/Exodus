@@ -1,6 +1,5 @@
 use std::fmt;
 use std::fmt::Formatter;
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use serde::{Serialize, Deserialize};
 use crate::directions::FromDirection;

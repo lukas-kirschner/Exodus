@@ -16,6 +16,7 @@ pub trait UIDialog {
             directories: &GameDirectories,
     );
     fn is_done(&self) -> bool;
+    fn is_cancelled(&self) -> bool;
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog>;
 }
 
@@ -24,6 +25,8 @@ enum SaveFileDialogState {
     CHOOSING,
     OVERWRITE,
     DONE,
+    ERROR,
+    CANCELLED,
 }
 
 pub struct SaveFileDialog {
@@ -36,6 +39,8 @@ pub struct SaveFileDialog {
     state: SaveFileDialogState,
     /// The finalized file path that is created as soon as the user presses the Save button
     file_path: Option<PathBuf>,
+    /// Error text that is shown when an error occurs
+    error_text: String,
 
 }
 
@@ -50,6 +55,7 @@ impl SaveFileDialog {
             world_to_save: world.clone(),
             state: SaveFileDialogState::CHOOSING,
             file_path: None,
+            error_text: "".to_string(),
         }
     }
     /// Resolve the file name and return the full path
@@ -92,8 +98,15 @@ impl UIDialog for SaveFileDialog {
                             println!("{:?}", map_dir);
                             if let Ok(path) = map_dir {
                                 self.file_path = Some(path);
+                                self.state = if self.file_path.as_ref().unwrap().exists() {
+                                    SaveFileDialogState::OVERWRITE
+                                } else {
+                                    SaveFileDialogState::DONE
+                                };
+                            } else {
+                                self.error_text = map_dir.unwrap_err().to_string();
+                                self.state = SaveFileDialogState::ERROR;
                             }
-                            self.state = SaveFileDialogState::DONE;
                         }
                     });
                 });
@@ -118,11 +131,51 @@ impl UIDialog for SaveFileDialog {
                     });
                 });
             });
+            ui.scope(|ui| {
+                ui.horizontal(|ui| {
+                    let res = ui.button("Cancel");
+                    if res.clicked() {
+                        self.state = SaveFileDialogState::CANCELLED;
+                    }
+                });
+            });
+            ui.add_visible_ui(self.state == SaveFileDialogState::ERROR || self.state == SaveFileDialogState::OVERWRITE, |ui| {
+                ui.scope(|ui| {
+                    ui.horizontal(|ui| {
+                        let etext = if self.state == SaveFileDialogState::ERROR {
+                            format!("Error: {}", self.error_text.as_str())
+                        } else {
+                            "Do you want to overwrite the map?".to_string()
+                        };
+                        ui.label(etext.as_str());
+                        if self.state == SaveFileDialogState::ERROR {
+                            let res = ui.button("Ok");
+                            if res.clicked() {
+                                self.state = SaveFileDialogState::CHOOSING;
+                            }
+                        } else {
+                            let res = ui.button("Yes");
+                            if res.clicked() {
+                                // We do not save the file here, but rely on the caller to save the file for us.
+                                self.state = SaveFileDialogState::DONE;
+                            }
+                            let res = ui.button("No");
+                            if res.clicked() {
+                                self.state = SaveFileDialogState::CHOOSING;
+                            }
+                        }
+                    });
+                });
+            });
         });
     }
 
     fn is_done(&self) -> bool {
         self.state == SaveFileDialogState::DONE
+    }
+
+    fn is_cancelled(&self) -> bool {
+        self.state == SaveFileDialogState::CANCELLED
     }
 
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog> {

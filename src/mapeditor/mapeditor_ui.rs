@@ -221,7 +221,6 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
                     egui_textures: Res<EguiButtonTextures>,
                     mut dialog: ResMut<MapEditorDialogResource>,
                     mut state: ResMut<State<AppState>>,
-                    mut commands: Commands,
                     mut worldwrapper: ResMut<MapWrapper>,
                     directories: Res<GameDirectoriesWrapper>,
 ) {
@@ -238,7 +237,12 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
             }
             worldwrapper.world.set_name(save_dialog.get_map_title());
             worldwrapper.world.set_author(save_dialog.get_map_author());
+            if worldwrapper.world.get_filename().is_some() {
+                worldwrapper.world.save_to_file(worldwrapper.world.get_filename().unwrap());
+            }
         }
+        state.set(AppState::MapEditor);
+    } else if dialog.ui_dialog.is_cancelled() {
         state.set(AppState::MapEditor);
     }
 }

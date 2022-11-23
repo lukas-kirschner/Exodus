@@ -23,6 +23,7 @@ impl GameWorld {
     pub fn save_to_file(&self, file: &Path) -> std::io::Result<()> {
         // TODO: Use a buffered writer to avoid having to copy over the entire file content to RAM
         fs::write(file, serde_json::to_string_pretty(self)?)?;
+        println!("Successfully saved map file {}", file.to_str().unwrap_or("<NONE>"));
         Ok(())
     }
 }
