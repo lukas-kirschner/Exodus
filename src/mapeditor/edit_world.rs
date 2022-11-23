@@ -102,7 +102,7 @@ fn mouse_down_handler(
     mut tile_entity_query: Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
     atlas: Res<CurrentMapTextureAtlasHandle>,
 ) {
-    let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
+    let (camera, camera_transform) = q_camera.get_single().expect("There were multiple cameras spawned");
     if buttons.pressed(MouseButton::Left) {
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {

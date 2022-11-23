@@ -31,3 +31,10 @@ pub fn init_player_spawn(
         })
         .insert(player);
 }
+
+pub fn destroy_player_spawn(
+    mut commands: Commands,
+    player_query: Query<Entity, With<PlayerSpawnComponent>>,
+) {
+    commands.entity(player_query.single()).despawn_recursive();
+}

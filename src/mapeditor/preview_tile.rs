@@ -21,11 +21,22 @@ impl Plugin for MapEditorPreviewTilePlugin {
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
                 .with_system(setup_preview_tile)
             )
+            .add_system_set(SystemSet::on_exit(AppState::MapEditor)
+                .with_system(destroy_preview_tile)
+            )
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
                 .with_system(update_preview_tile)
             )
         ;
     }
+}
+
+fn destroy_preview_tile(
+    mut commands: Commands,
+    mut preview_tile_q: Query<(&PreviewTile, Entity)>,
+) {
+    let (_, ent) = preview_tile_q.single();
+    commands.entity(ent).despawn();
 }
 
 /// Spawn a WALL PreviewTile at an invisible position

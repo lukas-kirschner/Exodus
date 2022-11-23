@@ -8,7 +8,7 @@ use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHan
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
-use crate::game::world::reset_world;
+use crate::game::world::{reset_world, WorldTile};
 
 pub struct PlayerPlugin;
 
@@ -62,8 +62,7 @@ pub fn despawn_dead_player(
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
     currentMapTextureHandle: Res<CurrentMapTextureAtlasHandle>,
-    coin_query: Query<Entity, With<CoinWrapper>>,
-    tiles_query: Query<Entity, With<TileWrapper>>,
+    tiles_query: Query<Entity, With<WorldTile>>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
@@ -73,7 +72,7 @@ pub fn despawn_dead_player(
             // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             scoreboard.reset();
-            reset_world(commands, worldwrapper, coin_query, tiles_query, currentMapTextureHandle);
+            reset_world(commands, worldwrapper, tiles_query, currentMapTextureHandle);
             return;
         }
         sprite.color.set_a(new_a);

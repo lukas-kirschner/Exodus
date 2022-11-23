@@ -14,7 +14,7 @@ use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHan
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
-use crate::mapeditor::player_spawn::{init_player_spawn, PlayerSpawnComponent};
+use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
 use crate::mapeditor::save_file_dialog::{SaveFileDialog, UIDialog};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
@@ -27,6 +27,9 @@ impl Plugin for MapEditorUiPlugin {
             .init_resource::<SelectedTile>()
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
                 .with_system(init_player_spawn).after("world").label("player_spawn_placeholder_init")
+            )
+            .add_system_set(SystemSet::on_exit(AppState::MapEditor)
+                .with_system(destroy_player_spawn)
             )
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
                 .with_system(atlas_to_egui_textures).after("player_spawn_placeholder_init")
