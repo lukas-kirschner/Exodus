@@ -10,9 +10,15 @@ use crate::world::GameWorld;
 impl GameWorld {
     /// Load a map from the given file.
     pub fn load_from_file(file: &Path) -> std::io::Result<Self> {
+        let filepath = file.to_str();
         let file = fs::File::open(file)?;
         let buf = BufReader::new(file);
-        let deserialized: Self = serde_json::from_reader(buf)?;
+        let mut deserialized: Self = serde_json::from_reader(buf)?;
+        if let Some(fname) = filepath {
+            deserialized.set_filename(fname);
+        } else {
+            deserialized.remove_filename();
+        }
         Ok(deserialized)
     }
     /// Save the map to the given file.

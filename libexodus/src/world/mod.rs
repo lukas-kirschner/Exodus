@@ -20,6 +20,8 @@ pub struct GameWorld {
     data: Vec<Vec<Tile>>,
     /// The coordinates of the player spawn
     playerspawn: (usize, usize),
+    /// The file name of this world, if any file name has been set
+    filename: Option<String>,
 }
 
 impl GameWorld {
@@ -32,6 +34,7 @@ impl GameWorld {
             name: "New World".to_string(),
             author: "".to_string(),
             uuid: Uuid::new_v4(), // Generate a new random UUID
+            filename: None,
         }
     }
     /// Set the UUID to the given value. If the given value is not a valid UUID, do not set anything.
@@ -46,6 +49,21 @@ impl GameWorld {
     /// Get the name of this world
     pub fn get_name(&self) -> &str {
         self.name.as_str()
+    }
+    /// Get the last set file name for this map, or None if it has been created new
+    pub fn get_filename(&self) -> Option<&str> {
+        match &self.filename {
+            None => None,
+            Some(filename) => Some(filename.as_str())
+        }
+    }
+    /// Set the last used file name of this map
+    pub fn set_filename(&mut self, new_filename: &str) {
+        self.filename = Some(new_filename.to_string());
+    }
+    /// Remove the file name of this map
+    pub fn remove_filename(&mut self) {
+        self.filename = None;
     }
     /// Set the name of this world
     pub fn set_name(&mut self, new_name: &str) -> &mut Self {

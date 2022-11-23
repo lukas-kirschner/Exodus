@@ -164,7 +164,13 @@ fn mapeditor_ui(
                         let sbutton = ui.button("S").on_hover_text("Save Map or Set Map Properties");
                         if sbutton.clicked() {
                             commands.insert_resource(MapEditorDialogResource {
-                                ui_dialog: Box::new(SaveFileDialog::new(&worldwrapper.world)),
+                                ui_dialog: Box::new(SaveFileDialog::new(
+                                    &worldwrapper.world,
+                                    worldwrapper.world.get_filename().unwrap_or(""),
+                                    worldwrapper.world.get_name(),
+                                    worldwrapper.world.get_author(),
+                                    worldwrapper.world.uuid().as_str(),
+                                )),
                             });
                             state.set(AppState::MapEditorDialog).expect("Could not open save dialog!");
                         }
@@ -216,6 +222,7 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
                     mut dialog: ResMut<MapEditorDialogResource>,
                     mut state: ResMut<State<AppState>>,
                     mut commands: Commands,
+                    mut worldwrapper: ResMut<MapWrapper>,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
@@ -224,6 +231,11 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
             dialog.ui_dialog.draw(ui, &*egui_textures);
         });
     if dialog.ui_dialog.is_done() {
+        if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {
+            worldwrapper.world.set_filename(save_dialog.get_filename());
+            worldwrapper.world.set_name(save_dialog.get_map_title());
+            worldwrapper.world.set_author(save_dialog.get_map_author());
+        }
         state.set(AppState::MapEditor);
     }
 }

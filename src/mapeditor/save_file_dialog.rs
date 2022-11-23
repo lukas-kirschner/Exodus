@@ -12,6 +12,7 @@ pub trait UIDialog {
             egui_textures: &EguiButtonTextures,
     );
     fn is_done(&self) -> bool;
+    fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog>;
 }
 
 #[derive(Eq, PartialEq)]
@@ -25,6 +26,7 @@ pub struct SaveFileDialog {
     file_name: String,
     map_title: String,
     map_author: String,
+    uuid: String,
     world_to_save: GameWorld,
     state: SaveFileDialogState,
 
@@ -32,14 +34,25 @@ pub struct SaveFileDialog {
 
 impl SaveFileDialog {
     /// Instantiate a new SaveFileDialog from the given world
-    pub fn new(world: &GameWorld) -> Self {
+    pub fn new(world: &GameWorld, filename: &str, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
         SaveFileDialog {
-            file_name: Default::default(),
-            map_title: Default::default(),
-            map_author: Default::default(),
+            file_name: String::from(filename),
+            map_title: String::from(mapname),
+            map_author: String::from(mapauthor),
+            uuid: String::from(uuid),
             world_to_save: world.clone(),
             state: SaveFileDialogState::CHOOSING,
         }
+    }
+
+    pub fn get_filename(&self) -> &str {
+        self.file_name.as_str()
+    }
+    pub fn get_map_title(&self) -> &str {
+        self.map_title.as_str()
+    }
+    pub fn get_map_author(&self) -> &str {
+        self.map_author.as_str()
     }
 }
 
@@ -65,7 +78,7 @@ impl UIDialog for SaveFileDialog {
                         });
                         let save = ui.button("Save");
                         if save.clicked() {
-                            //TODO
+                            //TODO Save map
                             self.state = SaveFileDialogState::DONE;
                         }
                     });
@@ -87,7 +100,7 @@ impl UIDialog for SaveFileDialog {
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.label("Map UUID:");
-                        ui.label("{TODO}");
+                        ui.label(self.uuid.as_str());
                     });
                 });
             });
@@ -96,5 +109,9 @@ impl UIDialog for SaveFileDialog {
 
     fn is_done(&self) -> bool {
         self.state == SaveFileDialogState::DONE
+    }
+
+    fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog> {
+        Some(self)
     }
 }
