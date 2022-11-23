@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use libexodus::tiles::Tile;
+use libexodus::world::GameWorld;
 use crate::AppState;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::WorldPlugin;
@@ -69,7 +70,15 @@ pub fn compute_cursor_position_in_world(
 
         // reduce it to a 2D value
         let world_pos: Vec2 = world_pos.truncate() + Vec2::new(0.5, 0.5);
-        return Some((world_pos.x as i32, world_pos.y as i32));
+        return if
+        world_pos.x < map.world.width() as f32 &&
+            world_pos.y < map.world.height() as f32 &&
+            world_pos.x >= 0. &&
+            world_pos.y >= 0. {
+            Some((world_pos.x as i32, world_pos.y as i32))
+        } else {
+            None
+        };
     }
     return None;
 }
