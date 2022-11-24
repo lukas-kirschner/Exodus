@@ -1,12 +1,8 @@
-use std::borrow::BorrowMut;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
-use bevy_egui::egui;
-use bevy_egui::egui::{Align, Ui};
+use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
-use libexodus::world::GameWorld;
-use crate::mapeditor::mapeditor_ui::EguiButtonTextures;
-use crate::{GameDirectoriesWrapper, World};
+use crate::egui_textures::EguiButtonTextures;
 
 pub trait UIDialog {
     fn dialog_title(&self) -> &str;
@@ -35,7 +31,6 @@ pub struct SaveFileDialog {
     map_title: String,
     map_author: String,
     uuid: String,
-    world_to_save: GameWorld,
     state: SaveFileDialogState,
     /// The finalized file path that is created as soon as the user presses the Save button
     file_path: Option<PathBuf>,
@@ -46,13 +41,12 @@ pub struct SaveFileDialog {
 
 impl SaveFileDialog {
     /// Instantiate a new SaveFileDialog from the given world
-    pub fn new(world: &GameWorld, filename: Option<&Path>, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
+    pub fn new(filename: Option<&Path>, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
         SaveFileDialog {
             file_name: String::from(filename.map(|p| { p.file_name().unwrap_or(OsStr::new("")) }).unwrap_or(OsStr::new("")).to_str().unwrap_or("")),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
             uuid: String::from(uuid),
-            world_to_save: world.clone(),
             state: SaveFileDialogState::CHOOSING,
             file_path: None,
             error_text: "".to_string(),
@@ -77,7 +71,7 @@ impl UIDialog for SaveFileDialog {
 
     fn draw(&mut self,
             ui: &mut Ui,
-            egui_textures: &EguiButtonTextures,
+            _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
             directories: &GameDirectories,
     ) {
         ui.vertical_centered_justified(|ui| {

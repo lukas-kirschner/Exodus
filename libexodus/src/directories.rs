@@ -46,7 +46,7 @@ impl Error for InvalidMapNameError {}
 
 /// A data type that includes all system paths and methods to query files and directories.
 pub struct GameDirectories {
-    base_dir: PathBuf,
+    _base_dir: PathBuf,
     pub maps_dir: PathBuf,
     pub config_dir: PathBuf,
 }
@@ -67,7 +67,7 @@ impl GameDirectories {
         let game_config_dir = game_base_dir.join("config");
         Ok(
             GameDirectories {
-                base_dir: PathBuf::from(game_base_dir),
+                _base_dir: PathBuf::from(game_base_dir),
                 maps_dir: PathBuf::from(game_maps_dir),
                 config_dir: PathBuf::from(game_config_dir),
             }

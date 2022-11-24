@@ -22,6 +22,8 @@ pub struct GameWorld {
     playerspawn: (usize, usize),
     /// The file name of this world, if any file name has been set
     filename: Option<PathBuf>,
+    /// If true, this map is clean, i.e., there are no changes that are unsaved
+    clean: bool,
 }
 
 impl GameWorld {
@@ -35,6 +37,7 @@ impl GameWorld {
             author: "".to_string(),
             uuid: Uuid::new_v4(), // Generate a new random UUID
             filename: None,
+            clean: true,
         }
     }
     /// Set the UUID to the given value. If the given value is not a valid UUID, do not set anything.
@@ -105,12 +108,12 @@ impl GameWorld {
     /// If the location is outside of the map boundaries, return None instead.
     ///
     /// ```rust
-    /// use libexodus::tiles;
+    /// use libexodus::tiles::Tile;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,tiles::spikes());
-    /// world.set(1,0,tiles::wall());
-    /// assert_eq!(&tiles::wall,world.get(1,0).unwrap());
+    /// world.set(1,1,Tile::SPIKES);
+    /// world.set(1,0,Tile::WALL);
+    /// assert_eq!(&Tile::WALL,world.get(1,0).unwrap());
     /// assert!(world.get(2,0).is_none());
     /// assert!(world.get(0,-1).is_none());
     /// ```
@@ -125,12 +128,12 @@ impl GameWorld {
     /// Fill the whole map with the given tile and delete everything else.
     ///
     /// ```rust
-    /// use libexodus::tiles;
+    /// use libexodus::tiles::Tile;
     /// use libexodus::world::GameWorld;
     /// let mut world = GameWorld::new(2,2);
-    /// world.set(1,1,tiles::spikes());
-    /// world.fill(&tiles::wall());
-    /// assert_eq!(&tiles::wall,world.get(1,1).unwrap());
+    /// world.set(1,1,Tile::SPIKES);
+    /// world.fill(&Tile::WALL);
+    /// assert_eq!(&Tile::WALL,world.get(1,1).unwrap());
     /// ```
     pub fn fill(&mut self, tile: &Tile) -> &mut Self {
         for i in 0..self.data.len() {
@@ -167,5 +170,45 @@ impl GameWorld {
 
     pub fn player_spawn(&self) -> (usize, usize) {
         self.playerspawn
+    }
+    /// Get the dirty state of this map, i.e. if the map has unsaved changes
+    /// ```rust
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(69,1337);
+    /// world.set_dirty();
+    /// assert!(world.is_dirty());
+    /// ```
+    ///
+    /// ```rust
+    /// use libexodus::world::GameWorld;
+    /// let world = GameWorld::new(69,1337);
+    /// assert!(!world.is_dirty());
+    /// ```
+    pub fn is_dirty(&self) -> bool {
+        !self.clean
+    }
+
+    /// Set the dirty state of this map to dirty, i.e. the map has unsaved changes
+    /// ```rust
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(69,1337);
+    /// world.set_dirty();
+    /// assert!(world.is_dirty());
+    /// ```
+    pub fn set_dirty(&mut self) -> &mut Self {
+        self.clean = false;
+        self
+    }
+    /// Set the dirty state of this map to clean, i.e. the map has no unsaved changes
+    /// ```rust
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(69,1337);
+    /// world.set_dirty();
+    /// world.set_clean();
+    /// assert!(!world.is_dirty());
+    /// ```
+    pub fn set_clean(&mut self) -> &mut Self {
+        self.clean = true;
+        self
     }
 }

@@ -108,6 +108,7 @@ fn mouse_down_handler(
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
                     replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &current_tile.tile, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
+                    map.world.set_dirty();
                 }
             }
         }
@@ -116,6 +117,7 @@ fn mouse_down_handler(
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
                     replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &Tile::AIR, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
+                    map.world.set_dirty();
                 }
             }
         }

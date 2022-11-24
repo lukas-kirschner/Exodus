@@ -1,21 +1,15 @@
-use std::borrow::{Borrow, BorrowMut};
-use std::collections::HashMap;
-use std::iter::Map;
-use std::rc::Rc;
-use std::sync::Arc;
+use std::borrow::Borrow;
 use bevy::prelude::*;
-use bevy::render::camera::RenderTarget;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{TextureId, Ui, Widget};
-use libexodus::tiles::{AtlasIndex, Tile};
-use strum::{IntoEnumIterator};
-use libexodus::player::Player;
-use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, GameDirectoriesWrapper};
+use bevy_egui::egui::Ui;
+use libexodus::tiles::{Tile};
+use crate::{AppState, GameDirectoriesWrapper};
+use crate::dialogs::save_file_dialog::{SaveFileDialog, UIDialog};
+use crate::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
-use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::mapeditor::{SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
-use crate::mapeditor::save_file_dialog::{SaveFileDialog, UIDialog};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
 
 
@@ -44,76 +38,15 @@ impl Plugin for MapEditorUiPlugin {
     }
 }
 
-
-pub struct EguiButtonTextures {
-    textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
-    player_textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
-}
-
-impl FromWorld for EguiButtonTextures {
-    fn from_world(_: &mut World) -> Self {
-        EguiButtonTextures {
-            textures: HashMap::new(),
-            player_textures: HashMap::new(),
-        }
-    }
-}
-
 struct MapEditorDialogResource {
     ui_dialog: Box<dyn UIDialog + Send + Sync>,
-}
-
-fn convert(
-    texture_atlas: &TextureAtlas,
-    texture_handle: &Handle<Image>,
-    egui_ctx: &mut ResMut<EguiContext>,
-    atlas_index: &AtlasIndex,
-) -> (TextureId, egui::Vec2, egui::Rect) {
-    let rect: bevy::sprite::Rect = texture_atlas.textures[*atlas_index];
-    let uv: egui::Rect = egui::Rect::from_min_max(
-        egui::pos2(rect.min.x / texture_atlas.size.x, rect.min.y / texture_atlas.size.y),
-        egui::pos2(rect.max.x / texture_atlas.size.x, rect.max.y / texture_atlas.size.y),
-    );
-    let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
-    // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
-    let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
-    (tex, rect_vec2, uv)
-    // TODO if the button size is smaller than the texture size, Egui textures need to be resized here
-}
-
-/// Convert Bevy Textures to Egui Textures to show those on the buttons
-fn atlas_to_egui_textures(
-    texture_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
-    player_atlas_handle: Res<CurrentPlayerTextureAtlasHandle>,
-    mut commands: Commands,
-    texture_atlases: Res<Assets<TextureAtlas>>,
-    mut egui_ctx: ResMut<EguiContext>,
-) {
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.handle).expect("The texture atlas of the tile set has not yet been loaded!");
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
-    let mut textures = HashMap::new();
-    for tile in Tile::iter() {
-        if let Some(atlas_index) = tile.atlas_index() {
-            textures.insert(atlas_index, convert(texture_atlas, texture_handle, &mut egui_ctx, &atlas_index));
-        }
-    }
-    let mut textures_p = HashMap::new();
-    // The Player Spawn needs a special texture, since it comes from a different atlas:
-    let player = Player::new(); // TODO The Query is not working in this stage, unfortunately
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&player_atlas_handle.handle).expect("The texture atlas of the player set has not yet been loaded!");
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
-    textures_p.insert(player.atlas_index(), convert(texture_atlas, texture_handle, &mut egui_ctx, &player.atlas_index()));
-    commands.insert_resource(EguiButtonTextures {
-        textures,
-        player_textures: textures_p,
-    });
 }
 
 fn tile_kind_selector_button_for(
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
     tile: &Tile,
-    mut selected_tile: &mut ResMut<SelectedTile>,
+    selected_tile: &mut ResMut<SelectedTile>,
     player: &PlayerSpawnComponent,
 ) {
     ui.add_enabled_ui(selected_tile.tile != *tile, |ui| {
@@ -148,7 +81,7 @@ fn mapeditor_ui(
     egui_textures: Res<EguiButtonTextures>,
     player: Query<&PlayerSpawnComponent>,
     mut state: ResMut<State<AppState>>,
-    mut worldwrapper: ResMut<MapWrapper>,
+    worldwrapper: ResMut<MapWrapper>,
 ) {
     let player_it = player.iter().next().expect("There was no Player Spawn set up");
     egui::TopBottomPanel::top("")
@@ -165,7 +98,6 @@ fn mapeditor_ui(
                         if sbutton.clicked() {
                             commands.insert_resource(MapEditorDialogResource {
                                 ui_dialog: Box::new(SaveFileDialog::new(
-                                    &worldwrapper.world,
                                     worldwrapper.world.get_filename(),
                                     worldwrapper.world.get_name(),
                                     worldwrapper.world.get_author(),
@@ -238,7 +170,18 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
             worldwrapper.world.set_name(save_dialog.get_map_title());
             worldwrapper.world.set_author(save_dialog.get_map_author());
             if worldwrapper.world.get_filename().is_some() {
-                worldwrapper.world.save_to_file(worldwrapper.world.get_filename().unwrap());
+                let result = worldwrapper.world.save_to_file(worldwrapper.world.get_filename().unwrap());
+                match result {
+                    Ok(_) => {
+                        // Mark map as clean, i.e. there are no unsaved changes
+                        worldwrapper.world.set_clean();
+                    }
+                    Err(v) => {
+                        eprintln!("Could not save map file {} - {}", worldwrapper.world.get_filename().unwrap().to_str().unwrap_or("<invalid>"), v.to_string());
+                        // Mark map as dirty, because saving the map was not successful
+                        worldwrapper.world.set_dirty();
+                    }
+                }
             }
         }
         state.set(AppState::MapEditor);

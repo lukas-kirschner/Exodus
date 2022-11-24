@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, MapEditorPlugin, TEXTURE_SIZE};
-use crate::CursorIcon::Default;
+use crate::{App, AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE};
 use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -10,7 +9,6 @@ use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 #[derive(Component)]
 pub struct PreviewTile {
     current_tile: Tile,
-    visible: bool,
 }
 
 pub struct MapEditorPreviewTilePlugin;
@@ -33,7 +31,7 @@ impl Plugin for MapEditorPreviewTilePlugin {
 
 fn destroy_preview_tile(
     mut commands: Commands,
-    mut preview_tile_q: Query<(&PreviewTile, Entity)>,
+    preview_tile_q: Query<(&PreviewTile, Entity)>,
 ) {
     let (_, ent) = preview_tile_q.single();
     commands.entity(ent).despawn();
@@ -44,7 +42,7 @@ pub fn setup_preview_tile(
     mut commands: Commands,
     current_texture_atlas: Res<CurrentMapTextureAtlasHandle>,
 ) {
-    let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL, visible: false };
+    let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
     commands
         .spawn_bundle(SpriteSheetBundle {
             sprite: TextureAtlasSprite {

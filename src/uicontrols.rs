@@ -1,10 +1,9 @@
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{Align, FontDefinitions, FontFamily, FontId};
-use bevy_egui::egui::FontFamily::{Monospace, Proportional};
+use bevy_egui::egui::{Align, FontId};
+use bevy_egui::egui::FontFamily::Proportional;
 use crate::AppState;
-use crate::game::constants::MENU_BORDER_WIDTH;
 
 /// The height of the Navbar
 pub const NAVBAR_HEIGHT: f32 = 32.0;
@@ -85,8 +84,8 @@ pub fn egui_fonts(ctx: &egui::Context) -> () {
 }
 
 pub fn add_navbar(
-    mut egui_ctx: &mut ResMut<EguiContext>,
-    mut state: &mut ResMut<State<AppState>>,
+    egui_ctx: &mut ResMut<EguiContext>,
+    state: &mut ResMut<State<AppState>>,
 ) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
         ui.set_height(NAVBAR_HEIGHT);

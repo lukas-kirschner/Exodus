@@ -1,8 +1,7 @@
-use std::borrow::BorrowMut;
 use std::fs;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
-use bevy::render::texture::{ImagePlugin, ImageSettings};
+use bevy::render::texture::ImageSettings;
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
@@ -22,6 +21,8 @@ mod uicontrols;
 mod mapselectionscreen;
 mod mapeditor;
 mod util;
+mod dialogs;
+mod egui_textures;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
