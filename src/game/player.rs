@@ -7,7 +7,7 @@ use libexodus::tiles::TileKind;
 use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
-use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
+use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{reset_world, WorldTile};
 
 pub struct PlayerPlugin;
@@ -61,7 +61,7 @@ pub fn despawn_dead_player(
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
-    currentMapTextureHandle: Res<CurrentMapTextureAtlasHandle>,
+    current_map_texture_handle: Res<CurrentMapTextureAtlasHandle>,
     tiles_query: Query<Entity, With<WorldTile>>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
@@ -72,7 +72,7 @@ pub fn despawn_dead_player(
             // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             scoreboard.reset();
-            reset_world(commands, worldwrapper, tiles_query, currentMapTextureHandle);
+            reset_world(commands, worldwrapper, tiles_query, current_map_texture_handle);
             return;
         }
         sprite.color.set_a(new_a);

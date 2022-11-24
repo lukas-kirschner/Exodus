@@ -1,11 +1,6 @@
-use std::borrow::BorrowMut;
-use std::thread::current;
 use bevy::prelude::*;
-use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, MapEditorPlugin, TEXTURE_SIZE};
-use crate::CursorIcon::Default;
-use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
+use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -43,7 +38,7 @@ fn delete_tile_at(
 /// Update the first tile with the given tile in the view.
 fn update_texture_at(
     pos: &Vec2,
-    mut tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
+    tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
     new_tile: &Tile,
 ) {
     if let Some(new_atlas_index) = new_tile.atlas_index() {
@@ -64,7 +59,7 @@ fn replace_world_tile_at(
     new_tile: &Tile,
     mut commands: &mut Commands,
     map: &mut MapWrapper,
-    mut tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
+    tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
     atlas: &CurrentMapTextureAtlasHandle,
 ) {
     if let Some(current_world_tile) = map.world.get(pos.x as i32, pos.y as i32) {
@@ -127,10 +122,10 @@ fn mouse_down_handler(
 fn mouse_down_handler_playerspawn(
     wnds: Res<Windows>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut map: ResMut<MapWrapper>,
+    map: ResMut<MapWrapper>,
     buttons: Res<Input<MouseButton>>,
     current_tile: Res<SelectedTile>,
-    mut player_spawn_query: Query<(&mut Transform), With<PlayerSpawnComponent>>,
+    mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
 ) {
     if current_tile.tile == Tile::PLAYERSPAWN {
         let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera

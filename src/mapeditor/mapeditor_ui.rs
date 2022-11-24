@@ -4,13 +4,15 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Ui;
 use libexodus::tiles::{Tile};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::dialogs::save_file_dialog::{SaveFileDialog, UIDialog};
+use crate::dialogs::save_file_dialog::SaveFileDialog;
+use crate::dialogs::UIDialog;
+use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
-use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT};
+use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT, NAVBAR_BACK_TEXT};
 
 
 pub struct MapEditorUiPlugin;
@@ -89,6 +91,26 @@ fn mapeditor_ui(
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
+                // Exit Button
+                ui.scope(|ui| {
+                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                    ui.centered_and_justified(|ui| {
+                        let xbutton = ui.button(NAVBAR_BACK_TEXT).on_hover_text("Exit and return to Map Selection Screen");
+                        if xbutton.clicked() {
+                            if worldwrapper.world.is_dirty() {
+                                commands.insert_resource(MapEditorDialogResource {
+                                    ui_dialog: Box::new(UnsavedChangesDialog::new(
+                                        "The current map has unsaved changes! Do you really want to quit and discard the changes?"
+                                    )),
+                                });
+                                state.set(AppState::MapEditorDialog).expect("Could not change state to overwrite dialog!");
+                            } else {
+                                state.set(AppState::MapSelectionScreen).expect("Could not change state back to map selection screen!");
+                            }
+                        }
+                    });
+                });
                 // Save Button
                 ui.scope(|ui| {
                     ui.set_height(MAPEDITOR_BUTTON_SIZE);
@@ -104,7 +126,7 @@ fn mapeditor_ui(
                                     worldwrapper.world.uuid().as_str(),
                                 )),
                             });
-                            state.set(AppState::MapEditorDialog).expect("Could not open save dialog!");
+                            state.set(AppState::MapEditorDialog).expect("Could not change state to save dialog!");
                         }
                     });
                 });
@@ -183,9 +205,11 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
                     }
                 }
             }
+            state.set(AppState::MapEditor).expect("Could not close dialog");
+        } else if let Some(_) = dialog.ui_dialog.as_unsaved_changes_dialog() {
+            state.set(AppState::MapSelectionScreen).expect("Could not exit Map Editor");
         }
-        state.set(AppState::MapEditor);
     } else if dialog.ui_dialog.is_cancelled() {
-        state.set(AppState::MapEditor);
+        state.set(AppState::MapEditor).expect("Could not cancel dialog");
     }
 }

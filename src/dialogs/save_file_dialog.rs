@@ -2,19 +2,9 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
+use crate::dialogs::UIDialog;
+use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::egui_textures::EguiButtonTextures;
-
-pub trait UIDialog {
-    fn dialog_title(&self) -> &str;
-    fn draw(&mut self,
-            ui: &mut Ui,
-            egui_textures: &EguiButtonTextures,
-            directories: &GameDirectories,
-    );
-    fn is_done(&self) -> bool;
-    fn is_cancelled(&self) -> bool;
-    fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog>;
-}
 
 #[derive(Eq, PartialEq)]
 enum SaveFileDialogState {
@@ -26,11 +16,15 @@ enum SaveFileDialogState {
 }
 
 pub struct SaveFileDialog {
-    /// The file name that is shown to the user
+    /// The file name to be saved
     file_name: String,
+    /// The name of the map
     map_title: String,
+    /// The name of the map author
     map_author: String,
+    /// The UUID of the map that is shown to the user
     uuid: String,
+    /// The current state of the dialog
     state: SaveFileDialogState,
     /// The finalized file path that is created as soon as the user presses the Save button
     file_path: Option<PathBuf>,
@@ -174,5 +168,9 @@ impl UIDialog for SaveFileDialog {
 
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog> {
         Some(self)
+    }
+
+    fn as_unsaved_changes_dialog(&mut self) -> Option<&mut UnsavedChangesDialog> {
+        None
     }
 }

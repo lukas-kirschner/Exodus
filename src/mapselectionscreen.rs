@@ -1,11 +1,9 @@
-use std::borrow::BorrowMut;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Align;
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::game::scoreboard::Scoreboard;
-use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, egui_fonts, menu_esc_control, NAVBAR_BACK_TEXT, NAVBAR_HEIGHT, PLAY_TEXT};
+use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, menu_esc_control, NAVBAR_HEIGHT, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
 struct Maps {
@@ -33,8 +31,9 @@ fn load_maps(
         .for_each(|map_file| {
             if let Ok(map) = GameWorld::load_from_file(map_file.path())
                 .map_err(|err| eprintln!("Could not load map file at {}! Error: {}", map_file.path().to_str().unwrap_or("<Invalid Path>"), err))
-                .map(|map| {
+                .map(|mut map| {
                     println!("Successfully loaded map file {}", map_file.path().to_str().unwrap_or("<Invalid Path>"));
+                    map.set_clean();
                     map
                 }) {
                 maps.maps.push(MapWrapper {
@@ -75,7 +74,6 @@ impl FromWorld for MapSelectionScreenAction {
 fn map_selection_screen_execute_event_queue(
     mut commands: Commands,
     action: Res<MapSelectionScreenAction>,
-    directories: Res<GameDirectoriesWrapper>,
     mut maps: ResMut<Maps>,
     mut state: ResMut<State<AppState>>,
 ) {
@@ -130,7 +128,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(NAVBAR_HEIGHT);
                                             ui.set_width(NAVBAR_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let play_btn = ui.button(PLAY_TEXT);
+                                                let play_btn = ui.button(PLAY_TEXT).on_hover_text("Play Map");
                                                 if play_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::PLAY { map_index: i });
                                                 }
@@ -140,7 +138,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(NAVBAR_HEIGHT);
                                             ui.set_width(NAVBAR_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let edit_btn = ui.button(EDIT_TEXT);
+                                                let edit_btn = ui.button(EDIT_TEXT).on_hover_text("Edit Map");
                                                 if edit_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::EDIT { map_index: i });
                                                 }
@@ -150,7 +148,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(NAVBAR_HEIGHT);
                                             ui.set_width(NAVBAR_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let delete_btn = ui.button(DELETE_TEXT);
+                                                let delete_btn = ui.button(DELETE_TEXT).on_hover_text("Delete Map");
                                                 if delete_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::DELETE { map_index: i });
                                                 }

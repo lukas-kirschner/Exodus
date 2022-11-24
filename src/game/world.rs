@@ -2,7 +2,6 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use bevy::render::camera::{DepthCalculation, ScalingMode};
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::camera::{destroy_camera, setup_camera};
 use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};

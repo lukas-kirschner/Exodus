@@ -16,14 +16,14 @@ pub fn rescale_camera(
     // we leave at least one world tile of space free for UI elements, which we also scale
     // exactly to the height of one tile.
     let (left, top, right, bottom) = ui_margins;
-    let map_width_pixels: usize = TEXTURE_SIZE * map.world.width();
+    let map_width_pixels_plus_ui: usize = TEXTURE_SIZE * map.world.width() + left + right;
     let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height()) + top + bottom; // 2 tiles for UI elements
     let window_height_pixels: usize = window.height as usize;
     let window_width_pixels: usize = window.width as usize;
     let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
-    let map_ratio: f32 = map_width_pixels as f32 / map_height_pixels_plus_ui as f32;
+    let map_ratio: f32 = map_width_pixels_plus_ui as f32 / map_height_pixels_plus_ui as f32;
     let camera_scale = if window_ratio < map_ratio {
-        window_width_pixels as f32 / map_width_pixels as f32
+        window_width_pixels as f32 / map_width_pixels_plus_ui as f32
     } else {
         window_height_pixels as f32 / map_height_pixels_plus_ui as f32
     };

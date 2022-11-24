@@ -64,8 +64,8 @@ fn mainmenu_buttons(
 /// Main Menu main routine
 fn mainmenu_ui(
     mut egui_ctx: ResMut<EguiContext>,
-    mut state: ResMut<State<AppState>>,
-    mut exit: EventWriter<AppExit>,
+    state: ResMut<State<AppState>>,
+    exit: EventWriter<AppExit>,
 ) {
     egui::CentralPanel::default()
         .frame(Frame::none())
