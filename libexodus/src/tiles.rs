@@ -29,6 +29,9 @@ pub enum TileKind {
     /// A collectible key
     KEY,
     ///
+    /// A collectible that does not change any counter when collected
+    COLLECTIBLE,
+    ///
     /// A door that can be opened (removed) using a key
     DOOR,
     ///
@@ -83,6 +86,14 @@ pub enum Tile {
     WALLSPIKESRTB,
     /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
     WALLSPIKESLTB,
+    /// An arrow that points to the right
+    ARROWRIGHT,
+    /// An arrow that points to the left
+    ARROWLEFT,
+    /// An arrow that points up
+    ARROWUP,
+    /// An arrow that points down
+    ARROWDOWN,
 }
 
 impl Tile {
@@ -110,6 +121,10 @@ impl Tile {
             Tile::DOOR => TileKind::DOOR,
             Tile::KEY => TileKind::KEY,
             Tile::OPENDOOR => TileKind::AIR,
+            Tile::ARROWRIGHT => TileKind::COLLECTIBLE,
+            Tile::ARROWLEFT => TileKind::COLLECTIBLE,
+            Tile::ARROWUP => TileKind::COLLECTIBLE,
+            Tile::ARROWDOWN => TileKind::COLLECTIBLE,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -134,7 +149,11 @@ impl Tile {
             Tile::WALLSPIKESRTB => Some(239),
             Tile::DOOR => Some(103),
             Tile::KEY => Some(201),
-            Tile::OPENDOOR => { Some(247) }
+            Tile::OPENDOOR => Some(247),
+            Tile::ARROWRIGHT => Some(35),
+            Tile::ARROWLEFT => Some(36),
+            Tile::ARROWUP => Some(37),
+            Tile::ARROWDOWN => Some(34),
         };
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -148,6 +167,7 @@ impl Tile {
             TileKind::LADDER => { false }
             TileKind::KEY => { false }
             TileKind::DOOR => { true }
+            TileKind::COLLECTIBLE => { false }
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
@@ -161,6 +181,7 @@ impl Tile {
             TileKind::LADDER => { false }
             TileKind::KEY => { false }
             TileKind::DOOR => { false }
+            TileKind::COLLECTIBLE => { false }
         }
     }
 }
@@ -189,6 +210,10 @@ impl fmt::Display for Tile {
             Tile::DOOR => "Door",
             Tile::OPENDOOR => "Open Door",
             Tile::KEY => "Key",
+            Tile::ARROWRIGHT => "Arrow Right",
+            Tile::ARROWLEFT => "Arrow Left",
+            Tile::ARROWUP => "Arrow Up",
+            Tile::ARROWDOWN => "Arrow Down",
         })
     }
 }
