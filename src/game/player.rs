@@ -224,7 +224,7 @@ pub fn player_movement(
                         TileKind::LADDER => {
                             // On a ladder, the movement queue is cleared after every step!
                             // This way, the player is unable to jump on a double ladder and ascends instead of jumping.
-                            // This case is handled redundantly below in the gravity handler, but we include it here anyways
+                            // For players with empty movement queues, this case is handled below as well.
                             player.clear_movement_queue();
                         }
                         TileKind::KEY => {}
@@ -249,6 +249,11 @@ pub fn player_movement(
             if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32) {
                 if let TileKind::LADDER = block.kind() {
                     player.clear_movement_queue(); // We don't want any gravity pulling the player off a ladder
+                }
+            }
+            if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32 - 1) {
+                if let TileKind::LADDER = block.kind() {
+                    player.clear_movement_queue(); // Players shall be able to stand on ladders
                 }
             }
         }
@@ -289,6 +294,7 @@ pub fn keyboard_controls(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &Transform)>,
     mut scoreboard: ResMut<Scoreboard>,
+    map: Res<MapWrapper>,
 ) {
     for (mut _player, mut sprite, transform) in players.iter_mut() {
         let player: &mut Player = &mut _player.player;
@@ -307,22 +313,26 @@ pub fn keyboard_controls(
                         is_manual: true,
                     });
                 } else if keyboard_input.just_pressed(KeyCode::Up) {
-                    // Jump 3 high
+                    let tile = map.world.get(cur_x, cur_y).unwrap();
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
                         target: (cur_x, cur_y + 1),
                         is_manual: true,
                     });
-                    player.push_movement_queue(Movement {
-                        velocity: (0., vy),
-                        target: (cur_x, cur_y + 2),
-                        is_manual: true,
-                    });
-                    player.push_movement_queue(Movement {
-                        velocity: (0., vy),
-                        target: (cur_x, cur_y + 3),
-                        is_manual: true,
-                    });
+                    // We need to differentiate between ladder and NOT ladder here, this allows us to jump only 1 high on the end of a ladder
+                    if tile.kind() != TileKind::LADDER {
+                        // Jump 3 high.
+                        player.push_movement_queue(Movement {
+                            velocity: (0., vy),
+                            target: (cur_x, cur_y + 2),
+                            is_manual: true,
+                        });
+                        player.push_movement_queue(Movement {
+                            velocity: (0., vy),
+                            target: (cur_x, cur_y + 3),
+                            is_manual: true,
+                        });
+                    }
                 } else if keyboard_input.just_pressed(KeyCode::Right) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
