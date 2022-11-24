@@ -100,6 +100,8 @@ impl GameWorld {
             }
             TileKind::COIN => {}
             TileKind::LADDER => {}
+            TileKind::KEY => {}
+            TileKind::DOOR => {}
         }
         self
     }
@@ -210,5 +212,28 @@ impl GameWorld {
     pub fn set_clean(&mut self) -> &mut Self {
         self.clean = true;
         self
+    }
+    /// Reset the game state.
+    /// This will close opened doors.
+    ///
+    /// ```rust
+    /// use libexodus::tiles::Tile;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(2,1);
+    /// world.set(1,0,Tile::OPENDOOR);
+    /// world.reset_game_state();
+    /// assert_eq!(Tile::DOOR,*world.get(1,0).unwrap())
+    /// ```
+    pub fn reset_game_state(&mut self) {
+        for x in 0..self.width() {
+            for y in 0..self.height() {
+                match self.get(x as i32, y as i32).unwrap() {
+                    Tile::OPENDOOR => {
+                        self.set(x, y, Tile::DOOR);
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
 }

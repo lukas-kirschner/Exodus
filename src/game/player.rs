@@ -3,12 +3,13 @@ use libexodus::directions::{FromDirection};
 use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::TileKind;
+use libexodus::tiles::{Tile, TileKind};
+use libexodus::world::GameWorld;
 use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::{reset_world, WorldTile};
+use crate::game::world::{DoorWrapper, reset_world, WorldTile};
 
 pub struct PlayerPlugin;
 
@@ -81,10 +82,41 @@ pub fn despawn_dead_player(
     }
 }
 
+/// Open the door at the new player position and return true if the door has been opened.
+/// Fail, if the player does not have enough keys
+fn door_opened(
+    doors: &mut Query<(Entity, &Transform, &mut TextureAtlasSprite), With<DoorWrapper>>,
+    commands: &mut Commands,
+    target_x: i32,
+    target_y: i32,
+    world: &mut GameWorld,
+    scoreboard: &mut Scoreboard,
+) -> bool {
+    if !world.get(target_x, target_y).map(|t| { t.kind() == TileKind::DOOR }).unwrap_or(false) {
+        return false;
+    }
+    if scoreboard.keys > 0 {
+        for (entity, transform, mut texture_atlas_sprite) in doors.iter_mut() {
+            if transform.translation.x == target_x as f32 && transform.translation.y == target_y as f32 {
+                // Found the door. Despawn it and change its texture to an open door
+                commands.entity(entity).remove::<DoorWrapper>();
+                world.set(target_x as usize, target_y as usize, Tile::OPENDOOR);
+                texture_atlas_sprite.index = Tile::OPENDOOR.atlas_index().unwrap();
+                scoreboard.keys -= 1;
+                return true;
+            }
+        }
+        panic!("There was no DoorWrapper spawned for the door at {},{}", target_x, target_y);
+    }
+    return false;
+}
+
 pub fn player_movement(
     mut commands: Commands,
-    mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, Entity, &mut Transform, &Handle<TextureAtlas>)>,
-    worldwrapper: Res<MapWrapper>,
+    mut scoreboard: ResMut<Scoreboard>,
+    mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, Entity, &mut Transform, &Handle<TextureAtlas>), Without<DoorWrapper>>,
+    mut doors: Query<(Entity, &Transform, &mut TextureAtlasSprite), With<DoorWrapper>>,
+    mut worldwrapper: ResMut<MapWrapper>,
     time: Res<Time>,
 ) {
     for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
@@ -99,8 +131,12 @@ pub fn player_movement(
             if let Some(block) = worldwrapper.world.get(target_x, target_y) {
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
-                    println!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
-                    player.pop_movement_queue(); // On collision, clear the latest movement
+                    if !door_opened(&mut doors, &mut commands, target_x, target_y, &mut worldwrapper.world, &mut *scoreboard) {
+                        println!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
+                        player.pop_movement_queue(); // On collision, clear the latest movement
+                    } else {
+                        break;
+                    }
                 } else {
                     break;
                 }
@@ -152,7 +188,7 @@ pub fn player_movement(
                 }
             }
             if transform.translation.x == target_x && transform.translation.y == target_y {
-                // Check for deadly collision and kill the player, if one has occurred
+                // Check for events that occur when the player is already on the same tile as the block
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
                     match block.kind() { // Handle special collision events here
                         TileKind::AIR => {}
@@ -185,6 +221,8 @@ pub fn player_movement(
                             // This case is handled redundantly below in the gravity handler, but we include it here anyways
                             player.clear_movement_queue();
                         }
+                        TileKind::KEY => {}
+                        TileKind::DOOR => {}
                     }
                 }
                 player.pop_movement_queue();

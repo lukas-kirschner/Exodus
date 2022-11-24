@@ -26,6 +26,12 @@ pub enum TileKind {
     /// A collectible coin
     COIN,
     ///
+    /// A collectible key
+    KEY,
+    ///
+    /// A door that can be opened (removed) using a key
+    DOOR,
+    ///
     /// A ladder
     LADDER,
 }
@@ -41,8 +47,14 @@ pub enum Tile {
     WALL,
     /// The position where the player spawns
     PLAYERSPAWN,
+    /// A door that can be opened with a key
+    DOOR,
+    /// A opened door
+    OPENDOOR,
     /// A collectible coin
     COIN,
+    /// A collectible key
+    KEY,
     /// A ladder
     LADDER,
     /// Spikes that sit on the ground and point up
@@ -95,6 +107,9 @@ impl Tile {
             Tile::WALLSPIKESRLTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
             Tile::WALLSPIKESRTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST] },
             Tile::WALLSPIKESLTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMWEST] },
+            Tile::DOOR => TileKind::DOOR,
+            Tile::KEY => TileKind::KEY,
+            Tile::OPENDOOR => TileKind::AIR,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -117,6 +132,9 @@ impl Tile {
             Tile::WALLSPIKESRLTB => Some(254),
             Tile::WALLSPIKESLTB => Some(237),
             Tile::WALLSPIKESRTB => Some(239),
+            Tile::DOOR => Some(103),
+            Tile::KEY => Some(201),
+            Tile::OPENDOOR => { Some(247) }
         };
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -128,6 +146,8 @@ impl Tile {
             TileKind::PLAYERSPAWN => { false }
             TileKind::COIN => { false }
             TileKind::LADDER => { false }
+            TileKind::KEY => { false }
+            TileKind::DOOR => { true }
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
@@ -139,6 +159,8 @@ impl Tile {
             TileKind::PLAYERSPAWN => { false }
             TileKind::COIN => { false }
             TileKind::LADDER => { false }
+            TileKind::KEY => { false }
+            TileKind::DOOR => { false }
         }
     }
 }
@@ -164,6 +186,9 @@ impl fmt::Display for Tile {
             Tile::WALLSPIKESRLTB => "LTB Wall Spikes",
             Tile::WALLSPIKESRTB => "RTB Wall Spikes",
             Tile::WALLSPIKESLTB => "LTB Wall Spikes",
+            Tile::DOOR => "Door",
+            Tile::OPENDOOR => "Open Door",
+            Tile::KEY => "Key",
         })
     }
 }

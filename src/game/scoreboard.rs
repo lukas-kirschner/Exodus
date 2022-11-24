@@ -4,8 +4,8 @@ use crate::World;
 #[derive(Resource)]
 pub struct Scoreboard {
     pub coins: i32,
-    // This might be changed to a HashMap later to support multiplayer
-    pub moves: usize, // see above
+    pub moves: usize,
+    pub keys: usize,
 }
 
 impl FromWorld for Scoreboard {
@@ -13,6 +13,7 @@ impl FromWorld for Scoreboard {
         Scoreboard {
             coins: 0,
             moves: 0,
+            keys: 0,
         }
     }
 }
@@ -21,5 +22,6 @@ impl Scoreboard {
     pub fn reset(&mut self) {
         self.coins = 0;
         self.moves = 0;
+        self.keys = 0;
     }
 }

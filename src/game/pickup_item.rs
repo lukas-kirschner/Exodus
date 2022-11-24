@@ -1,6 +1,8 @@
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
+use libexodus::tiles::{Tile, TileKind};
 use crate::AppState;
-use crate::game::constants::{COIN_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED, PICKUP_ITEM_ZOOM_SPEED};
+use crate::game::constants::{COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED, PICKUP_ITEM_ZOOM_SPEED};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
@@ -37,6 +39,9 @@ impl Plugin for PickupItemPlugin {
                 .with_system(coin_collision).after("player_movement")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(key_collision).after("player_movement")
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(pickup_item_animation).after("player_movement")
             )
         ;
@@ -45,9 +50,33 @@ impl Plugin for PickupItemPlugin {
 
 /// A wrapper for coins
 #[derive(Component)]
-pub struct CoinWrapper<> {
+pub struct CoinWrapper {
     /// The value of this coin, i.e. the score a player gets for collecting the coin
     pub coin_value: i32,
+}
+
+/// A wrapper for keys
+#[derive(Component)]
+pub struct KeyWrapper;
+
+fn collectible_collision<T: bevy::prelude::Component, F: FnMut(&T) -> ()>(
+    commands: &mut Commands,
+    query: &mut Query<(Entity, &Transform, &mut T)>,
+    players: &Query<(&PlayerComponent, &Transform)>,
+    mut increment_function: F,
+) {
+    for (_player, player_trans) in players.iter() {
+        let player_pos: Vec3 = player_trans.translation;
+        for (coin_entity, coin_trans, coin) in query.iter_mut() {
+            let coin_pos: Vec3 = coin_trans.translation;
+            let dist = dist_2d(&player_pos, &coin_pos);
+            if dist <= COLLECTIBLE_PICKUP_DISTANCE {
+                // The player picks up the collectible
+                increment_function(&*coin);
+                commands.entity(coin_entity).remove::<T>().insert(PickupItem);
+            }
+        }
+    }
 }
 
 pub fn coin_collision(
@@ -56,16 +85,29 @@ pub fn coin_collision(
     players: Query<(&PlayerComponent, &Transform)>,
     mut scoreboard: ResMut<Scoreboard>,
 ) {
-    for (_player, player_trans) in players.iter() {
-        let player_pos: Vec3 = player_trans.translation;
-        for (coin_entity, coin_trans, coin) in coin_query.iter_mut() {
-            let coin_pos: Vec3 = coin_trans.translation;
-            let dist = dist_2d(&player_pos, &coin_pos);
-            if dist <= COIN_PICKUP_DISTANCE {
-                // The player picks up the coin
-                scoreboard.coins += coin.coin_value;
-                commands.entity(coin_entity).remove::<CoinWrapper>().insert(PickupItem);
-            }
+    collectible_collision(&mut commands, &mut coin_query, &players, |coin: &CoinWrapper| { scoreboard.coins += coin.coin_value });
+}
+
+pub fn key_collision(
+    mut commands: Commands,
+    mut key_query: Query<(Entity, &Transform, &mut KeyWrapper)>,
+    players: Query<(&PlayerComponent, &Transform)>,
+    mut scoreboard: ResMut<Scoreboard>,
+) {
+    collectible_collision(&mut commands, &mut key_query, &players, |_: &KeyWrapper| { scoreboard.keys += 1 });
+}
+
+pub fn insert_wrappers(
+    tile: &Tile,
+    bundle: &mut EntityCommands,
+) {
+    match tile.kind() {
+        TileKind::COIN => {
+            bundle.insert(CoinWrapper { coin_value: 1 });
         }
+        TileKind::KEY => {
+            bundle.insert(KeyWrapper);
+        }
+        _ => {}
     }
 }

@@ -24,10 +24,6 @@ impl MapWrapper {
     }
 }
 
-/// A wrapper for any other map tile
-#[derive(Component)]
-pub struct TileWrapper;
-
 
 pub fn reset_score(
     mut scoreboard: ResMut<Scoreboard>
