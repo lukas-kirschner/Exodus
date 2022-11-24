@@ -1,6 +1,6 @@
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
-use libexodus::tiles::Tile;
+use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::camera::{destroy_camera, setup_camera};
@@ -39,6 +39,21 @@ impl Plugin for WorldPlugin {
 #[derive(Component)]
 pub struct WorldTile;
 
+#[derive(Component)]
+pub struct DoorWrapper;
+
+pub fn insert_door_wrappers(
+    tile: &Tile,
+    bundle: &mut EntityCommands,
+) {
+    match tile.kind() {
+        TileKind::DOOR => {
+            bundle.insert(DoorWrapper);
+        }
+        _ => {}
+    }
+}
+
 /// Spawn a single tile at the given position
 pub fn spawn_tile(
     commands: &mut Commands,
@@ -60,6 +75,7 @@ pub fn spawn_tile(
         });
     bundle.insert(WorldTile); // WorldTiles are attached to each world tile, while TileWrappers are only attached to non-interactive world tiles.
     insert_wrappers(tile, &mut bundle);
+    insert_door_wrappers(tile, &mut bundle);
 }
 
 pub fn setup_game_world(
@@ -89,12 +105,13 @@ pub fn setup_game_world(
 /// Delete everything world-related and respawn the world, including coins
 pub fn reset_world(
     mut commands: Commands,
-    worldwrapper: ResMut<MapWrapper>,
+    mut worldwrapper: ResMut<MapWrapper>,
     tiles_query: Query<Entity, With<WorldTile>>,
     the_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
 ) {
     for entity in tiles_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
+    worldwrapper.world.reset_game_state();
     setup_game_world(commands, worldwrapper, the_atlas_handle);
 }
