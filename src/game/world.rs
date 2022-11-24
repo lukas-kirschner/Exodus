@@ -5,7 +5,8 @@ use libexodus::world::GameWorld;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::camera::{destroy_camera, setup_camera};
 use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
-use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
+use crate::game::pickup_item::CoinWrapper;
+use crate::game::tilewrapper::{MapWrapper, TileWrapper};
 
 pub struct WorldPlugin;
 

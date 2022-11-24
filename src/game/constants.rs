@@ -26,3 +26,9 @@ pub const DEAD_PLAYER_ZOOM_SPEED: f32 = 0.1;
 pub const DEAD_PLAYER_DECAY_SPEED: f32 = 2.0;
 /// The button size for the map editor
 pub const MAPEDITOR_BUTTON_SIZE: f32 = 38.;
+/// The speed a pickup item ascends
+pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
+/// The speed a pickup item resizes
+pub const PICKUP_ITEM_ZOOM_SPEED: f32 = 0.01;
+/// The speed a pickup item fades out
+pub const PICKUP_ITEM_DECAY_SPEED: f32 = 3.5;
