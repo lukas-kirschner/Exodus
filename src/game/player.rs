@@ -128,6 +128,12 @@ pub fn player_movement(
             // Check if the player collides with anything, and remove the movement if that is the case.
             // For Player movements, only the directions from the movements are used -- The target is discarded and calculated from the direction.
             let (target_x, target_y) = movement.int_target_from_direction(transform.translation.x, transform.translation.y);
+            // Check if the player collides with map boundaries
+            if target_x < 0 || target_y < 0 || target_x >= worldwrapper.world.width() as i32 || target_y >= worldwrapper.world.height() as i32 {
+                println!("Dropped Movement {:?} to {},{}, because its target lies outside of the map boundaries!", movement.direction(), movement.target.0, movement.target.1);
+                player.pop_movement_queue();
+                continue;
+            }
             if let Some(block) = worldwrapper.world.get(target_x, target_y) {
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
