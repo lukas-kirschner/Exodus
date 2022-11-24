@@ -6,7 +6,8 @@ mod player;
 pub mod tilewrapper;
 pub mod scoreboard;
 mod ui;
-mod world;
+pub(crate) mod world;
+pub mod camera;
 
 use crate::game::player::PlayerPlugin;
 use crate::game::tilewrapper::{CoinPlugin, MapWrapper};

@@ -28,9 +28,6 @@ pub fn setup_game_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    //Spawn UI Camera
-    // commands.spawn_bundle(UiCameraBundle::default());
-
     //Initialize Coin Counter
     commands.spawn_bundle(TextBundle {
         text: Text {

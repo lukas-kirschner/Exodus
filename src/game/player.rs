@@ -4,11 +4,11 @@ use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::TileKind;
-use crate::AppState;
+use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
-use crate::game::tilewrapper::{CoinWrapper, MapWrapper, TileWrapper};
-use crate::game::world::reset_world;
+use crate::game::tilewrapper::MapWrapper;
+use crate::game::world::{reset_world, WorldTile};
 
 pub struct PlayerPlugin;
 
@@ -61,10 +61,8 @@ pub fn despawn_dead_player(
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
-    asset_server: Res<AssetServer>,
-    texture_atlases: ResMut<Assets<TextureAtlas>>,
-    coin_query: Query<Entity, With<CoinWrapper>>,
-    tiles_query: Query<Entity, With<TileWrapper>>,
+    current_map_texture_handle: Res<CurrentMapTextureAtlasHandle>,
+    tiles_query: Query<Entity, With<WorldTile>>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
@@ -74,7 +72,7 @@ pub fn despawn_dead_player(
             // Spawn new player and reset scores
             respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
             scoreboard.reset();
-            reset_world(commands, asset_server, texture_atlases, worldwrapper, coin_query, tiles_query);
+            reset_world(commands, worldwrapper, tiles_query, current_map_texture_handle);
             return;
         }
         sprite.color.set_a(new_a);
@@ -156,7 +154,7 @@ pub fn player_movement(
             if transform.translation.x == target_x && transform.translation.y == target_y {
                 // Check for deadly collision and kill the player, if one has occurred
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
-                    match block.kind { // Handle special collision events here
+                    match block.kind() { // Handle special collision events here
                         TileKind::AIR => {}
                         TileKind::SOLID => {}
                         TileKind::DEADLY { .. } => {
@@ -205,7 +203,7 @@ pub fn player_movement(
                 }
             }
             if let Some(block) = worldwrapper.world.get(transform.translation.x as i32, transform.translation.y as i32) {
-                if let TileKind::LADDER = block.kind {
+                if let TileKind::LADDER = block.kind() {
                     player.clear_movement_queue(); // We don't want any gravity pulling the player off a ladder
                 }
             }
@@ -225,7 +223,7 @@ fn respawn_player(
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
             texture_atlas: atlas_handle_player.clone(),
             transform: Transform {
-                translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, 0.),
+                translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
                 scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
                 ..default()
             },
@@ -237,18 +235,10 @@ fn respawn_player(
 
 pub fn setup_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    current_texture_atlas: Res<CurrentPlayerTextureAtlasHandle>,
     worldwrapper: ResMut<MapWrapper>,
 ) {
-    let texture_atlas_player = TextureAtlas::from_grid(
-        asset_server.load("textures/Tiny_Platform_Quest_Characters.png"),
-        Vec2::splat(TEXTURE_SIZE as f32),
-        16,
-        16,
-    );
-    let atlas_handle_player = texture_atlases.add(texture_atlas_player);
-    respawn_player(&mut commands, atlas_handle_player, &worldwrapper);
+    respawn_player(&mut commands, (*current_texture_atlas).handle.clone(), &worldwrapper);
 }
 
 pub fn keyboard_controls(

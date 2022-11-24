@@ -1,13 +1,16 @@
-use std::borrow::BorrowMut;
 use std::fs;
+use bevy::asset::LoadState;
 use bevy::prelude::*;
+use bevy::render::texture::ImageSettings;
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
 use libexodus::directories::GameDirectories;
 use crate::creditsscreen::CreditsScreen;
+use crate::game::constants::TEXTURE_SIZE;
 use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
+use crate::mapeditor::MapEditorPlugin;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
 use crate::uicontrols::{egui_fonts, UiControlsPlugin};
 
@@ -16,6 +19,10 @@ mod mainmenu;
 mod creditsscreen;
 mod uicontrols;
 mod mapselectionscreen;
+mod mapeditor;
+mod util;
+mod dialogs;
+mod egui_textures;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -28,9 +35,12 @@ pub enum AppState {
     MapSelectionScreen,
     CreditsScreen,
     Playing,
+    MapEditor,
+    MapEditorDialog,
+    Loading,
 }
 
-struct GameDirectoriesWrapper {
+pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
 }
 
@@ -68,6 +78,127 @@ fn game_init(
     egui_fonts(ctx.ctx_mut());
 }
 
+pub struct RpgSpriteHandles {
+    // TODO Change to include metadata of textures
+    handles: Vec<HandleUntyped>,
+}
+
+impl FromWorld for RpgSpriteHandles {
+    fn from_world(_: &mut World) -> Self {
+        RpgSpriteHandles {
+            handles: vec![],
+        }
+    }
+}
+
+pub struct PlayerSpriteHandles {
+    // TODO Change to include metadata of textures
+    handles: Vec<HandleUntyped>,
+}
+
+impl FromWorld for PlayerSpriteHandles {
+    fn from_world(_: &mut World) -> Self {
+        PlayerSpriteHandles {
+            handles: vec![],
+        }
+    }
+}
+
+fn load_textures(
+    mut rpg_sprite_handles: ResMut<RpgSpriteHandles>,
+    mut player_sprite_handles: ResMut<PlayerSpriteHandles>,
+    asset_server: Res<AssetServer>,
+) {
+    // Load the textures, similar to the example in https://github.com/bevyengine/bevy/blob/main/examples/2d/texture_atlas.rs
+    rpg_sprite_handles.handles = asset_server.load_folder("textures/tilesets").unwrap();
+    player_sprite_handles.handles = asset_server.load_folder("textures/players").unwrap();
+}
+
+
+pub struct CurrentMapTextureAtlasHandle {
+    pub handle: Handle<TextureAtlas>,
+}
+
+impl FromWorld for CurrentMapTextureAtlasHandle {
+    fn from_world(_: &mut World) -> Self {
+        CurrentMapTextureAtlasHandle {
+            handle: Handle::default()
+        }
+    }
+}
+
+pub struct CurrentPlayerTextureAtlasHandle {
+    pub handle: Handle<TextureAtlas>,
+}
+
+impl FromWorld for CurrentPlayerTextureAtlasHandle {
+    fn from_world(_: &mut World) -> Self {
+        CurrentPlayerTextureAtlasHandle {
+            handle: Handle::default()
+        }
+    }
+}
+
+fn check_and_init_textures(
+    mut state: ResMut<State<AppState>>,
+    sprite_handles: ResMut<RpgSpriteHandles>,
+    player_sprite_handles: ResMut<PlayerSpriteHandles>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    if let LoadState::Loaded =
+    asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id))
+    {
+        if let LoadState::Loaded =
+        asset_server.get_group_load_state(player_sprite_handles.handles.iter().map(|handle| handle.id))
+        {
+            // Load Tilesets
+            for handle in &sprite_handles.handles {
+                let handle = handle.typed_weak();
+                let texture_atlas = TextureAtlas::from_grid(
+                    handle,
+                    Vec2::splat(TEXTURE_SIZE as f32),
+                    16,
+                    16,
+                );
+                let atlas_handle = texture_atlases.add(texture_atlas);
+                // TODO Keep a database of all loaded textures here to allow using multiple textures
+                commands.insert_resource(CurrentMapTextureAtlasHandle { handle: atlas_handle.clone() });
+            }
+            // Load Player Texture Sets
+            for handle in &player_sprite_handles.handles {
+                let handle = handle.typed_weak();
+                let texture_atlas = TextureAtlas::from_grid(
+                    handle,
+                    Vec2::splat(TEXTURE_SIZE as f32),
+                    16,
+                    16,
+                );
+                let atlas_handle = texture_atlases.add(texture_atlas);
+                // TODO Keep a database of all loaded textures here to allow using multiple player textures
+                commands.insert_resource(CurrentPlayerTextureAtlasHandle { handle: atlas_handle.clone() });
+            }
+            // TODO no more code duplication
+            // Finish loading and start the main menu
+            state.set(AppState::MainMenu).unwrap();
+        }
+    }
+}
+
+struct LoadingPlugin;
+
+impl Plugin for LoadingPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .init_resource::<RpgSpriteHandles>()
+            .init_resource::<PlayerSpriteHandles>()
+            .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(load_textures))
+            .add_system_set(SystemSet::on_update(AppState::Loading).with_system(check_and_init_textures))
+        ;
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
@@ -82,7 +213,8 @@ fn main() {
         })
         .init_resource::<GameDirectoriesWrapper>()
         .add_startup_system(game_init)
-        .add_state(AppState::MainMenu)
+        .add_state(AppState::Loading)
+        .insert_resource(ImageSettings::default_nearest())
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
         .add_plugin(UiControlsPlugin)
@@ -90,5 +222,7 @@ fn main() {
         .add_plugin(MainMenu)
         .add_plugin(MapSelectionScreenPlugin)
         .add_plugin(CreditsScreen)
+        .add_plugin(MapEditorPlugin)
+        .add_plugin(LoadingPlugin)
         .run();
 }
