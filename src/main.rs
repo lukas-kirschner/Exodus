@@ -1,6 +1,7 @@
 use std::fs;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
+use bevy::render::render_resource::FilterMode;
 use bevy::render::texture::ImageSettings;
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
@@ -215,6 +216,8 @@ fn main() {
         .add_startup_system(game_init)
         .add_state(AppState::Loading)
         .insert_resource(ImageSettings::default_nearest())
+        .insert_resource(FilterMode::Nearest)
+        .insert_resource(Msaa { samples: 1 })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
         .add_plugin(UiControlsPlugin)
