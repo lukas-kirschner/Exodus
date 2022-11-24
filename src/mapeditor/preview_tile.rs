@@ -44,7 +44,7 @@ pub fn setup_preview_tile(
 ) {
     let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
     commands
-        .spawn_bundle(SpriteSheetBundle {
+        .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite {
                 color: Color::Rgba {
                     red: 1.0,

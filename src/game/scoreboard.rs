@@ -1,6 +1,7 @@
-use bevy::prelude::FromWorld;
+use bevy::prelude::*;
 use crate::World;
 
+#[derive(Resource)]
 pub struct Scoreboard {
     pub coins: i32,
     // This might be changed to a HashMap later to support multiplayer

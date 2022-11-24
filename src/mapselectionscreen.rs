@@ -6,6 +6,7 @@ use crate::{AppState, GameDirectoriesWrapper};
 use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, menu_esc_control, NAVBAR_HEIGHT, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
+#[derive(Resource)]
 struct Maps {
     maps: Vec<MapWrapper>,
 }
@@ -58,6 +59,7 @@ fn load_maps(
     }
 }
 
+#[derive(Resource)]
 enum MapSelectionScreenAction {
     PLAY { map_index: usize },
     DELETE { map_index: usize },

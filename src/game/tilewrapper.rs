@@ -5,6 +5,7 @@ use crate::game::scoreboard::Scoreboard;
 
 ///
 /// A wrapper around a GameWorld
+#[derive(Resource)]
 pub struct MapWrapper<> {
     pub world: GameWorld,
 }

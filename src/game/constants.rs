@@ -17,7 +17,7 @@ pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins
 pub const COIN_PICKUP_DISTANCE: f32 = 0.1;
 /// The UI Font Size for main UI elements
-pub const UI_FONT_SIZE: f32 = TEXTURE_SIZE as f32;
+pub const _UI_FONT_SIZE: f32 = TEXTURE_SIZE as f32;
 /// The speed a dead player ascends to heaven at
 pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
 /// The speed a dead player ascends to heaven at

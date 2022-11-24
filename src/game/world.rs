@@ -48,7 +48,7 @@ pub fn spawn_tile(
     tile: &Tile,
 ) {
     let mut bundle: EntityCommands = commands
-        .spawn_bundle(SpriteSheetBundle {
+        .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(atlas_index),
             texture_atlas: map_texture_atlas.handle.clone(),
             transform: Transform {

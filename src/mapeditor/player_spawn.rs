@@ -18,8 +18,7 @@ pub fn init_player_spawn(
     let player: PlayerSpawnComponent = PlayerSpawnComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
-        .spawn()
-        .insert_bundle(SpriteSheetBundle {
+        .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
             texture_atlas: current_texture_atlas.handle.clone(),
             transform: Transform {

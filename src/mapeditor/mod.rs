@@ -11,6 +11,7 @@ mod player_spawn;
 mod preview_tile;
 mod edit_world;
 
+#[derive(Resource)]
 pub struct SelectedTile {
     pub tile: Tile,
 }

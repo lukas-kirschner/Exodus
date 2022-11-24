@@ -7,6 +7,7 @@ use libexodus::tiles::{AtlasIndex, Tile};
 use crate::{CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
 use strum::IntoEnumIterator;
 
+#[derive(Resource)]
 pub struct EguiButtonTextures {
     pub textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
     pub player_textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
@@ -27,7 +28,7 @@ fn convert(
     egui_ctx: &mut ResMut<EguiContext>,
     atlas_index: &AtlasIndex,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
-    let rect: bevy::sprite::Rect = texture_atlas.textures[*atlas_index];
+    let rect: bevy::math::Rect = texture_atlas.textures[*atlas_index];
     let uv: egui::Rect = egui::Rect::from_min_max(
         egui::pos2(rect.min.x / texture_atlas.size.x, rect.min.y / texture_atlas.size.y),
         egui::pos2(rect.max.x / texture_atlas.size.x, rect.max.y / texture_atlas.size.y),
