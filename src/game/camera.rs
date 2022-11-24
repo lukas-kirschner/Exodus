@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::render::camera::{DepthCalculation, ScalingMode};
+use bevy::render::camera::ScalingMode;
 use crate::game::constants::TILE_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::TEXTURE_SIZE;
@@ -7,7 +7,7 @@ use crate::TEXTURE_SIZE;
 pub type UIMargins = (usize, usize, usize, usize);
 
 pub fn rescale_camera(
-    window: &WindowDescriptor,
+    window: &Window,
     map: &MapWrapper,
     mut camera_transform: &mut Transform,
     ui_margins: &UIMargins,
@@ -18,8 +18,8 @@ pub fn rescale_camera(
     let (left, top, right, bottom) = ui_margins;
     let map_width_pixels_plus_ui: usize = TEXTURE_SIZE * map.world.width() + left + right;
     let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height()) + top + bottom; // 2 tiles for UI elements
-    let window_height_pixels: usize = window.height as usize;
-    let window_width_pixels: usize = window.width as usize;
+    let window_height_pixels: usize = window.height() as usize;
+    let window_width_pixels: usize = window.width() as usize;
     let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
     let map_ratio: f32 = map_width_pixels_plus_ui as f32 / map_height_pixels_plus_ui as f32;
     let camera_scale = if window_ratio < map_ratio {
@@ -33,13 +33,12 @@ pub fn rescale_camera(
 
 pub fn setup_camera(
     mut commands: Commands,
-    window: Res<WindowDescriptor>,
+    window: Res<Windows>,
     map: Res<MapWrapper>,
 ) {
     let mut camera = Camera2dBundle {
         projection: OrthographicProjection {
             far: 1000.0,
-            depth_calculation: DepthCalculation::ZDifference,
             scaling_mode: ScalingMode::WindowSize,
             ..default()
         }.into(),
@@ -47,8 +46,8 @@ pub fn setup_camera(
         ..default()
     };
     // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
-    rescale_camera(&window, &map, &mut camera.transform, &(0, TILE_SIZE as usize, 0, TILE_SIZE as usize));
-    commands.spawn_bundle(camera);
+    rescale_camera(&window.get_primary().unwrap(), &map, &mut camera.transform, &(0, TILE_SIZE as usize, 0, TILE_SIZE as usize));
+    commands.spawn(camera);
 }
 
 pub fn destroy_camera(

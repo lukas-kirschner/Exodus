@@ -1,8 +1,6 @@
 use std::fs;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
-use bevy::render::render_resource::FilterMode;
-use bevy::render::texture::ImageSettings;
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
@@ -13,7 +11,7 @@ use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
 use crate::mapeditor::MapEditorPlugin;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::{egui_fonts, UiControlsPlugin};
+use crate::uicontrols::egui_fonts;
 
 mod game;
 mod mainmenu;
@@ -41,6 +39,7 @@ pub enum AppState {
     Loading,
 }
 
+#[derive(Resource)]
 pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
 }
@@ -79,6 +78,7 @@ fn game_init(
     egui_fonts(ctx.ctx_mut());
 }
 
+#[derive(Resource)]
 pub struct RpgSpriteHandles {
     // TODO Change to include metadata of textures
     handles: Vec<HandleUntyped>,
@@ -92,6 +92,7 @@ impl FromWorld for RpgSpriteHandles {
     }
 }
 
+#[derive(Resource)]
 pub struct PlayerSpriteHandles {
     // TODO Change to include metadata of textures
     handles: Vec<HandleUntyped>,
@@ -115,7 +116,7 @@ fn load_textures(
     player_sprite_handles.handles = asset_server.load_folder("textures/players").unwrap();
 }
 
-
+#[derive(Resource)]
 pub struct CurrentMapTextureAtlasHandle {
     pub handle: Handle<TextureAtlas>,
 }
@@ -128,6 +129,7 @@ impl FromWorld for CurrentMapTextureAtlasHandle {
     }
 }
 
+#[derive(Resource)]
 pub struct CurrentPlayerTextureAtlasHandle {
     pub handle: Handle<TextureAtlas>,
 }
@@ -162,6 +164,8 @@ fn check_and_init_textures(
                     Vec2::splat(TEXTURE_SIZE as f32),
                     16,
                     16,
+                    None,
+                    None,
                 );
                 let atlas_handle = texture_atlases.add(texture_atlas);
                 // TODO Keep a database of all loaded textures here to allow using multiple textures
@@ -175,6 +179,8 @@ fn check_and_init_textures(
                     Vec2::splat(TEXTURE_SIZE as f32),
                     16,
                     16,
+                    None,
+                    None,
                 );
                 let atlas_handle = texture_atlases.add(texture_atlas);
                 // TODO Keep a database of all loaded textures here to allow using multiple player textures
@@ -202,25 +208,27 @@ impl Plugin for LoadingPlugin {
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Exodus".to_string(),
-            resizable: false,
-            width: 1001.,
-            height: 501.,
-            cursor_visible: true,
-            decorations: true,
-            mode: WindowMode::Windowed,
-            ..Default::default()
-        })
         .init_resource::<GameDirectoriesWrapper>()
         .add_startup_system(game_init)
         .add_state(AppState::Loading)
-        .insert_resource(ImageSettings::default_nearest())
-        .insert_resource(FilterMode::Nearest)
         .insert_resource(Msaa { samples: 1 })
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .set(WindowPlugin {
+                window: WindowDescriptor {
+                    title: "Exodus".to_string(),
+                    resizable: false,
+                    width: 1001.,
+                    height: 501.,
+                    cursor_visible: true,
+                    decorations: true,
+                    mode: WindowMode::Windowed,
+                    ..Default::default()
+                },
+                ..default()
+            })
+        )
         .add_plugin(EguiPlugin)
-        .add_plugin(UiControlsPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(MainMenu)
         .add_plugin(MapSelectionScreenPlugin)

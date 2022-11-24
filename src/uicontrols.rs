@@ -20,32 +20,6 @@ pub const DELETE_TEXT: &str = "\u{2020}";
 /// The text used for the Delete Button
 pub const EDIT_TEXT: &str = "E";
 
-pub struct MenuMaterials {
-    pub root: UiColor,
-    pub border: UiColor,
-    pub menu: UiColor,
-    pub button: UiColor,
-    pub button_hovered: UiColor,
-    pub button_pressed: UiColor,
-    pub navbar: UiColor,
-    pub button_text: Color,
-}
-
-impl FromWorld for MenuMaterials {
-    fn from_world(_: &mut World) -> Self {
-        MenuMaterials {
-            root: Color::NONE.into(),
-            border: Color::rgb(0.65, 0.65, 0.65).into(),
-            menu: Color::rgb(0.15, 0.15, 0.15).into(),
-            button: Color::rgb(0.15, 0.15, 0.15).into(),
-            button_hovered: Color::rgb(0.25, 0.25, 0.25).into(),
-            button_pressed: Color::rgb(0.35, 0.75, 0.35).into(),
-            navbar: Color::rgb(0.10, 0.10, 0.10).into(),
-            button_text: Color::WHITE,
-        }
-    }
-}
-
 pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
     if *app_state.current() != AppState::MainMenu {
         if keys.just_pressed(KeyCode::Escape) {
@@ -104,14 +78,4 @@ pub fn add_navbar(
             });
         });
     });
-}
-
-pub struct UiControlsPlugin;
-
-impl Plugin for UiControlsPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            .init_resource::<MenuMaterials>()
-        ;
-    }
 }

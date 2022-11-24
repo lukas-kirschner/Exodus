@@ -40,6 +40,7 @@ impl Plugin for MapEditorUiPlugin {
     }
 }
 
+#[derive(Resource)]
 struct MapEditorDialogResource {
     ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }

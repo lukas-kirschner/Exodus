@@ -162,7 +162,7 @@ pub fn player_movement(
                                 commands.entity(entity).despawn_recursive();
                                 sprite.index = 80; // Angel texture
                                 //TODO trigger GameOverEvent?
-                                commands.spawn_bundle(SpriteSheetBundle {
+                                commands.spawn(SpriteSheetBundle {
                                     sprite: sprite.clone(),
                                     texture_atlas: handle.clone(),
                                     transform: Transform {
@@ -219,7 +219,7 @@ fn respawn_player(
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
-        .spawn_bundle(SpriteSheetBundle {
+        .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
             texture_atlas: atlas_handle_player.clone(),
             transform: Transform {
