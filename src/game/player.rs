@@ -83,6 +83,7 @@ pub fn despawn_dead_player(
 
 pub fn player_movement(
     mut commands: Commands,
+    mut scoreboard: ResMut<Scoreboard>,
     mut player_positions: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, Entity, &mut Transform, &Handle<TextureAtlas>)>,
     worldwrapper: Res<MapWrapper>,
     time: Res<Time>,
@@ -99,6 +100,7 @@ pub fn player_movement(
             if let Some(block) = worldwrapper.world.get(target_x, target_y) {
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
+                    // TODO handle doors here
                     println!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
                     player.pop_movement_queue(); // On collision, clear the latest movement
                 } else {
@@ -152,7 +154,7 @@ pub fn player_movement(
                 }
             }
             if transform.translation.x == target_x && transform.translation.y == target_y {
-                // Check for deadly collision and kill the player, if one has occurred
+                // Check for events that occur when the player is already on the same tile as the block
                 if let Some(block) = worldwrapper.world.get(target_x as i32, target_y as i32) {
                     match block.kind() { // Handle special collision events here
                         TileKind::AIR => {}
@@ -185,6 +187,8 @@ pub fn player_movement(
                             // This case is handled redundantly below in the gravity handler, but we include it here anyways
                             player.clear_movement_queue();
                         }
+                        TileKind::KEY => {}
+                        TileKind::DOOR => {}
                     }
                 }
                 player.pop_movement_queue();

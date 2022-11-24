@@ -100,6 +100,8 @@ impl GameWorld {
             }
             TileKind::COIN => {}
             TileKind::LADDER => {}
+            TileKind::KEY => {}
+            TileKind::DOOR => {}
         }
         self
     }

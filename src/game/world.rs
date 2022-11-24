@@ -1,12 +1,12 @@
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
-use libexodus::tiles::{Tile, TileKind};
+use libexodus::tiles::Tile;
 use libexodus::world::GameWorld;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::camera::{destroy_camera, setup_camera};
 use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
-use crate::game::pickup_item::CoinWrapper;
-use crate::game::tilewrapper::{MapWrapper, TileWrapper};
+use crate::game::pickup_item::insert_wrappers;
+use crate::game::tilewrapper::MapWrapper;
 
 pub struct WorldPlugin;
 
@@ -59,15 +59,7 @@ pub fn spawn_tile(
             ..Default::default()
         });
     bundle.insert(WorldTile); // WorldTiles are attached to each world tile, while TileWrappers are only attached to non-interactive world tiles.
-    // Insert wrappers so we can despawn the whole map later
-    match tile.kind() {
-        TileKind::COIN => {
-            bundle.insert(CoinWrapper { coin_value: 1 });
-        }
-        _ => {
-            bundle.insert(TileWrapper);
-        }
-    }
+    insert_wrappers(tile, &mut bundle);
 }
 
 pub fn setup_game_world(

@@ -15,7 +15,7 @@ pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 43;
 /// The speed of the player movement
 pub const PLAYER_SPEED: f32 = 4.0;
 /// The pickup distance for coins
-pub const COIN_PICKUP_DISTANCE: f32 = 0.1;
+pub const COLLECTIBLE_PICKUP_DISTANCE: f32 = 0.1;
 /// The UI Font Size for main UI elements
 pub const _UI_FONT_SIZE: f32 = TEXTURE_SIZE as f32;
 /// The speed a dead player ascends to heaven at

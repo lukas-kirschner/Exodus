@@ -35,6 +35,8 @@ fn game_ui_system(
                 ui.label(format!("Coins: {}", scoreboard.coins));
                 ui.separator();
                 ui.label(format!("Moves: {}", scoreboard.moves));
+                ui.separator();
+                ui.label(format!("Keys: {}", scoreboard.keys));
             })
         });
 }
