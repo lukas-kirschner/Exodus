@@ -42,6 +42,9 @@ impl Plugin for PickupItemPlugin {
                 .with_system(key_collision).after("player_movement")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(misc_collectible_collision).after("player_movement")
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(pickup_item_animation).after("player_movement")
             )
         ;
@@ -58,6 +61,10 @@ pub struct CoinWrapper {
 /// A wrapper for keys
 #[derive(Component)]
 pub struct KeyWrapper;
+
+/// A wrapper for Collectibles (Arrows,...)
+#[derive(Component)]
+pub struct CollectibleWrapper;
 
 fn collectible_collision<T: bevy::prelude::Component, F: FnMut(&T) -> ()>(
     commands: &mut Commands,
@@ -97,6 +104,14 @@ pub fn key_collision(
     collectible_collision(&mut commands, &mut key_query, &players, |_: &KeyWrapper| { scoreboard.keys += 1 });
 }
 
+pub fn misc_collectible_collision(
+    mut commands: Commands,
+    mut key_query: Query<(Entity, &Transform, &mut CollectibleWrapper)>,
+    players: Query<(&PlayerComponent, &Transform)>,
+) {
+    collectible_collision(&mut commands, &mut key_query, &players, |_: &CollectibleWrapper| {});
+}
+
 pub fn insert_wrappers(
     tile: &Tile,
     bundle: &mut EntityCommands,
@@ -107,6 +122,9 @@ pub fn insert_wrappers(
         }
         TileKind::KEY => {
             bundle.insert(KeyWrapper);
+        }
+        TileKind::COLLECTIBLE => {
+            bundle.insert(CollectibleWrapper);
         }
         _ => {}
     }

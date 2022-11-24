@@ -53,6 +53,10 @@ impl GameWorld {
             .set(18, 8, WALLSPIKESTB)
             .set(19, 8, WALLSPIKESRTB)
             .set(17, 7, COIN)
+            .set(19, 1, ARROWDOWN)
+            .set(18, 1, ARROWLEFT)
+            .set(17, 1, ARROWRIGHT)
+            .set(16, 1, ARROWUP)
         ;
         world
     }

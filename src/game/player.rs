@@ -229,6 +229,7 @@ pub fn player_movement(
                         }
                         TileKind::KEY => {}
                         TileKind::DOOR => {}
+                        TileKind::COLLECTIBLE => {}
                     }
                 }
                 player.pop_movement_queue();
