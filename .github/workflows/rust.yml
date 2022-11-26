@@ -3,7 +3,7 @@ on: [ push, pull_request ]
 name: build
 
 env:
-  LD_LIBRARY_PATH: "target/debug/deps:${HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:&{LD_LIBRARY_PATH}"
+  LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/target/debug/deps:${GITHUB_WORKSPACE}/target/release/deps:${HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:${LD_LIBRARY_PATH}"
 
 jobs:
   check:
@@ -27,6 +27,9 @@ jobs:
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '--workspace'
+          out-type: Xml
 
       - name: Upload code coverage results
         uses: irongut/CodeCoverageSummary@v1.3.0
