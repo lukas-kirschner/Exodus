@@ -1,0 +1,75 @@
+on: [ push, pull_request ]
+
+name: Rust Toolchain
+
+env:
+  LD_LIBRARY_PATH: "target/debug/deps:target/release/deps:${GITHUB_WORKSPACE}/target/debug/deps:${GITHUB_WORKSPACE}/target/release/deps:${HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:${LD_LIBRARY_PATH}"
+  EXODUS_BUILD_NUMBER: ${{ github.run_number }}
+
+jobs:
+  check:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: sudo apt-get install -y libwayland-dev libxkbcommon-dev
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '1'
+          lfs: true
+          submodules: true
+
+      - name: Install Stable Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '--workspace'
+          out-type: Xml
+
+      - name: Upload code coverage results
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: cobertura.xml
+          badge: true
+          format: markdown
+          hide_branch_rate: false
+          indicators: true
+          thresholds: '60 80'
+          output: both
+          hide_complexity: true
+      - name: Add Coverage Pull Request Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+  build_linux64:
+    name: Build Nightly for Linux x64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: sudo apt-get install -y libwayland-dev libxkbcommon-dev
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '1'
+          lfs: true
+          submodules: true
+
+      - name: Install Stable Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build Nightly in Release Mode
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
