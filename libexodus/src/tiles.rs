@@ -1,11 +1,10 @@
 use std::fmt;
 use std::fmt::Formatter;
-use strum_macros::EnumIter;
-use serde::{Serialize, Deserialize};
+use strum_macros::{EnumIter, EnumCount as EnumCountMacro};
 use crate::directions::FromDirection;
 use crate::directions::FromDirection::{FROMEAST, FROMNORTH, FROMSOUTH, FROMWEST};
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TileKind {
     ///
     /// A tile that cannot interact with the player in any way
@@ -42,7 +41,7 @@ pub enum TileKind {
 pub type AtlasIndex = usize;
 
 // Tiles Definitions
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, EnumIter)]
+#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro)]
 pub enum Tile {
     /// An air tile without a texture
     AIR,

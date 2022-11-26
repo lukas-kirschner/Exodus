@@ -1,5 +1,4 @@
 use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::tiles::{Tile, TileKind};
 
@@ -7,8 +6,9 @@ use crate::tiles::{Tile, TileKind};
 pub mod exampleworlds;
 pub mod presets;
 pub mod io;
+pub mod io_error;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct GameWorld {
     /// A human-readable name of this world
     name: String,
