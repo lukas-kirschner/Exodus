@@ -22,6 +22,8 @@ fn main() {
     if let Ok(buildnumber) = env::var("EXODUS_BUILD_NUMBER") {
         if let Ok(bnr) = i32::from_str(buildnumber.as_str()) {
             println!("cargo:rustc-env=BUILD_NUMBER={}", bnr);
+        } else {
+            println!("cargo:warning=Could not parse environment variable EXODUS_BUILD_NUMBER as i32: {}", buildnumber);
         }
     }
 }
