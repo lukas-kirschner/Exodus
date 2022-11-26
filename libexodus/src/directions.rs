@@ -1,5 +1,3 @@
-use serde::{Serialize, Deserialize};
-
 #[derive(Hash, Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Directions {
     NORTH,
@@ -8,7 +6,7 @@ pub enum Directions {
     WEST,
 }
 
-#[derive(Hash, Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Hash, Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FromDirection {
     FROMNORTH,
     FROMSOUTH,
