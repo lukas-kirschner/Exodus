@@ -1,6 +1,9 @@
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 name: build
+
+env:
+  LD_LIBRARY_PATH: "target/debug/deps:${HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:&{LD_LIBRARY_PATH}"
 
 jobs:
   check:

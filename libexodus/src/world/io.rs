@@ -241,6 +241,7 @@ impl Tile {
 
 #[cfg(test)]
 mod tests {
+    use bincode::ErrorKind;
     use bytebuffer::ByteBuffer;
     use strum::{EnumCount, IntoEnumIterator};
     use super::*;
@@ -345,6 +346,75 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidVersion {
             invalid_version: 0xff
+        }.numeric_error());
+    }
+
+    #[test]
+    fn test_map_with_invalid_name_string() {
+        let mut data: Vec<u8> = vec![];
+        data.extend_from_slice(&MAGICBYTES);
+        data.push(CURRENT_MAP_VERSION);
+        data.extend_from_slice(&[0xffu8; 100]);
+        let mut buf = ByteBuffer::from_bytes(&data);
+        let mut map = GameWorld::new(1, 1);
+        let result = map.parse(&mut buf);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::BincodeError {
+            bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
+        }.numeric_error());
+    }
+
+    #[test]
+    fn test_map_with_invalid_author_string() {
+        let mut data: Vec<u8> = vec![];
+        data.extend_from_slice(&MAGICBYTES);
+        data.push(CURRENT_MAP_VERSION);
+        data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
+        data.extend_from_slice(&[0xffu8; 100]);
+        let mut buf = ByteBuffer::from_bytes(&data);
+        let mut map = GameWorld::new(1, 1);
+        let result = map.parse(&mut buf);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::BincodeError {
+            bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
+        }.numeric_error());
+    }
+
+    #[test]
+    fn test_map_with_invalid_width() {
+        let mut data: Vec<u8> = vec![];
+        data.extend_from_slice(&MAGICBYTES);
+        data.push(CURRENT_MAP_VERSION);
+        data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
+        data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
+        data.extend_from_slice(&[0xffu8; 16]);
+        data.extend_from_slice(&bincode::serialize(&((MAX_MAP_WIDTH + 1) as usize)).unwrap());
+        let mut buf = ByteBuffer::from_bytes(&data);
+        let mut map = GameWorld::new(1, 1);
+        let result = map.parse(&mut buf);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidMapWidth {
+            max_width: MAX_MAP_WIDTH,
+            actual_width: MAX_MAP_WIDTH + 1,
+        }.numeric_error());
+    }
+
+    #[test]
+    fn test_map_with_invalid_width_zero() {
+        let mut data: Vec<u8> = vec![];
+        data.extend_from_slice(&MAGICBYTES);
+        data.push(CURRENT_MAP_VERSION);
+        data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
+        data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
+        data.extend_from_slice(&[0xffu8; 16]);
+        data.extend_from_slice(&bincode::serialize(&(0 as usize)).unwrap());
+        let mut buf = ByteBuffer::from_bytes(&data);
+        let mut map = GameWorld::new(1, 1);
+        let result = map.parse(&mut buf);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidMapWidth {
+            max_width: MAX_MAP_WIDTH,
+            actual_width: MAX_MAP_WIDTH + 1,
         }.numeric_error());
     }
 }
