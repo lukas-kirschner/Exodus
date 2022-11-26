@@ -350,6 +350,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_map_with_invalid_name_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
@@ -365,6 +366,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_map_with_invalid_author_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
@@ -381,6 +383,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_map_with_invalid_width() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
@@ -400,6 +403,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_map_with_invalid_width_zero() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);

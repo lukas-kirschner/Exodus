@@ -8,8 +8,9 @@ use crate::uicontrols::{add_navbar, menu_esc_control, UIMARGIN};
 pub struct CreditsScreen;
 
 fn credits() -> String {
+    let buildnr = option_env!("BUILD_NUMBER").map(|b| format!(".{}", b)).unwrap_or("".to_string());
     let mut ret: String = formatdoc! {"
-        {program_name} Version {version}
+        {program_name} Version {version}{buildnr}
         based on the \"Space Exodus\" Psion EPOC game
         by David Sansome (2001)
 
@@ -20,6 +21,7 @@ fn credits() -> String {
             program_name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION"),
             license = "MIT License",
+            buildnr = buildnr,
     };
     if cfg!(debug_assertions) {
         ret.push_str(format!("\nDebug Build {build} ({date})",

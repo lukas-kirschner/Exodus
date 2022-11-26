@@ -1,4 +1,6 @@
+use std::env;
 use std::process::Command;
+use std::str::FromStr;
 
 fn main() {
     let mut git_hash: String = "<unknown hash>".to_string();
@@ -15,5 +17,11 @@ fn main() {
             git_date = parsed_date;
         }
     }
-    println!("cargo:rustc-env=GIT_SHORTDATE={}", git_date)
+    println!("cargo:rustc-env=GIT_SHORTDATE={}", git_date);
+
+    if let Ok(buildnumber) = env::var("EXODUS_BUILD_NUMBER") {
+        if let Ok(bnr) = i32::from_str(buildnumber.as_str()) {
+            println!("cargo:rustc-env=BUILD_NUMBER={}", bnr);
+        }
+    }
 }
