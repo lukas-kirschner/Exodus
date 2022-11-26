@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fmt::Formatter;
-use strum_macros::EnumIter;
+use strum_macros::{EnumIter, EnumCount as EnumCountMacro};
 use crate::directions::FromDirection;
 use crate::directions::FromDirection::{FROMEAST, FROMNORTH, FROMSOUTH, FROMWEST};
 
@@ -41,7 +41,7 @@ pub enum TileKind {
 pub type AtlasIndex = usize;
 
 // Tiles Definitions
-#[derive(Clone, Debug, Eq, PartialEq, EnumIter)]
+#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro)]
 pub enum Tile {
     /// An air tile without a texture
     AIR,

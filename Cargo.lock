@@ -718,6 +718,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4a45a46ab1f2412e53d3a0ade76ffad2025804294569aae387231a0cd6e0899"
 
 [[package]]
+name = "bytebuffer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e822a21389d388828152aeae8bb43049196b09076e2a138f53351d8cf6576cf3"
+dependencies = [
+ "byteorder 0.3.13",
+]
+
+[[package]]
 name = "bytemuck"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -736,6 +745,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "byteorder"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29b2aa490a8f546381308d68fc79e6bd753cd3ad839f7a7172897f1feedfa175"
 
 [[package]]
 name = "byteorder"
@@ -1206,7 +1221,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
- "byteorder",
+ "byteorder 1.4.3",
 ]
 
 [[package]]
@@ -1353,7 +1368,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd8e4fb07cf672b1642304e731ef8a6a4c7891d67bb4fd4f5ce58cd6ed86803c"
 dependencies = [
  "bytemuck",
- "byteorder",
+ "byteorder 1.4.3",
  "color_quant",
  "num-rational",
  "num-traits",
@@ -1431,6 +1446,7 @@ name = "libexodus"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "bytebuffer",
  "directories",
  "strum",
  "strum_macros",

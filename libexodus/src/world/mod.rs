@@ -6,6 +6,7 @@ use crate::tiles::{Tile, TileKind};
 pub mod exampleworlds;
 pub mod presets;
 pub mod io;
+pub mod io_error;
 
 #[derive(Clone)]
 pub struct GameWorld {
