@@ -218,6 +218,22 @@ impl Tile {
             0x31 => Some(Tile::KEY),
             0x22 => Some(Tile::LADDER),
             0x40 => Some(Tile::SPIKES),
+            0x41 => Some(Tile::SPIKESALT),
+            0x42 => Some(Tile::SPIKESSLOPED),
+            0x50 => Some(Tile::WALLSPIKESL),
+            0x51 => Some(Tile::WALLSPIKESR),
+            0x52 => Some(Tile::WALLSPIKESLR),
+            0x53 => Some(Tile::WALLSPIKESB),
+            0x54 => Some(Tile::WALLSPIKESLB),
+            0x55 => Some(Tile::WALLSPIKESRB),
+            0x56 => Some(Tile::WALLSPIKESTB),
+            0x57 => Some(Tile::WALLSPIKESRLTB),
+            0x58 => Some(Tile::WALLSPIKESRTB),
+            0x59 => Some(Tile::WALLSPIKESLTB),
+            0x32 => Some(Tile::ARROWRIGHT),
+            0x33 => Some(Tile::ARROWLEFT),
+            0x34 => Some(Tile::ARROWUP),
+            0x35 => Some(Tile::ARROWDOWN),
             _ => None
         }
     }
