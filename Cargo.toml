@@ -80,3 +80,11 @@ features = [
     #    "trace_chrome", # Tracing using the Chrome format
     #    "wgpu_trace",   # WGPU/rendering tracing
 ]
+
+
+[profile.release]
+debug = false
+strip = "symbols"
+debug-assertions = false
+lto = true
+codegen-units = 1

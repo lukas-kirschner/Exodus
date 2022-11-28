@@ -3,6 +3,14 @@ name = "libexodus"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["lib"]
+path = "src/lib.rs"
+test = true
+doctest = true
+bench = true
+doc = true
+
 [dependencies]
 directories = "4.0"
 walkdir = "2.3.2"
