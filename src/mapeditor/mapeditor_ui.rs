@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{Ui, WidgetText};
+use bevy_egui::egui::Ui;
 use libexodus::tiles::{Tile};
 use crate::{AppState, GameDirectoriesWrapper};
 use crate::dialogs::save_file_dialog::SaveFileDialog;
@@ -14,16 +14,12 @@ use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT, NAVBAR_BACK_TEXT};
 
-#[derive(Resource, Default)]
-pub(crate) struct UiMenuOpenEvent(pub bool);
-
 pub struct MapEditorUiPlugin;
 
 impl Plugin for MapEditorUiPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<SelectedTile>()
-            .init_resource::<UiMenuOpenEvent>()
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
                 .with_system(init_player_spawn).after("world").label("player_spawn_placeholder_init")
             )
@@ -82,29 +78,6 @@ fn tile_kind_selector_button_for(
     });
 }
 
-/// Create a menu button with the given text
-fn tile_submenu_button<TUiCreator: FnOnce(&mut Ui) -> (), TText: Into<WidgetText>>(
-    ui: &mut Ui,
-    button_text: TText,
-    button_tooltip: TText,
-    menu_open_res: &mut UiMenuOpenEvent,
-    submenu_content: TUiCreator,
-) {
-    menu_open_res.0 = false;
-    ui.scope(|ui| {
-        ui.set_height(MAPEDITOR_BUTTON_SIZE);
-        ui.set_width(MAPEDITOR_BUTTON_SIZE);
-        ui.centered_and_justified(|ui| {
-            ui.menu_button(button_text, |ui| {
-                submenu_content(ui);
-                menu_open_res.0 = true;
-            })
-                .response
-                .on_hover_text(button_tooltip);
-        });
-    });
-}
-
 fn mapeditor_ui(
     mut commands: Commands,
     mut egui_ctx: ResMut<EguiContext>,
@@ -113,88 +86,94 @@ fn mapeditor_ui(
     player: Query<&PlayerSpawnComponent>,
     mut state: ResMut<State<AppState>>,
     worldwrapper: ResMut<MapWrapper>,
-    mut ev_menuopen: ResMut<UiMenuOpenEvent>,
 ) {
     let player_it = player.iter().next().expect("There was no Player Spawn set up");
-    egui::TopBottomPanel::top("")
+    let _panel = egui::TopBottomPanel::top("")
         .resizable(false)
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal(|ui| {
-                // Exit Button
+            ui.vertical_centered_justified(|ui| {
                 ui.scope(|ui| {
-                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
-                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
-                    ui.centered_and_justified(|ui| {
-                        let xbutton = ui.button(NAVBAR_BACK_TEXT).on_hover_text("Exit and return to Map Selection Screen");
-                        if xbutton.clicked() {
-                            if worldwrapper.world.is_dirty() {
-                                commands.insert_resource(MapEditorDialogResource {
-                                    ui_dialog: Box::new(UnsavedChangesDialog::new(
-                                        "The current map has unsaved changes! Do you really want to quit and discard the changes?"
-                                    )),
-                                });
-                                state.set(AppState::MapEditorDialog).expect("Could not change state to overwrite dialog!");
-                            } else {
-                                state.set(AppState::MapSelectionScreen).expect("Could not change state back to map selection screen!");
-                            }
-                        }
-                    });
-                });
-                // Save Button
-                ui.scope(|ui| {
-                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
-                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
-                    ui.centered_and_justified(|ui| {
-                        let sbutton = ui.button("S").on_hover_text("Save Map or Set Map Properties");
-                        if sbutton.clicked() {
-                            commands.insert_resource(MapEditorDialogResource {
-                                ui_dialog: Box::new(SaveFileDialog::new(
-                                    worldwrapper.world.get_filename(),
-                                    worldwrapper.world.get_name(),
-                                    worldwrapper.world.get_author(),
-                                    worldwrapper.world.uuid().as_str(),
-                                )),
+                    ui.horizontal(|ui| {
+                        // Exit Button
+                        ui.scope(|ui| {
+                            ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                            ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                            ui.centered_and_justified(|ui| {
+                                let xbutton = ui.button(NAVBAR_BACK_TEXT).on_hover_text("Exit and return to Map Selection Screen");
+                                if xbutton.clicked() {
+                                    if worldwrapper.world.is_dirty() {
+                                        commands.insert_resource(MapEditorDialogResource {
+                                            ui_dialog: Box::new(UnsavedChangesDialog::new(
+                                                "The current map has unsaved changes! Do you really want to quit and discard the changes?"
+                                            )),
+                                        });
+                                        state.set(AppState::MapEditorDialog).expect("Could not change state to overwrite dialog!");
+                                    } else {
+                                        state.set(AppState::MapSelectionScreen).expect("Could not change state back to map selection screen!");
+                                    }
+                                }
                             });
-                            state.set(AppState::MapEditorDialog).expect("Could not change state to save dialog!");
-                        }
+                        });
+                        // Save Button
+                        ui.scope(|ui| {
+                            ui.set_height(MAPEDITOR_BUTTON_SIZE);
+                            ui.set_width(MAPEDITOR_BUTTON_SIZE);
+                            ui.centered_and_justified(|ui| {
+                                let sbutton = ui.button("S").on_hover_text("Save Map or Set Map Properties");
+                                if sbutton.clicked() {
+                                    commands.insert_resource(MapEditorDialogResource {
+                                        ui_dialog: Box::new(SaveFileDialog::new(
+                                            worldwrapper.world.get_filename(),
+                                            worldwrapper.world.get_name(),
+                                            worldwrapper.world.get_author(),
+                                            worldwrapper.world.uuid().as_str(),
+                                        )),
+                                    });
+                                    state.set(AppState::MapEditorDialog).expect("Could not change state to save dialog!");
+                                }
+                            });
+                        });
+                        ui.separator();
+                        // Buttons for the different tiles
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::AIR, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALL, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKES, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESALT, &mut selected_tile, player_it);
+                        ui.separator();
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::KEY, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::LADDER, &mut selected_tile, player_it);
+                        ui.separator();
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
+                        ui.separator();
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
                     });
                 });
-                ui.separator();
-                // Buttons for the different tiles
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::AIR, &mut selected_tile, player_it);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALL, &mut selected_tile, player_it);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKES, &mut selected_tile, player_it);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESALT, &mut selected_tile, player_it);
-                ui.separator();
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile, player_it);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::KEY, &mut selected_tile, player_it);
-                tile_submenu_button(ui, "-", "Select an arrow", &mut ev_menuopen, |ui| {
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
-                });
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::LADDER, &mut selected_tile, player_it);
-                ui.separator();
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
-                tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
-                tile_submenu_button(ui, "w", "Select a wall spike", &mut ev_menuopen, |ui| {
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile, player_it);
-                });
-                tile_submenu_button(ui, "W", "Select a wall spike corner", &mut ev_menuopen, |ui| {
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile, player_it);
-                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile, player_it);
+                ui.scope(|ui| {
+                    ui.horizontal(|ui| {
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile, player_it);
+                        ui.separator();
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile, player_it);
+                    })
                 });
             });
-        });
+        })
+        ;
+    // let ui_height = panel.response.rect.height();
+    // println!("Height {:?}", ui_height);
 }
 
 fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
