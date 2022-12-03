@@ -21,6 +21,39 @@ pub const DELETE_TEXT: &str = "\u{2020}";
 /// The text used for the Delete Button
 pub const EDIT_TEXT: &str = "E";
 
+#[derive(Resource, PartialEq, Copy, Clone)]
+pub struct WindowUiOverlayInfo {
+    pub top: f32,
+    pub bottom: f32,
+    pub left: f32,
+    pub right: f32,
+}
+
+impl Default for WindowUiOverlayInfo {
+    fn default() -> Self {
+        WindowUiOverlayInfo {
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
+        }
+    }
+}
+
+pub struct UiSizeChangedEvent;
+
+pub fn check_ui_size_changed(
+    new_size: &WindowUiOverlayInfo,
+    mut current_size: ResMut<WindowUiOverlayInfo>,
+    event_writer: &mut EventWriter<UiSizeChangedEvent>,
+) {
+    if *new_size != *current_size {
+        *current_size = (*new_size).clone();
+        event_writer.send(UiSizeChangedEvent);
+        println!("Changed UI Overlay to T {:?} B {:?} L {:?} R{:?}", new_size.top, new_size.bottom, new_size.left, new_size.right);
+    }
+}
+
 pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
     if *app_state.current() != AppState::MainMenu {
         if keys.just_pressed(KeyCode::Escape) {

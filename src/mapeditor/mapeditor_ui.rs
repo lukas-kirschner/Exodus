@@ -12,7 +12,7 @@ use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
-use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT, NAVBAR_BACK_TEXT};
+use crate::uicontrols::{check_ui_size_changed, MAPEDITOR_CONTROLS_HEIGHT, NAVBAR_BACK_TEXT, UiSizeChangedEvent, WindowUiOverlayInfo};
 
 pub struct MapEditorUiPlugin;
 
@@ -86,9 +86,11 @@ fn mapeditor_ui(
     player: Query<&PlayerSpawnComponent>,
     mut state: ResMut<State<AppState>>,
     worldwrapper: ResMut<MapWrapper>,
+    current_window_size: ResMut<WindowUiOverlayInfo>,
+    mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
 ) {
     let player_it = player.iter().next().expect("There was no Player Spawn set up");
-    let _panel = egui::TopBottomPanel::top("")
+    let panel = egui::TopBottomPanel::top("")
         .resizable(false)
         .default_height(MAPEDITOR_CONTROLS_HEIGHT)
         .show(egui_ctx.ctx_mut(), |ui| {
@@ -172,8 +174,11 @@ fn mapeditor_ui(
             });
         })
         ;
-    // let ui_height = panel.response.rect.height();
-    // println!("Height {:?}", ui_height);
+    let ui_height = panel.response.rect.height();
+    check_ui_size_changed(&WindowUiOverlayInfo {
+        top: ui_height,
+        ..default()
+    }, current_window_size, &mut window_size_event_writer);
 }
 
 fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,

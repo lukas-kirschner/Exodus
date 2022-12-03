@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use crate::AppState;
+use crate::{AppState, UiSizeChangedEvent};
 use crate::game::scoreboard::Scoreboard;
-use crate::uicontrols::NAVBAR_HEIGHT;
+use crate::uicontrols::{check_ui_size_changed, NAVBAR_HEIGHT, WindowUiOverlayInfo};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 
@@ -25,8 +25,10 @@ pub struct ScoreboardUICounter;
 fn game_ui_system(
     mut egui_ctx: ResMut<EguiContext>,
     scoreboard: Res<Scoreboard>,
+    current_size: ResMut<WindowUiOverlayInfo>,
+    mut event_writer: EventWriter<UiSizeChangedEvent>,
 ) {
-    egui::TopBottomPanel::bottom("")
+    let bot_panel = egui::TopBottomPanel::bottom("")
         .resizable(false)
         .min_height(NAVBAR_HEIGHT)
         .max_height(NAVBAR_HEIGHT)
@@ -39,4 +41,9 @@ fn game_ui_system(
                 ui.label(format!("Keys: {}", scoreboard.keys));
             })
         });
+    let bot_size = bot_panel.response.rect.height();
+    check_ui_size_changed(&WindowUiOverlayInfo {
+        bottom: bot_size,
+        ..default()
+    }, current_size, &mut event_writer);
 }

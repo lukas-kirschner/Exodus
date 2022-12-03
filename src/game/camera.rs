@@ -2,22 +2,30 @@ use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
 use crate::game::constants::TILE_SIZE;
 use crate::game::tilewrapper::MapWrapper;
-use crate::TEXTURE_SIZE;
+use crate::{TEXTURE_SIZE, UiSizeChangedEvent};
+use crate::uicontrols::WindowUiOverlayInfo;
 
-pub type UIMargins = (usize, usize, usize, usize);
+
+pub fn handle_ui_resize(
+    _event: EventReader<UiSizeChangedEvent>,
+    window: Res<Windows>,
+    map: Res<MapWrapper>,
+    ui_info: Res<WindowUiOverlayInfo>,
+    mut camera_query: Query<&mut Transform, With<Camera>>,
+) {
+    let mut camera_transform = camera_query.single_mut();
+    rescale_camera(&window.get_primary().unwrap(), &*map, &mut camera_transform, &*ui_info);
+}
 
 pub fn rescale_camera(
     window: &Window,
     map: &MapWrapper,
     mut camera_transform: &mut Transform,
-    ui_margins: &UIMargins,
+    ui_margins: &WindowUiOverlayInfo,
 ) {
-    // Scale the camera, such that the world exactly fits into the viewport. At the top and bottom,
-    // we leave at least one world tile of space free for UI elements, which we also scale
-    // exactly to the height of one tile.
-    let (left, top, right, bottom) = ui_margins;
-    let map_width_pixels_plus_ui: usize = TEXTURE_SIZE * map.world.width() + left + right;
-    let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height()) + top + bottom; // 2 tiles for UI elements
+    // Scale the camera, such that the world exactly fits into the viewport.
+    let map_width_pixels_plus_ui: usize = TEXTURE_SIZE * map.world.width() + ui_margins.left as usize + ui_margins.right as usize;
+    let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height()) + ui_margins.top as usize + ui_margins.bottom as usize;
     let window_height_pixels: usize = window.height() as usize;
     let window_width_pixels: usize = window.width() as usize;
     let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
@@ -27,8 +35,13 @@ pub fn rescale_camera(
     } else {
         window_height_pixels as f32 / map_height_pixels_plus_ui as f32
     };
+
+    // Translate the camera, such that the center of the game board is shifted up or down, according to the UI margins
+    let shift_x = ((ui_margins.left - ui_margins.right) / TEXTURE_SIZE as f32) * 0.5;
+    let shift_y = ((ui_margins.top - ui_margins.bottom) / TEXTURE_SIZE as f32) * 0.5;
     *camera_transform = Transform::from_scale(Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32)));
-    camera_transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5, (map.world.height() as f32 / 2.) - 0.5, 0.);
+    // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
+    camera_transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5 + shift_x, (map.world.height() as f32 / 2.) - 0.5 + shift_y, 0.);
 }
 
 pub fn setup_camera(
@@ -45,8 +58,13 @@ pub fn setup_camera(
         transform: Transform::default(),
         ..default()
     };
-    // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
-    rescale_camera(&window.get_primary().unwrap(), &map, &mut camera.transform, &(0, TILE_SIZE as usize, 0, TILE_SIZE as usize));
+    let new_size = WindowUiOverlayInfo {
+        top: TILE_SIZE,
+        bottom: TILE_SIZE,
+        ..default()
+    };
+    commands.insert_resource::<WindowUiOverlayInfo>(new_size.clone());
+    rescale_camera(&window.get_primary().unwrap(), &map, &mut camera.transform, &new_size);
     commands.spawn(camera);
 }
 

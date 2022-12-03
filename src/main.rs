@@ -11,7 +11,7 @@ use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
 use crate::mapeditor::MapEditorPlugin;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::egui_fonts;
+use crate::uicontrols::{egui_fonts, UiSizeChangedEvent, WindowUiOverlayInfo};
 
 mod game;
 mod mainmenu;
@@ -209,6 +209,8 @@ impl Plugin for LoadingPlugin {
 fn main() {
     App::new()
         .init_resource::<GameDirectoriesWrapper>()
+        .add_event::<UiSizeChangedEvent>()
+        .init_resource::<WindowUiOverlayInfo>()
         .add_startup_system(game_init)
         .add_state(AppState::Loading)
         .insert_resource(Msaa { samples: 1 })
