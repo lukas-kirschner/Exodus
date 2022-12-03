@@ -11,6 +11,15 @@ mod player_spawn;
 mod preview_tile;
 mod edit_world;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(SystemLabel)]
+enum MapeditorSystems {
+    /// The Game Board mouse handlers
+    GameBoardMouseHandlers,
+    /// The egui drawing routines
+    UiDrawing,
+}
+
 #[derive(Resource)]
 pub struct SelectedTile {
     pub tile: Tile,

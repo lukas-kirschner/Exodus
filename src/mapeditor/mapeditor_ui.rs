@@ -10,10 +10,12 @@ use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
-use crate::mapeditor::{SelectedTile};
+use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
 use crate::uicontrols::{MAPEDITOR_CONTROLS_HEIGHT, NAVBAR_BACK_TEXT};
 
+#[derive(Resource, Default)]
+pub(crate) struct UiMenuOpenEvent(pub bool);
 
 pub struct MapEditorUiPlugin;
 
@@ -21,6 +23,7 @@ impl Plugin for MapEditorUiPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<SelectedTile>()
+            .init_resource::<UiMenuOpenEvent>()
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
                 .with_system(init_player_spawn).after("world").label("player_spawn_placeholder_init")
             )
@@ -31,7 +34,7 @@ impl Plugin for MapEditorUiPlugin {
                 .with_system(atlas_to_egui_textures).after("player_spawn_placeholder_init")
             )
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(mapeditor_ui)
+                .with_system(mapeditor_ui.label(MapeditorSystems::UiDrawing).after(MapeditorSystems::GameBoardMouseHandlers))
             )
             .add_system_set(SystemSet::on_update(AppState::MapEditorDialog)
                 .with_system(mapeditor_dialog)
@@ -84,13 +87,18 @@ fn tile_submenu_button<TUiCreator: FnOnce(&mut Ui) -> (), TText: Into<WidgetText
     ui: &mut Ui,
     button_text: TText,
     button_tooltip: TText,
+    menu_open_res: &mut UiMenuOpenEvent,
     submenu_content: TUiCreator,
 ) {
+    menu_open_res.0 = false;
     ui.scope(|ui| {
         ui.set_height(MAPEDITOR_BUTTON_SIZE);
         ui.set_width(MAPEDITOR_BUTTON_SIZE);
         ui.centered_and_justified(|ui| {
-            ui.menu_button(button_text, submenu_content)
+            ui.menu_button(button_text, |ui| {
+                submenu_content(ui);
+                menu_open_res.0 = true;
+            })
                 .response
                 .on_hover_text(button_tooltip);
         });
@@ -105,6 +113,7 @@ fn mapeditor_ui(
     player: Query<&PlayerSpawnComponent>,
     mut state: ResMut<State<AppState>>,
     worldwrapper: ResMut<MapWrapper>,
+    mut ev_menuopen: ResMut<UiMenuOpenEvent>,
 ) {
     let player_it = player.iter().next().expect("There was no Player Spawn set up");
     egui::TopBottomPanel::top("")
@@ -160,7 +169,7 @@ fn mapeditor_ui(
                 ui.separator();
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::KEY, &mut selected_tile, player_it);
-                tile_submenu_button(ui, "-", "Select an arrow", |ui| {
+                tile_submenu_button(ui, "-", "Select an arrow", &mut ev_menuopen, |ui| {
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
@@ -170,13 +179,13 @@ fn mapeditor_ui(
                 ui.separator();
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
-                tile_submenu_button(ui, "w", "Select a wall spike", |ui| {
+                tile_submenu_button(ui, "w", "Select a wall spike", &mut ev_menuopen, |ui| {
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile, player_it);
                 });
-                tile_submenu_button(ui, "W", "Select a wall spike corner", |ui| {
+                tile_submenu_button(ui, "W", "Select a wall spike corner", &mut ev_menuopen, |ui| {
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile, player_it);
                     tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile, player_it);

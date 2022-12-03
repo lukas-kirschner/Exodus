@@ -3,7 +3,8 @@ use libexodus::tiles::Tile;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
-use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
+use crate::mapeditor::mapeditor_ui::UiMenuOpenEvent;
 use crate::mapeditor::player_spawn::PlayerSpawnComponent;
 
 pub struct EditWorldPlugin;
@@ -12,10 +13,10 @@ impl Plugin for EditWorldPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(mouse_down_handler)
+                .with_system(mouse_down_handler.label(MapeditorSystems::GameBoardMouseHandlers))
             )
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(mouse_down_handler_playerspawn)
+                .with_system(mouse_down_handler_playerspawn.label(MapeditorSystems::GameBoardMouseHandlers))
             )
         ;
     }
@@ -96,23 +97,26 @@ fn mouse_down_handler(
     current_tile: Res<SelectedTile>,
     mut tile_entity_query: Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
     atlas: Res<CurrentMapTextureAtlasHandle>,
+    menu_open: Res<UiMenuOpenEvent>,
 ) {
-    let (camera, camera_transform) = q_camera.get_single().expect("There were multiple cameras spawned");
-    if buttons.pressed(MouseButton::Left) {
-        if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
-            if let Some(current_world_tile) = map.world.get(world_x, world_y) {
-                if *current_world_tile != current_tile.tile {
-                    replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &current_tile.tile, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
-                    map.world.set_dirty();
+    if !menu_open.0 {
+        let (camera, camera_transform) = q_camera.get_single().expect("There were multiple cameras spawned");
+        if buttons.just_pressed(MouseButton::Left) {
+            if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+                if let Some(current_world_tile) = map.world.get(world_x, world_y) {
+                    if *current_world_tile != current_tile.tile {
+                        replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &current_tile.tile, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
+                        map.world.set_dirty();
+                    }
                 }
             }
-        }
-    } else if buttons.pressed(MouseButton::Right) { // On Right Click, replace the current tile with air
-        if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
-            if let Some(current_world_tile) = map.world.get(world_x, world_y) {
-                if *current_world_tile != Tile::AIR {
-                    replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &Tile::AIR, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
-                    map.world.set_dirty();
+        } else if buttons.just_pressed(MouseButton::Right) { // On Right Click, replace the current tile with air
+            if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+                if let Some(current_world_tile) = map.world.get(world_x, world_y) {
+                    if *current_world_tile != Tile::AIR {
+                        replace_world_tile_at(Vec2::new(world_x as f32, world_y as f32), &Tile::AIR, &mut commands, &mut *map, &mut tile_entity_query, &*atlas);
+                        map.world.set_dirty();
+                    }
                 }
             }
         }
@@ -126,14 +130,17 @@ fn mouse_down_handler_playerspawn(
     buttons: Res<Input<MouseButton>>,
     current_tile: Res<SelectedTile>,
     mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
+    menu_open: Res<UiMenuOpenEvent>,
 ) {
-    if current_tile.tile == Tile::PLAYERSPAWN {
-        let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
-        if buttons.pressed(MouseButton::Left) {
-            if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
-                let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
-                translation.x = world_x as f32;
-                translation.y = world_y as f32;
+    if !menu_open.0 {
+        if current_tile.tile == Tile::PLAYERSPAWN {
+            let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
+            if buttons.just_pressed(MouseButton::Left) {
+                if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+                    let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
+                    translation.x = world_x as f32;
+                    translation.y = world_y as f32;
+                }
             }
         }
     }
