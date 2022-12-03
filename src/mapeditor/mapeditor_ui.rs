@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::Ui;
+use bevy_egui::egui::{Ui, WidgetText};
 use libexodus::tiles::{Tile};
 use crate::{AppState, GameDirectoriesWrapper};
 use crate::dialogs::save_file_dialog::SaveFileDialog;
@@ -45,6 +45,7 @@ struct MapEditorDialogResource {
     ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }
 
+/// Create an egui button to select a tile that can currently be placed
 fn tile_kind_selector_button_for(
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
@@ -73,7 +74,26 @@ fn tile_kind_selector_button_for(
             ;
         if button.clicked() {
             selected_tile.tile = tile.clone();
+            ui.close_menu();
         }
+    });
+}
+
+/// Create a menu button with the given text
+fn tile_submenu_button<TUiCreator: FnOnce(&mut Ui) -> (), TText: Into<WidgetText>>(
+    ui: &mut Ui,
+    button_text: TText,
+    button_tooltip: TText,
+    submenu_content: TUiCreator,
+) {
+    ui.scope(|ui| {
+        ui.set_height(MAPEDITOR_BUTTON_SIZE);
+        ui.set_width(MAPEDITOR_BUTTON_SIZE);
+        ui.centered_and_justified(|ui| {
+            ui.menu_button(button_text, submenu_content)
+                .response
+                .on_hover_text(button_tooltip);
+        });
     });
 }
 
@@ -140,47 +160,29 @@ fn mapeditor_ui(
                 ui.separator();
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::COIN, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::KEY, &mut selected_tile, player_it);
-                ui.scope(|ui| {
-                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
-                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
-                    ui.centered_and_justified(|ui| {
-                        ui.menu_button("-", |ui| { // TODO Icon on a Menu Button?
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
-                        }).response.on_hover_text("Select an arrow");
-                    });
+                tile_submenu_button(ui, "-", "Select an arrow", |ui| {
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
                 });
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::LADDER, &mut selected_tile, player_it);
                 ui.separator();
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
                 tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
-                ui.scope(|ui| {
-                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
-                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
-                    ui.centered_and_justified(|ui| {
-                        ui.menu_button("w", |ui| { // TODO Icon on a Menu Button?
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile, player_it);
-                        }).response.on_hover_text("Select a wall spike edge");
-                    });
+                tile_submenu_button(ui, "w", "Select a wall spike", |ui| {
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::SPIKESSLOPED, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESL, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESR, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESB, &mut selected_tile, player_it);
                 });
-                ui.scope(|ui| {
-                    ui.set_height(MAPEDITOR_BUTTON_SIZE);
-                    ui.set_width(MAPEDITOR_BUTTON_SIZE);
-                    ui.centered_and_justified(|ui| {
-                        ui.menu_button("W", |ui| {
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile, player_it);
-                            tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile, player_it);
-                        }).response.on_hover_text("Select a wall spike corner");
-                    });
+                tile_submenu_button(ui, "W", "Select a wall spike corner", |ui| {
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLR, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRB, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLB, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile, player_it);
+                    tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile, player_it);
                 });
             });
         });
