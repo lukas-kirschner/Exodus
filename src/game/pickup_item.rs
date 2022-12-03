@@ -139,6 +139,7 @@ fn collectible_collected_event(
 ) {
     for ev in ev_collectible_collected.iter() {
         let _player: Entity = ev.player;
+        let _collectible: Entity = ev.collectible;
         match ev.action {
             CollectibleAction::AddCoins { coins } => scoreboard.coins += coins as i32,
             CollectibleAction::AddKeys { keys } => scoreboard.keys += keys as usize,
