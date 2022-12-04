@@ -61,15 +61,24 @@ jobs:
           fetch-depth: '1'
           lfs: true
           submodules: true
-
       - name: Install Stable Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-
       - name: Build Nightly in Release Mode
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release
+      - name: Strip Metadata
+        run: |
+          cp -vr assets target/release
+        shell: bash
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: exodus-linux-x64
+          path: |
+            target/release/exodus
+            target/release/assets

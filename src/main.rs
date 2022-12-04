@@ -107,12 +107,19 @@ impl FromWorld for PlayerSpriteHandles {
     }
 }
 
+fn load_asset_folder_or_panic(
+    asset_server: &AssetServer,
+    path: &str,
+) -> Vec<HandleUntyped> {
+    asset_server.load_folder(path).expect(format!("Could not find asset folder at {}", path).as_str())
+}
+
 fn load_textures(
     mut rpg_sprite_handles: ResMut<RpgSpriteHandles>,
     mut player_sprite_handles: ResMut<PlayerSpriteHandles>,
     asset_server: Res<AssetServer>,
 ) {
-    // Load the textures, similar to the example in https://github.com/bevyengine/bevy/blob/main/examples/2d/texture_atlas.rs
+    // Load the textures - Bevy takes care of resolving the paths, see https://bevy-cheatbook.github.io/assets/assetserver.html
     rpg_sprite_handles.handles = asset_server.load_folder("textures/tilesets").unwrap();
     player_sprite_handles.handles = asset_server.load_folder("textures/players").unwrap();
 }

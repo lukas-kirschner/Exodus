@@ -5,7 +5,7 @@ authors = ["Lukas Kirschner <lukas@lukaskirschner.de>"]
 edition = "2021"
 
 [workspace]
-
+resolver = "2"
 members = [
     "libexodus"
 ]
@@ -74,9 +74,21 @@ features = [
     #    "wav",
 
     # Development/Debug features:
-    "dynamic", # Dynamic linking for faster compile-times
+#    "dynamic", # Dynamic linking for faster compile-times
     #    "trace",        # Enable tracing for performance measurement
     #    "trace_tracy",  # Tracing using `tracy`
     #    "trace_chrome", # Tracing using the Chrome format
     #    "wgpu_trace",   # WGPU/rendering tracing
 ]
+
+
+[profile.release]
+debug = false
+strip = "symbols"
+debug-assertions = false
+lto = true
+codegen-units = 1
+opt-level = 3
+
+[profile.dev.package."*"]
+opt-level = 3
