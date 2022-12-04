@@ -13,7 +13,7 @@ impl Plugin for GameUIPlugin {
         app
             .init_resource::<Scoreboard>()
             .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(game_ui_system)
+                .with_system(game_ui_system.label("gameui"))
             )
         ;
     }
