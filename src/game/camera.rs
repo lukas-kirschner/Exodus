@@ -24,24 +24,34 @@ pub fn rescale_camera(
     ui_margins: &WindowUiOverlayInfo,
 ) {
     // Scale the camera, such that the world exactly fits into the viewport.
-    let map_width_pixels_plus_ui: usize = TEXTURE_SIZE * map.world.width() + ui_margins.left as usize + ui_margins.right as usize;
-    let map_height_pixels_plus_ui: usize = TEXTURE_SIZE * (map.world.height()) + ui_margins.top as usize + ui_margins.bottom as usize;
-    let window_height_pixels: usize = window.height() as usize;
-    let window_width_pixels: usize = window.width() as usize;
-    let window_ratio: f32 = window_width_pixels as f32 / window_height_pixels as f32;
-    let map_ratio: f32 = map_width_pixels_plus_ui as f32 / map_height_pixels_plus_ui as f32;
+    let map_width_px: usize = TEXTURE_SIZE * map.world.width();
+    let map_height_px: usize = TEXTURE_SIZE * (map.world.height());
+    let window_space_height_pixels: f32 = window.height() - (ui_margins.top + ui_margins.bottom);
+    let window_space_width_pixels: f32 = window.width() - (ui_margins.left + ui_margins.right);
+    let window_ratio: f32 = window_space_width_pixels / window_space_height_pixels;
+    let map_ratio: f32 = map_width_px as f32 / map_height_px as f32;
     let camera_scale = if window_ratio < map_ratio {
-        window_width_pixels as f32 / map_width_pixels_plus_ui as f32
+        window_space_width_pixels / (map_width_px as f32)
     } else {
-        window_height_pixels as f32 / map_height_pixels_plus_ui as f32
+        window_space_height_pixels / (map_height_px as f32)
     };
+    *camera_transform = Transform::from_scale(Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32)));
 
     // Translate the camera, such that the center of the game board is shifted up or down, according to the UI margins
-    let shift_x = ((ui_margins.left - ui_margins.right) / TEXTURE_SIZE as f32) * 0.5;
-    let shift_y = ((ui_margins.top - ui_margins.bottom) / TEXTURE_SIZE as f32) * 0.5;
-    *camera_transform = Transform::from_scale(Vec3::splat(1. / (camera_scale * TEXTURE_SIZE as f32)));
-    // We need to subtract 0.5 to account for the fact that tiles are placed in the middle of each coordinate
-    camera_transform.translation = Vec3::new((map.world.width() as f32 / 2.) - 0.5 + shift_x, (map.world.height() as f32 / 2.) - 0.5 + shift_y, 0.);
+    // Shift the world to the middle of the screen
+    let mut shift_x = ((map.world.width() * TEXTURE_SIZE) as f32 / 2.);
+    let mut shift_y = ((map.world.height() * TEXTURE_SIZE) as f32 / 2.);
+    // Shift the UI down to match the viewport with UI margins
+    shift_x = shift_x + (ui_margins.left - ui_margins.right) / 2.;
+    shift_y = shift_y + (ui_margins.top - ui_margins.bottom) / 2.;
+    // Convert pixels to world coordinates
+    shift_x /= TEXTURE_SIZE as f32;
+    shift_y /= TEXTURE_SIZE as f32;
+    // We need to subtract 0.5 to take account for the fact that tiles are placed in the middle of each coordinate instead of the corner
+    shift_x = shift_x - 0.5;
+    shift_y = shift_y - 0.5;
+
+    camera_transform.translation = Vec3::new(shift_x, shift_y, 0.);
 }
 
 pub fn setup_camera(
