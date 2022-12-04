@@ -73,7 +73,6 @@ jobs:
           args: --release
       - name: Strip Metadata
         run: |
-          mv -v target/release/deps/*.so target/release
           cp -vr assets target/release
         shell: bash
       - name: Upload Artifact
@@ -81,6 +80,5 @@ jobs:
         with:
           name: exodus-linux-x64
           path: |
-            target/release/*.so
             target/release/exodus
             target/release/assets

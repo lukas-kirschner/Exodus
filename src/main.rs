@@ -107,6 +107,13 @@ impl FromWorld for PlayerSpriteHandles {
     }
 }
 
+fn load_asset_folder_or_panic(
+    asset_server: &AssetServer,
+    path: &str,
+) -> Vec<HandleUntyped> {
+    asset_server.load_folder(path).expect(format!("Could not find asset folder at {}", path).as_str())
+}
+
 fn load_textures(
     mut rpg_sprite_handles: ResMut<RpgSpriteHandles>,
     mut player_sprite_handles: ResMut<PlayerSpriteHandles>,
