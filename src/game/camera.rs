@@ -7,14 +7,16 @@ use crate::uicontrols::WindowUiOverlayInfo;
 
 
 pub fn handle_ui_resize(
-    _event: EventReader<UiSizeChangedEvent>,
+    mut event: EventReader<UiSizeChangedEvent>,
     window: Res<Windows>,
     map: Res<MapWrapper>,
     ui_info: Res<WindowUiOverlayInfo>,
     mut camera_query: Query<&mut Transform, With<Camera>>,
 ) {
-    let mut camera_transform = camera_query.single_mut();
-    rescale_camera(&window.get_primary().unwrap(), &*map, &mut camera_transform, &*ui_info);
+    for _ in event.iter() {
+        let mut camera_transform = camera_query.single_mut();
+        rescale_camera(&window.get_primary().unwrap(), &*map, &mut camera_transform, &*ui_info);
+    }
 }
 
 pub fn rescale_camera(
