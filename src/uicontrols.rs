@@ -50,7 +50,7 @@ pub fn check_ui_size_changed(
     if *new_size != *current_size {
         *current_size = (*new_size).clone();
         event_writer.send(UiSizeChangedEvent);
-        println!("Changed UI Overlay to T {:?} B {:?} L {:?} R{:?}", new_size.top, new_size.bottom, new_size.left, new_size.right);
+        debug!("Changed UI Overlay to T {:?} B {:?} L {:?} R{:?}", new_size.top, new_size.bottom, new_size.left, new_size.right);
     }
 }
 

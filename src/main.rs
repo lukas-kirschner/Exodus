@@ -1,5 +1,6 @@
 use std::fs;
 use bevy::asset::LoadState;
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
 use bevy_egui::{EguiContext, EguiPlugin};
@@ -228,6 +229,14 @@ fn main() {
                     ..Default::default()
                 },
                 ..default()
+            })
+            .set(LogPlugin {
+                filter: if cfg!(debug_assertions) {
+                    "info,wgpu_core=warn,wgpu_hal=warn,exodus=debug"
+                } else {
+                    "info,wgpu_core=warn,wgpu_hal=warn,exodus=info"
+                }.into(),
+                level: bevy::log::Level::DEBUG,
             })
         )
         .add_plugin(EguiPlugin)

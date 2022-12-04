@@ -209,7 +209,7 @@ fn mapeditor_dialog(mut egui_ctx: ResMut<EguiContext>,
                         worldwrapper.world.set_clean();
                     }
                     Err(v) => {
-                        eprintln!("Could not save map file {} - {}", worldwrapper.world.get_filename().unwrap().to_str().unwrap_or("<invalid>"), v.to_string());
+                        error!("Could not save map file {} - {}", worldwrapper.world.get_filename().unwrap().to_str().unwrap_or("<invalid>"), v.to_string());
                         // Mark map as dirty, because saving the map was not successful
                         worldwrapper.world.set_dirty();
                     }

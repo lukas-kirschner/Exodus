@@ -31,9 +31,9 @@ fn load_maps(
     directories.game_directories.iter_maps()
         .for_each(|map_file| {
             if let Ok(map) = GameWorld::load_from_file(map_file.path())
-                .map_err(|err| eprintln!("Could not load map file at {}! Error: {}", map_file.path().to_str().unwrap_or("<Invalid Path>"), err))
+                .map_err(|err| error!("Could not load map file at {}! Error: {}", map_file.path().to_str().unwrap_or("<Invalid Path>"), err))
                 .map(|mut map| {
-                    println!("Successfully loaded map file {}", map_file.path().to_str().unwrap_or("<Invalid Path>"));
+                    debug!("Successfully loaded map file {}", map_file.path().to_str().unwrap_or("<Invalid Path>"));
                     map.set_clean();
                     map
                 }) {
