@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use bevy::log::debug;
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 use crate::dialogs::UIDialog;
@@ -81,9 +82,8 @@ impl UIDialog for SaveFileDialog {
                         });
                         let save = ui.button("Save");
                         if save.clicked() {
-                            //TODO Save map
                             let map_dir = directories.path_from_userinput(self.file_name.as_str());
-                            println!("{:?}", map_dir);
+                            debug!("{:?}", map_dir);
                             if let Ok(path) = map_dir {
                                 self.file_path = Some(path);
                                 self.state = if self.file_path.as_ref().unwrap().exists() {

@@ -35,20 +35,30 @@ pub struct PickupItemPlugin;
 impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_event::<CollectibleCollectedEvent>()
+            // Collision Handlers
             .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(coin_collision).after("player_movement")
+                .with_system(setup_collectible_event::<CoinWrapper>).after("player_movement")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(key_collision).after("player_movement")
+                .with_system(setup_collectible_event::<KeyWrapper>).after("player_movement")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(misc_collectible_collision).after("player_movement")
+                .with_system(setup_collectible_event::<CollectibleWrapper>).after("player_movement")
+            )
+            // Event Handlers
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(collectible_collected_event).after("player_movement")
             )
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(pickup_item_animation).after("player_movement")
             )
         ;
     }
+}
+
+trait CollectibleWrapperTrait {
+    fn get_action(&self) -> CollectibleAction;
 }
 
 /// A wrapper for coins
@@ -58,60 +68,88 @@ pub struct CoinWrapper {
     pub coin_value: i32,
 }
 
+impl CollectibleWrapperTrait for CoinWrapper {
+    fn get_action(&self) -> CollectibleAction {
+        CollectibleAction::AddCoins { coins: 1 }
+    }
+}
+
 /// A wrapper for keys
 #[derive(Component)]
 pub struct KeyWrapper;
+
+impl CollectibleWrapperTrait for KeyWrapper {
+    fn get_action(&self) -> CollectibleAction {
+        CollectibleAction::AddKeys { keys: 1 }
+    }
+}
 
 /// A wrapper for Collectibles (Arrows,...)
 #[derive(Component)]
 pub struct CollectibleWrapper;
 
-fn collectible_collision<T: bevy::prelude::Component, F: FnMut(&T) -> ()>(
-    commands: &mut Commands,
-    query: &mut Query<(Entity, &Transform, &mut T)>,
-    players: &Query<(&PlayerComponent, &Transform)>,
-    mut increment_function: F,
+impl CollectibleWrapperTrait for CollectibleWrapper {
+    fn get_action(&self) -> CollectibleAction {
+        CollectibleAction::None
+    }
+}
+
+enum CollectibleAction {
+    AddCoins { coins: u32 },
+    AddKeys { keys: u32 },
+    None,
+}
+
+struct CollectibleCollectedEvent {
+    player: Entity,
+    action: CollectibleAction,
+    collectible: Entity,
+}
+
+fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
+    mut commands: Commands,
+    coin_query: Query<(Entity, &Transform, &WrapperType)>,
+    players: Query<(&PlayerComponent, &Transform, Entity)>,
+    mut ev_collectible_collected: EventWriter<CollectibleCollectedEvent>,
 ) {
-    for (_player, player_trans) in players.iter() {
+    for (_player, player_trans, player_entity) in players.iter() {
         let player_pos: Vec3 = player_trans.translation;
-        for (coin_entity, coin_trans, coin) in query.iter_mut() {
+        for (coin_entity, coin_trans, coin) in coin_query.iter() {
             let coin_pos: Vec3 = coin_trans.translation;
             let dist = dist_2d(&player_pos, &coin_pos);
             if dist <= COLLECTIBLE_PICKUP_DISTANCE {
-                // The player picks up the collectible
-                increment_function(&*coin);
-                commands.entity(coin_entity).remove::<T>().insert(PickupItem);
+                // Fire event
+                ev_collectible_collected.send(CollectibleCollectedEvent {
+                    player: player_entity,
+                    action: coin.get_action(),
+                    collectible: coin_entity,
+                });
+                // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
+                commands.entity(coin_entity).remove::<WrapperType>().insert(PickupItem);
             }
         }
     }
 }
 
-pub fn coin_collision(
-    mut commands: Commands,
-    mut coin_query: Query<(Entity, &Transform, &mut CoinWrapper)>,
-    players: Query<(&PlayerComponent, &Transform)>,
+
+/// Event that despawns the collected collectible and executes the associated action
+fn collectible_collected_event(
+    mut ev_collectible_collected: EventReader<CollectibleCollectedEvent>,
     mut scoreboard: ResMut<Scoreboard>,
 ) {
-    collectible_collision(&mut commands, &mut coin_query, &players, |coin: &CoinWrapper| { scoreboard.coins += coin.coin_value });
+    for ev in ev_collectible_collected.iter() {
+        let _player: Entity = ev.player;
+        let _collectible: Entity = ev.collectible;
+        match ev.action {
+            CollectibleAction::AddCoins { coins } => scoreboard.coins += coins as i32,
+            CollectibleAction::AddKeys { keys } => scoreboard.keys += keys as usize,
+            CollectibleAction::None => (),
+        };
+    }
 }
 
-pub fn key_collision(
-    mut commands: Commands,
-    mut key_query: Query<(Entity, &Transform, &mut KeyWrapper)>,
-    players: Query<(&PlayerComponent, &Transform)>,
-    mut scoreboard: ResMut<Scoreboard>,
-) {
-    collectible_collision(&mut commands, &mut key_query, &players, |_: &KeyWrapper| { scoreboard.keys += 1 });
-}
-
-pub fn misc_collectible_collision(
-    mut commands: Commands,
-    mut key_query: Query<(Entity, &Transform, &mut CollectibleWrapper)>,
-    players: Query<(&PlayerComponent, &Transform)>,
-) {
-    collectible_collision(&mut commands, &mut key_query, &players, |_: &CollectibleWrapper| {});
-}
-
+/// Insert the appropriate wrapper when a tile is set up in the game world.
+/// Must be called from the game board setup routine
 pub fn insert_wrappers(
     tile: &Tile,
     bundle: &mut EntityCommands,

@@ -1,7 +1,8 @@
 use std::fs;
 use bevy::asset::LoadState;
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use bevy::window::WindowMode;
+use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
 use libexodus::directories::GameDirectories;
@@ -11,7 +12,7 @@ use crate::game::GamePlugin;
 use crate::mainmenu::MainMenu;
 use crate::mapeditor::MapEditorPlugin;
 use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::egui_fonts;
+use crate::uicontrols::{egui_fonts, UiSizeChangedEvent, WindowUiOverlayInfo};
 
 mod game;
 mod mainmenu;
@@ -206,9 +207,32 @@ impl Plugin for LoadingPlugin {
     }
 }
 
+fn resize_notificator(
+    mut resize_event: EventReader<WindowResized>,
+    mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
+    window: Res<Windows>,
+) {
+    for e in resize_event.iter() {
+        if e.id == window.get_primary().unwrap().id() {
+            debug!("The main window was resized to a new size of {} x {}", e.width, e.height);
+            ev_camera_writer.send(UiSizeChangedEvent);
+        }
+    }
+}
+
+pub(crate) fn get_buildnr() -> String {
+    option_env!("BUILD_NUMBER").map(|b| format!(".{}", b)).unwrap_or("".to_string())
+}
+
 fn main() {
+    let mut window_title: String = format!("{} {}{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"), get_buildnr());
+    if cfg!(debug_assertions) {
+        window_title.push_str(format!(" Build {} ({})", env!("GIT_SHORTHASH"), env!("GIT_SHORTDATE")).as_str());
+    }
     App::new()
         .init_resource::<GameDirectoriesWrapper>()
+        .add_event::<UiSizeChangedEvent>()
+        .init_resource::<WindowUiOverlayInfo>()
         .add_startup_system(game_init)
         .add_state(AppState::Loading)
         .insert_resource(Msaa { samples: 1 })
@@ -216,8 +240,8 @@ fn main() {
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
                 window: WindowDescriptor {
-                    title: "Exodus".to_string(),
-                    resizable: false,
+                    title: window_title,
+                    resizable: true,
                     width: 1001.,
                     height: 501.,
                     cursor_visible: true,
@@ -227,7 +251,16 @@ fn main() {
                 },
                 ..default()
             })
+            .set(LogPlugin {
+                filter: if cfg!(debug_assertions) {
+                    "info,wgpu_core=warn,wgpu_hal=warn,exodus=debug"
+                } else {
+                    "info,wgpu_core=warn,wgpu_hal=warn,exodus=info"
+                }.into(),
+                level: bevy::log::Level::DEBUG,
+            })
         )
+        .add_system(resize_notificator)
         .add_plugin(EguiPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(MainMenu)

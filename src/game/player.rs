@@ -130,7 +130,7 @@ pub fn player_movement(
             let (target_x, target_y) = movement.int_target_from_direction(transform.translation.x, transform.translation.y);
             // Check if the player collides with map boundaries
             if target_x < 0 || target_y < 0 || target_x >= worldwrapper.world.width() as i32 || target_y >= worldwrapper.world.height() as i32 {
-                println!("Dropped Movement {:?} to {},{}, because its target lies outside of the map boundaries!", movement.direction(), movement.target.0, movement.target.1);
+                debug!("Dropped Movement {:?} to {},{}, because its target lies outside of the map boundaries!", movement.direction(), movement.target.0, movement.target.1);
                 player.pop_movement_queue();
                 continue;
             }
@@ -138,7 +138,7 @@ pub fn player_movement(
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
                     if !door_opened(&mut doors, &mut commands, target_x, target_y, &mut worldwrapper.world, &mut *scoreboard) {
-                        println!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
+                        debug!("Dropped movement {:?} to {},{} because a collision was detected.", movement.direction(), movement.target.0, movement.target.1);
                         player.pop_movement_queue(); // On collision, clear the latest movement
                     } else {
                         break;

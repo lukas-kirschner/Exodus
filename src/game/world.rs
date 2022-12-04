@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
-use crate::game::camera::{destroy_camera, setup_camera};
+use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
@@ -14,20 +14,26 @@ impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(AppState::Playing)
-                .with_system(reset_world).label("world")
+                .with_system(reset_world.label("world"))
             )
             .add_system_set(SystemSet::on_enter(AppState::Playing)
-                .with_system(setup_camera).after("world").label("camera")
+                .with_system(setup_camera.after("world").label("camera"))
+            )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(handle_ui_resize.after("gameui"))
             )
             .add_system_set(SystemSet::on_exit(AppState::Playing)
                 .with_system(destroy_camera)
             )
             // Map Editor needs a world as well:
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
-                .with_system(reset_world).label("world")
+                .with_system(reset_world.label("world"))
             )
             .add_system_set(SystemSet::on_enter(AppState::MapEditor)
-                .with_system(setup_camera).after("world").label("camera")
+                .with_system(setup_camera.after("world").label("camera"))
+            )
+            .add_system_set(SystemSet::on_update(AppState::MapEditor)
+                .with_system(handle_ui_resize.after("gameui"))
             )
             .add_system_set(SystemSet::on_exit(AppState::MapEditor)
                 .with_system(destroy_camera)
