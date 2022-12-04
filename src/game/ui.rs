@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use crate::{AppState, UiSizeChangedEvent};
 use crate::game::scoreboard::Scoreboard;
-use crate::uicontrols::{check_ui_size_changed, WindowUiOverlayInfo};
+use crate::uicontrols::{check_ui_size_changed, UIMARGIN, WindowUiOverlayInfo};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 
@@ -31,13 +31,23 @@ fn game_ui_system(
     let bot_panel = egui::TopBottomPanel::bottom("")
         .resizable(false)
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal_centered(|ui| {
-                ui.label(format!("Coins: {}", scoreboard.coins));
-                ui.separator();
-                ui.label(format!("Moves: {}", scoreboard.moves));
-                ui.separator();
-                ui.label(format!("Keys: {}", scoreboard.keys));
-            })
+            ui.vertical(|ui| {
+                ui.scope(|ui| {
+                    ui.set_height(UIMARGIN / 2.);
+                });
+                ui.scope(|ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(format!("Coins: {}", scoreboard.coins));
+                        ui.separator();
+                        ui.label(format!("Moves: {}", scoreboard.moves));
+                        ui.separator();
+                        ui.label(format!("Keys: {}", scoreboard.keys));
+                    });
+                });
+                ui.scope(|ui| {
+                    ui.set_height(UIMARGIN / 2.);
+                });
+            });
         });
     let bot_size = bot_panel.response.rect.height();
     check_ui_size_changed(&WindowUiOverlayInfo {
