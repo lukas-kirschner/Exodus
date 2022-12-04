@@ -210,10 +210,13 @@ impl Plugin for LoadingPlugin {
 fn resize_notificator(
     mut resize_event: EventReader<WindowResized>,
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
+    window: Res<Windows>,
 ) {
     for e in resize_event.iter() {
-        debug!("The window was resized to a new size of {} x {}", e.width, e.height);
-        ev_camera_writer.send(UiSizeChangedEvent);
+        if e.id == window.get_primary().unwrap().id() {
+            debug!("The main window was resized to a new size of {} x {}", e.width, e.height);
+            ev_camera_writer.send(UiSizeChangedEvent);
+        }
     }
 }
 
