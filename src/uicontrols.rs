@@ -8,8 +8,6 @@ use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 
 /// The height of the Navbar
 pub const NAVBAR_HEIGHT: f32 = 32.0;
-/// The height of the Map Editor Controls Bar
-pub const MAPEDITOR_CONTROLS_HEIGHT: f32 = (MAPEDITOR_BUTTON_SIZE + 2.) * 2.;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
 /// The text used for the Navbar Back Button

@@ -2,13 +2,13 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::{Frame, RichText};
 use indoc::formatdoc;
-use crate::AppState;
+use crate::{AppState, get_buildnr};
 use crate::uicontrols::{add_navbar, menu_esc_control, UIMARGIN};
 
 pub struct CreditsScreen;
 
 fn credits() -> String {
-    let buildnr = option_env!("BUILD_NUMBER").map(|b| format!(".{}", b)).unwrap_or("".to_string());
+    let buildnr = get_buildnr();
     let mut ret: String = formatdoc! {"
         {program_name} Version {version}{buildnr}
         based on the \"Space Exodus\" Psion EPOC game
