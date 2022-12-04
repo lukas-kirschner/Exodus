@@ -111,14 +111,9 @@ fn load_textures(
     mut player_sprite_handles: ResMut<PlayerSpriteHandles>,
     asset_server: Res<AssetServer>,
 ) {
-    let current_exe = std::env::current_exe().map_err(|err| panic!("Could not locate current exe directory! {}", err.to_string())).unwrap();
-    let mut tilesets_folder = current_exe.parent().expect(format!("Could not find parent of current exe at {}", current_exe.to_str().unwrap()).as_str()).to_path_buf();
-    tilesets_folder.push("textures/tilesets");
-    let mut players_folder = current_exe.parent().unwrap().to_path_buf();
-    players_folder.push("textures/players");
-    // Load the textures, similar to the example in https://github.com/bevyengine/bevy/blob/main/examples/2d/texture_atlas.rs
-    rpg_sprite_handles.handles = asset_server.load_folder(&tilesets_folder).expect(format!("Could not load textures from {}", tilesets_folder.to_str().unwrap()).as_str());
-    player_sprite_handles.handles = asset_server.load_folder(&players_folder).expect(format!("Could not load textures from {}", players_folder.to_str().unwrap()).as_str());
+    // Load the textures - Bevy takes care of resolving the paths, see https://bevy-cheatbook.github.io/assets/assetserver.html
+    rpg_sprite_handles.handles = asset_server.load_folder("textures/tilesets").unwrap();
+    player_sprite_handles.handles = asset_server.load_folder("textures/players").unwrap();
 }
 
 #[derive(Resource)]
