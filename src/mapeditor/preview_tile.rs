@@ -116,7 +116,7 @@ fn update_preview_tile(
         // eprintln!("World coords: {}/{}", world_x, world_y);
     } else {
         // The cursor is not in the window. We need to move the preview out of sight
-        transform.translation.x = -1.0;
-        transform.translation.y = -1.0;
+        transform.translation.x = -10000.0;
+        transform.translation.y = -10000.0;
     }
 }

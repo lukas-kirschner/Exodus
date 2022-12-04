@@ -203,7 +203,7 @@ impl fmt::Display for Tile {
             Tile::WALLSPIKESLB => "LB Wall Spikes",
             Tile::WALLSPIKESRB => "RB Wall Spikes",
             Tile::WALLSPIKESTB => "TB Wall Spikes",
-            Tile::WALLSPIKESRLTB => "LTB Wall Spikes",
+            Tile::WALLSPIKESRLTB => "RLTB Wall Spikes",
             Tile::WALLSPIKESRTB => "RTB Wall Spikes",
             Tile::WALLSPIKESLTB => "LTB Wall Spikes",
             Tile::DOOR => "Door",

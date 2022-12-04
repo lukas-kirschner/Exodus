@@ -3,7 +3,7 @@ use libexodus::tiles::Tile;
 use crate::{AppState, CurrentMapTextureAtlasHandle};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
-use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
 use crate::mapeditor::player_spawn::PlayerSpawnComponent;
 
 pub struct EditWorldPlugin;
@@ -12,10 +12,10 @@ impl Plugin for EditWorldPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(mouse_down_handler)
+                .with_system(mouse_down_handler.label(MapeditorSystems::GameBoardMouseHandlers))
             )
             .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(mouse_down_handler_playerspawn)
+                .with_system(mouse_down_handler_playerspawn.label(MapeditorSystems::GameBoardMouseHandlers))
             )
         ;
     }
@@ -98,7 +98,7 @@ fn mouse_down_handler(
     atlas: Res<CurrentMapTextureAtlasHandle>,
 ) {
     let (camera, camera_transform) = q_camera.get_single().expect("There were multiple cameras spawned");
-    if buttons.pressed(MouseButton::Left) {
+    if buttons.just_pressed(MouseButton::Left) {
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
@@ -107,7 +107,7 @@ fn mouse_down_handler(
                 }
             }
         }
-    } else if buttons.pressed(MouseButton::Right) { // On Right Click, replace the current tile with air
+    } else if buttons.just_pressed(MouseButton::Right) { // On Right Click, replace the current tile with air
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
@@ -129,7 +129,7 @@ fn mouse_down_handler_playerspawn(
 ) {
     if current_tile.tile == Tile::PLAYERSPAWN {
         let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
-        if buttons.pressed(MouseButton::Left) {
+        if buttons.just_pressed(MouseButton::Left) {
             if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
                 let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
                 translation.x = world_x as f32;
