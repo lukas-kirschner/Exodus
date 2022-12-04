@@ -3,7 +3,7 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Align;
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::uicontrols::{add_navbar, DELETE_TEXT, EDIT_TEXT, menu_esc_control, NAVBAR_HEIGHT, PLAY_TEXT};
+use crate::uicontrols::{add_navbar, BUTTON_HEIGHT, DELETE_TEXT, EDIT_TEXT, menu_esc_control, PLAY_TEXT};
 use crate::game::tilewrapper::MapWrapper;
 
 #[derive(Resource)]
@@ -120,15 +120,15 @@ fn map_selection_screen_ui(
                     ui.vertical_centered_justified(|ui| {
                         for (i, map) in maps.maps.iter().enumerate() {
                             ui.scope(|ui| {
-                                ui.set_height(NAVBAR_HEIGHT);
+                                ui.set_height(BUTTON_HEIGHT);
                                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
                                     ui.label(map.world.get_name());
                                     ui.label(" ");
                                     ui.label(map.world.get_author());
                                     ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
                                         ui.scope(|ui| {
-                                            ui.set_height(NAVBAR_HEIGHT);
-                                            ui.set_width(NAVBAR_HEIGHT);
+                                            ui.set_height(BUTTON_HEIGHT);
+                                            ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
                                                 let play_btn = ui.button(PLAY_TEXT).on_hover_text("Play Map");
                                                 if play_btn.clicked() {
@@ -137,8 +137,8 @@ fn map_selection_screen_ui(
                                             })
                                         });
                                         ui.scope(|ui| {
-                                            ui.set_height(NAVBAR_HEIGHT);
-                                            ui.set_width(NAVBAR_HEIGHT);
+                                            ui.set_height(BUTTON_HEIGHT);
+                                            ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
                                                 let edit_btn = ui.button(EDIT_TEXT).on_hover_text("Edit Map");
                                                 if edit_btn.clicked() {
@@ -147,8 +147,8 @@ fn map_selection_screen_ui(
                                             })
                                         });
                                         ui.scope(|ui| {
-                                            ui.set_height(NAVBAR_HEIGHT);
-                                            ui.set_width(NAVBAR_HEIGHT);
+                                            ui.set_height(BUTTON_HEIGHT);
+                                            ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
                                                 let delete_btn = ui.button(DELETE_TEXT).on_hover_text("Delete Map");
                                                 if delete_btn.clicked() {

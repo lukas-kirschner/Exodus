@@ -41,8 +41,8 @@ pub fn rescale_camera(
 
     // Translate the camera, such that the center of the game board is shifted up or down, according to the UI margins
     // Shift the world to the middle of the screen
-    let mut shift_x = ((map.world.width() * TEXTURE_SIZE) as f32 / 2.);
-    let mut shift_y = ((map.world.height() * TEXTURE_SIZE) as f32 / 2.);
+    let mut shift_x = (map.world.width() * TEXTURE_SIZE) as f32 / 2.;
+    let mut shift_y = (map.world.height() * TEXTURE_SIZE) as f32 / 2.;
     // Shift the UI down to match the viewport with UI margins
     shift_x = shift_x + (ui_margins.left - ui_margins.right) / 2.;
     shift_y = shift_y + (ui_margins.top - ui_margins.bottom) / 2.;

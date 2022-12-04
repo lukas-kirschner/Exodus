@@ -4,10 +4,9 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::{Align, FontId};
 use bevy_egui::egui::FontFamily::Proportional;
 use crate::AppState;
-use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 
-/// The height of the Navbar
-pub const NAVBAR_HEIGHT: f32 = 32.0;
+/// The button height of main menu buttons
+pub const BUTTON_HEIGHT: f32 = 32.0;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
 /// The text used for the Navbar Back Button
@@ -94,10 +93,10 @@ pub fn add_navbar(
     state: &mut ResMut<State<AppState>>,
 ) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
-        ui.set_height(NAVBAR_HEIGHT);
+        ui.set_height(BUTTON_HEIGHT);
         ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
             ui.scope(|ui| {
-                ui.set_width(NAVBAR_HEIGHT);
+                ui.set_width(BUTTON_HEIGHT);
                 ui.centered_and_justified(|ui| {
                     let back_button = ui.button(NAVBAR_BACK_TEXT);
 
