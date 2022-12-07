@@ -13,7 +13,6 @@ impl GameWorld {
         world
             .set_name("Example World")
             .set_author("Debugger")
-            .set_uuid("badeaffe-e4fe-47af-8ff6-0000c0febabe")
             .set(2, 1, WALL)
             .set(1, 1, WALL)
             .set(1, 2, PLAYERSPAWN)

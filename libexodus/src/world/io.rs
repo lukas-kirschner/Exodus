@@ -4,13 +4,13 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 use crate::tiles::Tile;
 use crate::world::GameWorld;
-use uuid::Uuid;
 use crate::world::io_error::GameWorldParseError;
 
 pub(crate) const CURRENT_MAP_VERSION: u8 = 0x01;
 pub(crate) const MAGICBYTES: [u8; 9] = [0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x4d, 0x61, 0x70];
 pub(crate) const MAX_MAP_WIDTH: usize = 1024;
 pub(crate) const MAX_MAP_HEIGHT: usize = 1024;
+pub(crate) const HASH_LENGTH: usize = 32;
 
 ///
 /// This file contains code used to manipulate physical data representing game worlds.
@@ -42,7 +42,7 @@ impl GameWorld {
         let mut ret: GameWorld = GameWorld {
             name: "".to_string(),
             author: "".to_string(),
-            uuid: Default::default(),
+            hash: Default::default(),
             data: vec![],
             playerspawn: (0, 0),
             filename: Some(path.to_path_buf()),
@@ -79,8 +79,13 @@ impl GameWorld {
         file.write(&author_b)?;
 
         // Write cached UUID
-        file.write(self.uuid.as_bytes())?;
+        file.write(&self.hash)?;
 
+        self.serialize_world_content(file)?;
+
+        Ok(())
+    }
+    pub(crate) fn serialize_world_content<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write Map Width and Height
         let width_b = bincode::serialize(&self.width())?;
         file.write(&width_b)?;
@@ -93,7 +98,6 @@ impl GameWorld {
                 file.write(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
             }
         }
-
         Ok(())
     }
 }
@@ -133,8 +137,8 @@ impl GameWorld {
         let author = self.parse_current_version_string(file)?;
         self.set_author(author.as_str());
 
-        let uuid = self.parse_current_version_uuid(file)?;
-        self.uuid = uuid;
+        let hash = self.parse_current_version_uuid(file)?;
+        self.hash = hash;
 
         // Parse Map Width and Map Height
         let map_width: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
@@ -166,10 +170,10 @@ impl GameWorld {
         Ok(string_value)
     }
     /// Parse a UUID
-    fn parse_current_version_uuid<T: Read>(&mut self, file: &mut T) -> Result<Uuid, GameWorldParseError> {
-        let mut buf = [0u8; 16];
+    fn parse_current_version_uuid<T: Read>(&mut self, file: &mut T) -> Result<[u8; HASH_LENGTH], GameWorldParseError> {
+        let mut buf = [0u8; HASH_LENGTH];
         file.read_exact(&mut buf)?;
-        Ok(Uuid::from_bytes(buf))
+        Ok(buf)
     }
 }
 
@@ -266,7 +270,7 @@ mod tests {
         buf.set_rpos(0);
         let result = result_map.parse(&mut buf);
         assert!(result.is_ok(), "Map failed to parse with error: {}", result.unwrap_err().to_string());
-        assert_eq!(map.uuid, result_map.uuid);
+        assert_eq!(map.hash, result_map.hash);
         assert_eq!(map.author, result_map.author);
         assert_eq!(map.name, result_map.name);
         assert_eq!(map.width(), result_map.width());

@@ -1,5 +1,4 @@
 use std::path::{Path, PathBuf};
-use uuid::Uuid;
 use crate::tiles::{Tile, TileKind};
 
 
@@ -7,6 +6,7 @@ pub mod exampleworlds;
 pub mod presets;
 pub mod io;
 pub mod io_error;
+pub mod hash;
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -14,8 +14,8 @@ pub struct GameWorld {
     name: String,
     /// A human-readable name of this world
     author: String,
-    /// A globally unique identifier
-    uuid: Uuid,
+    /// A globally unique identifier (hash) of the map
+    hash: [u8; 32],
     /// Data that contains all tiles in this world
     data: Vec<Vec<Tile>>,
     /// The coordinates of the player spawn
@@ -35,19 +35,18 @@ impl GameWorld {
             playerspawn: (1, 1), // Default spawn point is (1,1)
             name: "New World".to_string(),
             author: "".to_string(),
-            uuid: Uuid::new_v4(), // Generate a new random UUID
+            hash: [0u8; 32], // Generate a zeroed default hash
             filename: None,
             clean: true,
         }
     }
-    /// Set the UUID to the given value. If the given value is not a valid UUID, do not set anything.
-    pub fn set_uuid(&mut self, new_uuid: &str) -> &mut Self {
-        self.uuid = Uuid::parse_str(new_uuid).unwrap_or(self.uuid);
-        self
-    }
-    /// Get the unique ID of this map
-    pub fn uuid(&self) -> String {
-        self.uuid.to_string()
+    /// Get the unique ID of this map as hex-string
+    pub fn hash(&self) -> String {
+        let mut ret = String::new();
+        for b in &self.hash {
+            ret.push_str(format!("{:02X}", *b).as_str());
+        }
+        ret
     }
     /// Get the name of this world
     pub fn get_name(&self) -> &str {
