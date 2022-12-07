@@ -69,13 +69,14 @@ impl UIDialog for SaveFileDialog {
             _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
             directories: &GameDirectories,
     ) {
+        let row_width = 500.;// TODO hard-coded numbers
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::CHOOSING, |ui| {
                 // File Name and Save Button
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.scope(|ui| {
-                            ui.set_max_width(300.);// TODO hard-coded numbers
+                            ui.set_width(row_width);
                             ui.centered_and_justified(|ui| {
                                 ui.text_edit_singleline(&mut self.file_name).on_hover_text("Type a file name here.");
                             });
@@ -101,18 +102,21 @@ impl UIDialog for SaveFileDialog {
                 // Map Properties
                 ui.separator();
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map Name:");
                         ui.text_edit_singleline(&mut self.map_title).on_hover_text("Type a map title here")
                     });
                 });
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map Author:");
                         ui.text_edit_singleline(&mut self.map_author).on_hover_text("Type an author name here")
                     });
                 });
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map UUID:");
                         ui.label(self.hash.as_str());
