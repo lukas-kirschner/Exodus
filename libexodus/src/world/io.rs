@@ -4,6 +4,7 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 use crate::tiles::Tile;
 use crate::world::GameWorld;
+use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
 
 pub(crate) const CURRENT_MAP_VERSION: u8 = 0x01;
@@ -49,9 +50,13 @@ impl GameWorld {
             clean: true,
         };
         ret.parse(&mut buf)?;
-        Ok(ret)
+        match ret.recompute_hash() {
+            RecomputeHashResult::SAME => Ok(ret),
+            RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch { expected: ret.hash, actual: old_hash }),
+            RecomputeHashResult::ERROR { error } => Err(error),
+        }
     }
-    /// Save the map to the given file.
+    /// Save the map to the given file. The hash MUST be recomputed before saving the map - else, the next load will fail!
     pub fn save_to_file(&self, path: &Path) -> Result<(), GameWorldParseError> {
         let file: File = OpenOptions::new().create(true).write(true).open(path)?;
         let mut buf = BufWriter::new(file);

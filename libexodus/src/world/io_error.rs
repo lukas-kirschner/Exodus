@@ -15,6 +15,7 @@ pub enum GameWorldParseError {
     InvalidMapHeight { max_height: usize, actual_height: usize },
     UnexpectedEndOfTileData { position: usize, io_error: std::io::Error },
     InvalidTile { tile_bytes: u8 },
+    HashMismatch { expected: [u8; 32], actual: [u8; 32] },
 }
 
 impl Display for GameWorldParseError {
@@ -30,6 +31,7 @@ impl Display for GameWorldParseError {
             GameWorldParseError::InvalidMapHeight { max_height, actual_height } => write!(f, "Invalid Map Height: {} (Max allowed height: {})", actual_height, max_height),
             GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error.to_string()),
             GameWorldParseError::InvalidTile { tile_bytes } => write!(f, "Tile Byte not recognized as valid tile: 0x{:02x}", tile_bytes),
+            GameWorldParseError::HashMismatch { expected, actual } => write!(f, "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}", expected, actual),
         }
     }
 }
@@ -61,6 +63,7 @@ impl GameWorldParseError {
             GameWorldParseError::InvalidMapHeight { .. } => 6,
             GameWorldParseError::UnexpectedEndOfTileData { .. } => 7,
             GameWorldParseError::InvalidTile { .. } => 8,
+            GameWorldParseError::HashMismatch { .. } => 9,
         }
     }
 }

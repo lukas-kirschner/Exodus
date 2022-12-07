@@ -23,8 +23,8 @@ pub struct SaveFileDialog {
     map_title: String,
     /// The name of the map author
     map_author: String,
-    /// The UUID of the map that is shown to the user
-    uuid: String,
+    /// The hash of the map that is shown to the user
+    hash: String,
     /// The current state of the dialog
     state: SaveFileDialogState,
     /// The finalized file path that is created as soon as the user presses the Save button
@@ -41,7 +41,7 @@ impl SaveFileDialog {
             file_name: String::from(filename.map(|p| { p.file_name().unwrap_or(OsStr::new("")) }).unwrap_or(OsStr::new("")).to_str().unwrap_or("")),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
-            uuid: String::from(uuid),
+            hash: String::from(uuid),
             state: SaveFileDialogState::CHOOSING,
             file_path: None,
             error_text: "".to_string(),
@@ -115,7 +115,7 @@ impl UIDialog for SaveFileDialog {
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.label("Map UUID:");
-                        ui.label(self.uuid.as_str());
+                        ui.label(self.hash.as_str());
                     });
                 });
             });
