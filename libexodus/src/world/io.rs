@@ -50,11 +50,7 @@ impl GameWorld {
             clean: true,
         };
         ret.parse(&mut buf)?;
-        match ret.recompute_hash() {
-            RecomputeHashResult::SAME => Ok(ret),
-            RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch { expected: ret.hash, actual: old_hash }),
-            RecomputeHashResult::ERROR { error } => Err(error),
-        }
+        Ok(ret)
     }
     /// Save the map to the given file. The hash MUST be recomputed before saving the map - else, the next load will fail!
     pub fn save_to_file(&self, path: &Path) -> Result<(), GameWorldParseError> {
@@ -123,7 +119,12 @@ impl GameWorld {
         match buf[0] {
             CURRENT_MAP_VERSION => self.parse_current_version(file),
             // Add older versions here
-            _ => Err(GameWorldParseError::InvalidVersion { invalid_version: buf[0] }),
+            _ => return Err(GameWorldParseError::InvalidVersion { invalid_version: buf[0] }),
+        }?;
+        match self.recompute_hash() {
+            RecomputeHashResult::SAME => Ok(()),
+            RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch { expected: self.hash.clone(), actual: old_hash }),
+            RecomputeHashResult::ERROR { error } => Err(error),
         }
     }
 }
@@ -267,7 +268,8 @@ mod tests {
         }
     }
 
-    fn test_write_and_read_map(map: &GameWorld) {
+    fn test_write_and_read_map(map: &mut GameWorld) {
+        map.recompute_hash();
         let mut buf = ByteBuffer::new();
         let result = map.serialize(&mut buf);
         assert!(result.is_ok(), "Map failed to serialize with error: {}", result.unwrap_err().to_string());
@@ -290,7 +292,35 @@ mod tests {
             .set(1, 1, Tile::PLAYERSPAWN)
             .set(0, 1, Tile::AIR)
         ;
-        test_write_and_read_map(&reference_map);
+        test_write_and_read_map(&mut reference_map);
+    }
+
+    #[test]
+    fn test_map_with_invalid_hash() {
+        let mut map = GameWorld::exampleworld();
+        let mut data: Vec<u8> = vec![];
+        data.extend_from_slice(&MAGICBYTES);
+        data.push(CURRENT_MAP_VERSION);
+        data.extend_from_slice(&bincode::serialize(&map.name).unwrap());
+        data.extend_from_slice(&bincode::serialize(&map.author).unwrap());
+        map.set(0, 0, Tile::WALL)
+            .set(1, 0, Tile::DOOR)
+            .set(1, 1, Tile::PLAYERSPAWN)
+            .set(0, 1, Tile::AIR)
+        ;
+        let mut buf = ByteBuffer::new();
+        let result = map.serialize(&mut buf);
+        assert!(result.is_ok());
+        let mut result_map = GameWorld::new(1, 1);
+        let hash_offset: usize = data.len() + 16;
+        buf.set_rpos(hash_offset);
+        let val = buf.read_u8();
+        buf.set_rpos(hash_offset);
+        buf.write_u8(val + 1);
+        buf.set_rpos(0);
+        let result = result_map.parse(&mut buf);
+        assert!(&result.is_err(), "Map with invalid hash parsed correctly");
+        assert_eq!(9, result.as_ref().unwrap_err().numeric_error(), "Expected Hash Mismatch, got {:?}", &result);
     }
 
     #[test]
@@ -304,7 +334,7 @@ mod tests {
             .set_author("John Doe")
             .set_clean()
         ;
-        test_write_and_read_map(&reference_map);
+        test_write_and_read_map(&mut reference_map);
     }
 
     #[test]
@@ -318,7 +348,7 @@ mod tests {
             .set_author("")
             .set_dirty()
         ;
-        test_write_and_read_map(&reference_map);
+        test_write_and_read_map(&mut reference_map);
     }
 
     #[test]
@@ -327,7 +357,7 @@ mod tests {
         for (i, tile) in Tile::iter().enumerate() {
             reference_map.set(i, 0, tile);
         }
-        test_write_and_read_map(&reference_map);
+        test_write_and_read_map(&mut reference_map);
     }
 
     #[test]
@@ -399,7 +429,7 @@ mod tests {
         data.push(CURRENT_MAP_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
-        data.extend_from_slice(&[0xffu8; 16]);
+        data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
         data.extend_from_slice(&bincode::serialize(&((MAX_MAP_WIDTH + 1) as usize)).unwrap());
         let mut buf = ByteBuffer::from_bytes(&data);
         let mut map = GameWorld::new(1, 1);
@@ -419,7 +449,7 @@ mod tests {
         data.push(CURRENT_MAP_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
-        data.extend_from_slice(&[0xffu8; 16]);
+        data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
         data.extend_from_slice(&bincode::serialize(&(0 as usize)).unwrap());
         let mut buf = ByteBuffer::from_bytes(&data);
         let mut map = GameWorld::new(1, 1);
