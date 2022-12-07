@@ -23,8 +23,8 @@ pub struct SaveFileDialog {
     map_title: String,
     /// The name of the map author
     map_author: String,
-    /// The UUID of the map that is shown to the user
-    uuid: String,
+    /// The hash of the map that is shown to the user
+    hash: String,
     /// The current state of the dialog
     state: SaveFileDialogState,
     /// The finalized file path that is created as soon as the user presses the Save button
@@ -41,7 +41,7 @@ impl SaveFileDialog {
             file_name: String::from(filename.map(|p| { p.file_name().unwrap_or(OsStr::new("")) }).unwrap_or(OsStr::new("")).to_str().unwrap_or("")),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
-            uuid: String::from(uuid),
+            hash: String::from(uuid),
             state: SaveFileDialogState::CHOOSING,
             file_path: None,
             error_text: "".to_string(),
@@ -69,13 +69,14 @@ impl UIDialog for SaveFileDialog {
             _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
             directories: &GameDirectories,
     ) {
+        let row_width = 500.;// TODO hard-coded numbers
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::CHOOSING, |ui| {
                 // File Name and Save Button
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.scope(|ui| {
-                            ui.set_max_width(300.);// TODO hard-coded numbers
+                            ui.set_width(row_width);
                             ui.centered_and_justified(|ui| {
                                 ui.text_edit_singleline(&mut self.file_name).on_hover_text("Type a file name here.");
                             });
@@ -101,21 +102,24 @@ impl UIDialog for SaveFileDialog {
                 // Map Properties
                 ui.separator();
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map Name:");
                         ui.text_edit_singleline(&mut self.map_title).on_hover_text("Type a map title here")
                     });
                 });
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map Author:");
                         ui.text_edit_singleline(&mut self.map_author).on_hover_text("Type an author name here")
                     });
                 });
                 ui.scope(|ui| {
+                    ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label("Map UUID:");
-                        ui.label(self.uuid.as_str());
+                        ui.label(self.hash.as_str());
                     });
                 });
             });

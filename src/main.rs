@@ -120,8 +120,8 @@ fn load_textures(
     asset_server: Res<AssetServer>,
 ) {
     // Load the textures - Bevy takes care of resolving the paths, see https://bevy-cheatbook.github.io/assets/assetserver.html
-    rpg_sprite_handles.handles = asset_server.load_folder("textures/tilesets").unwrap();
-    player_sprite_handles.handles = asset_server.load_folder("textures/players").unwrap();
+    rpg_sprite_handles.handles = load_asset_folder_or_panic(&asset_server, "textures/tilesets");
+    player_sprite_handles.handles = load_asset_folder_or_panic(&asset_server, "textures/players");
 }
 
 #[derive(Resource)]

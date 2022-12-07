@@ -35,6 +35,7 @@ fn load_maps(
                 .map(|mut map| {
                     debug!("Successfully loaded map file {}", map_file.path().to_str().unwrap_or("<Invalid Path>"));
                     map.set_clean();
+                    map.recompute_hash();
                     map
                 }) {
                 maps.maps.push(MapWrapper {
@@ -43,15 +44,22 @@ fn load_maps(
             }
         });
 
-    //If we are in debug mode, insert the debug map exampleworld()!
+    //If we are in debug mode, insert the debug maps
     if cfg!(debug_assertions) {
+        let mut example_map = GameWorld::exampleworld();
+        example_map.recompute_hash();
         maps.maps.push(MapWrapper {
-            world: GameWorld::exampleworld(),
+            world: example_map,
         });
+        let mut psion_sized_map = presets::map_with_border(35, 15);
+        psion_sized_map.set_name("Empty Psion 5mx-sized map");
+        psion_sized_map.recompute_hash();
+        maps.maps.push(MapWrapper { world: psion_sized_map });
         // Fill the list to test scrolling
         for i in 1..=20 {
             let mut map = presets::map_with_border(24 + i, i + 3);
             map.set_name(format!("Empty {}x{} world", 24 + i, i + 3).as_str());
+            map.recompute_hash();
             maps.maps.push(MapWrapper {
                 world: map,
             })
