@@ -149,4 +149,8 @@ impl GameDirectories {
         let map_folder: PathBuf = self.maps_dir.join(map_file_name);
         Ok(map_folder)
     }
+
+    pub fn config_file(&self) -> PathBuf {
+        self.config_dir.as_path().join("config.exc")
+    }
 }

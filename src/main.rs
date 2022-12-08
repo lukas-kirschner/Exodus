@@ -1,10 +1,11 @@
 use std::fs;
+use std::path::PathBuf;
 use bevy::asset::LoadState;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
-use indoc::printdoc;
+use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
 use crate::game::constants::TEXTURE_SIZE;
 use crate::game::GamePlugin;
@@ -40,6 +41,12 @@ pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
 }
 
+#[derive(Resource)]
+pub struct GameConfig {
+    pub config: Config,
+    pub file: PathBuf,
+}
+
 impl FromWorld for GameDirectoriesWrapper {
     fn from_world(_: &mut World) -> Self {
         GameDirectoriesWrapper {
@@ -51,6 +58,7 @@ impl FromWorld for GameDirectoriesWrapper {
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
 fn game_init(
+    mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
     mut ctx: ResMut<EguiContext>,
 ) {
@@ -62,14 +70,23 @@ fn game_init(
         fs::create_dir_all(&directories.game_directories.config_dir)
             .expect(format!("Could not create the config directory at {}!", directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
     }
-    printdoc! {"
-    Using directory structure:
-        Maps directory: {maps_dir}
-        Config Directory: {config_dir}
-    ",
-        maps_dir = &directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"),
-        config_dir = &directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>")
-    }
+    info!("Set Maps Directory to {}",&directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"));
+    info!("Set Config Directory to {}",&directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>"));
+    let config_file = directories.game_directories.config_file();
+    info!("Loading Config File {}",config_file.as_path().to_str().unwrap_or("<Invalid Path>"));
+    let config = Config::load_from_file(config_file.as_path())
+        .map_err(|e| {
+            if config_file.exists() {
+                error!("Could not load config file - resorting to default config! {}",e.to_string())
+            } else {
+                warn!("The config file does not exist")
+            }
+        })
+        .unwrap_or(Config::default());
+    commands.insert_resource(GameConfig {
+        config,
+        file: config_file,
+    });
     // Initialize Styling and fonts for egui
     egui_fonts(ctx.ctx_mut());
 }
