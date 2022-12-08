@@ -6,23 +6,18 @@ use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use indoc::printdoc;
 use libexodus::directories::GameDirectories;
-use crate::creditsscreen::CreditsScreen;
 use crate::game::constants::TEXTURE_SIZE;
 use crate::game::GamePlugin;
-use crate::mainmenu::MainMenu;
 use crate::mapeditor::MapEditorPlugin;
-use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::{egui_fonts, UiSizeChangedEvent, WindowUiOverlayInfo};
+use crate::ui::egui_textures::egui_fonts;
+use crate::ui::{Ui, UiSizeChangedEvent};
+use crate::ui::uicontrols::WindowUiOverlayInfo;
 
 mod game;
-mod mainmenu;
-mod creditsscreen;
-mod uicontrols;
-mod mapselectionscreen;
 mod mapeditor;
 mod util;
 mod dialogs;
-mod egui_textures;
+mod ui;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -270,9 +265,7 @@ fn main() {
         .add_system(resize_notificator)
         .add_plugin(EguiPlugin)
         .add_plugin(GamePlugin)
-        .add_plugin(MainMenu)
-        .add_plugin(MapSelectionScreenPlugin)
-        .add_plugin(CreditsScreen)
+        .add_plugin(Ui)
         .add_plugin(MapEditorPlugin)
         .add_plugin(LoadingPlugin)
         .run();

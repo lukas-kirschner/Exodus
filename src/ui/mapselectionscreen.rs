@@ -3,8 +3,9 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Align;
 use libexodus::world::{GameWorld, presets};
 use crate::{AppState, GameDirectoriesWrapper};
-use crate::uicontrols::{add_navbar, BUTTON_HEIGHT, DELETE_TEXT, EDIT_TEXT, menu_esc_control, PLAY_TEXT};
+use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::game::tilewrapper::MapWrapper;
+use crate::ui::{BUTTON_HEIGHT, DELETE_TEXT, EDIT_TEXT, PLAY_TEXT};
 
 #[derive(Resource)]
 struct Maps {

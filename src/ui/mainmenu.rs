@@ -3,7 +3,7 @@ use bevy::app::AppExit;
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Frame;
 use crate::{AppState};
-use crate::uicontrols::{BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
 
 /// Set up the UI for the Main Menu
 fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {

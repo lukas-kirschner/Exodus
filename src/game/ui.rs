@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use crate::{AppState, UiSizeChangedEvent};
+use crate::AppState;
 use crate::game::scoreboard::Scoreboard;
-use crate::uicontrols::{check_ui_size_changed, UIMARGIN, WindowUiOverlayInfo};
+use crate::ui::uicontrols::WindowUiOverlayInfo;
+use crate::ui::{check_ui_size_changed, UIMARGIN, UiSizeChangedEvent};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 

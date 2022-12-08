@@ -7,12 +7,13 @@ use crate::{AppState, GameDirectoriesWrapper};
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::UIDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
+use crate::ui::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::mapeditor::player_spawn::{destroy_player_spawn, init_player_spawn, PlayerSpawnComponent};
-use crate::uicontrols::{check_ui_size_changed, NAVBAR_BACK_TEXT, UiSizeChangedEvent, WindowUiOverlayInfo};
+use crate::ui::{check_ui_size_changed, NAVBAR_BACK_TEXT, UiSizeChangedEvent};
+use crate::ui::uicontrols::WindowUiOverlayInfo;
 
 pub struct MapEditorUiPlugin;
 

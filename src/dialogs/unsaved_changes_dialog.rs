@@ -2,7 +2,7 @@ use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::UIDialog;
-use crate::egui_textures::EguiButtonTextures;
+use crate::ui::egui_textures::EguiButtonTextures;
 
 #[derive(Eq, PartialEq)]
 enum UnsavedChangesDialogState {

@@ -2,7 +2,7 @@ use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::egui_textures::EguiButtonTextures;
+use crate::ui::egui_textures::EguiButtonTextures;
 
 pub mod save_file_dialog;
 pub mod unsaved_changes_dialog;
