@@ -4,6 +4,7 @@ pub mod player;
 pub mod movement;
 pub mod directions;
 pub mod directories;
+pub mod config;
 
 #[cfg(test)]
 mod tests {
