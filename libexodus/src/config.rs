@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, BufWriter, Read, Write};
+use std::io;
+use std::io::{BufReader, BufWriter, ErrorKind, Read, Write};
 use std::path::Path;
 use strum_macros::{EnumIter, EnumCount as EnumCountMacro};
 
@@ -56,7 +57,7 @@ impl Language {
 
 // Serialization/Deserialization
 impl Config {
-    pub fn save_to_file(&mut self, path: &Path) -> std::io::Result<()> {
+    pub fn save_to_file(&self, path: &Path) -> std::io::Result<()> {
         let file: File = OpenOptions::new().create(true).write(true).open(path)?;
         let mut buf = BufWriter::new(file);
         self.serialize(&mut buf)?;
@@ -79,6 +80,10 @@ impl Config {
         // Read Language
         let mut lang_buf = [0u8; 1];
         file.read_exact(&mut lang_buf)?;
+        self.game_language = Language::from_bytes(lang_buf[0])
+            .ok_or(io::Error::new(ErrorKind::Other,
+                                  format!("Invalid Language 0x{:02X}", lang_buf[0]),
+            ))?;
 
         Ok(())
     }
@@ -116,6 +121,13 @@ mod tests {
     #[test]
     fn test_write_and_read_default_config() {
         let mut config = Config::default();
+        test_write_and_read_config(&mut config);
+    }
+
+    #[test]
+    fn test_write_and_read_german_config() {
+        let mut config = Config::default();
+        config.game_language = Language::GERMAN;
         test_write_and_read_config(&mut config);
     }
 }

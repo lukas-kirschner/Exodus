@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::ui::configscreen::ConfigScreen;
 use crate::ui::mainmenu::MainMenu;
 use crate::ui::creditsscreen::CreditsScreen;
 use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
@@ -9,6 +10,7 @@ pub mod egui_textures;
 pub mod uicontrols;
 mod creditsscreen;
 mod mapselectionscreen;
+mod configscreen;
 
 /// The button height of main menu buttons
 pub const BUTTON_HEIGHT: f32 = 32.0;
@@ -32,6 +34,7 @@ impl Plugin for Ui {
             .add_plugin(MainMenu)
             .add_plugin(MapSelectionScreenPlugin)
             .add_plugin(CreditsScreen)
+            .add_plugin(ConfigScreen)
         ;
     }
 }

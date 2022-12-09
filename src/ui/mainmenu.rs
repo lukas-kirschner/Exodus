@@ -49,6 +49,17 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
+                            let config_btn = ui.button("Config");
+                            if config_btn.clicked() {
+                                state
+                                    .set(AppState::ConfigScreen)
+                                    .expect("Could not switch state to Config Screen");
+                            }
+                        });
+                    });
+                    ui.scope(|ui| {
+                        ui.set_height(BUTTON_HEIGHT);
+                        ui.centered_and_justified(|ui| {
                             let quit_btn = ui.button("Quit");
                             if quit_btn.clicked() {
                                 exit.send(AppExit);

@@ -30,6 +30,7 @@ pub enum AppState {
     MainMenu,
     MapSelectionScreen,
     CreditsScreen,
+    ConfigScreen,
     Playing,
     MapEditor,
     MapEditorDialog,
@@ -83,6 +84,7 @@ fn game_init(
             }
         })
         .unwrap_or(Config::default());
+    debug!("Loaded Config with language {}",config.game_language.to_string());
     commands.insert_resource(GameConfig {
         config,
         file: config_file,
