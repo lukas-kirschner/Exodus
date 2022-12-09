@@ -1,0 +1,5 @@
+main_menu:
+  map_selection_screen: Karten
+  credits_screen: Über...
+  config_screen: Einstellungen
+  quit: Beenden

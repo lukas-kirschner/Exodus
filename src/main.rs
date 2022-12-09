@@ -14,6 +14,10 @@ use crate::ui::egui_textures::egui_fonts;
 use crate::ui::{Ui, UiSizeChangedEvent};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 
+#[macro_use]
+extern crate rust_i18n;
+i18n!("locales");
+
 mod game;
 mod mapeditor;
 mod util;
@@ -85,6 +89,7 @@ fn game_init(
         })
         .unwrap_or(Config::default());
     debug!("Loaded Config with language {}",config.game_language.to_string());
+    rust_i18n::set_locale(config.game_language.locale());
     commands.insert_resource(GameConfig {
         config,
         file: config_file,

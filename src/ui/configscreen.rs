@@ -45,7 +45,7 @@ fn config_screen_ui(
                                 ui.set_height(UIMARGIN);
                             });
                             let selected_lang = res_config.config.game_language.to_string();
-                            egui::ComboBox::from_id_source("langbox")
+                            egui::ComboBox::from_id_source("lang_box")
                                 .selected_text(format!("{}", &selected_lang))
                                 .show_ui(ui, |ui| {
                                     ui.set_width(400.);
@@ -71,4 +71,5 @@ fn save_config(
         .map(|_| {
             debug!("Saved Config File to {}",res_config.file.as_path().to_str().unwrap());
         }).unwrap_or(());
+    rust_i18n::set_locale(res_config.config.game_language.locale());
 }

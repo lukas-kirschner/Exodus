@@ -53,6 +53,12 @@ impl Language {
             _ => None
         }
     }
+    pub const fn locale(&self) -> &str {
+        match self {
+            Language::ENGLISH => "en_US",
+            Language::GERMAN => "de_DE",
+        }
+    }
 }
 
 // Serialization/Deserialization

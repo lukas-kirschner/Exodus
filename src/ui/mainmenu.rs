@@ -27,7 +27,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let maps_btn = ui.button("Maps");
+                            let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
                             if maps_btn.clicked() {
                                 state
                                     .set(AppState::MapSelectionScreen)
@@ -38,7 +38,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let credits_btn = ui.button("Credits");
+                            let credits_btn = ui.button(t!("main_menu.credits_screen"));
                             if credits_btn.clicked() {
                                 state
                                     .set(AppState::CreditsScreen)
@@ -49,7 +49,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let config_btn = ui.button("Config");
+                            let config_btn = ui.button(t!("main_menu.config_screen"));
                             if config_btn.clicked() {
                                 state
                                     .set(AppState::ConfigScreen)
@@ -60,7 +60,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let quit_btn = ui.button("Quit");
+                            let quit_btn = ui.button(t!("main_menu.quit"));
                             if quit_btn.clicked() {
                                 exit.send(AppExit);
                             }
