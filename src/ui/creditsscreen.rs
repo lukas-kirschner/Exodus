@@ -3,7 +3,8 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::{Frame, RichText};
 use indoc::formatdoc;
 use crate::{AppState, get_buildnr};
-use crate::uicontrols::{add_navbar, menu_esc_control, UIMARGIN};
+use crate::ui::uicontrols::{add_navbar, menu_esc_control};
+use crate::ui::UIMARGIN;
 
 pub struct CreditsScreen;
 

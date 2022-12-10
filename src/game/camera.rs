@@ -2,8 +2,9 @@ use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
 use crate::game::constants::TILE_SIZE;
 use crate::game::tilewrapper::MapWrapper;
-use crate::{TEXTURE_SIZE, UiSizeChangedEvent};
-use crate::uicontrols::WindowUiOverlayInfo;
+use crate::TEXTURE_SIZE;
+use crate::ui::uicontrols::WindowUiOverlayInfo;
+use crate::ui::UiSizeChangedEvent;
 
 
 pub fn handle_ui_resize(

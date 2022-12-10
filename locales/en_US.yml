@@ -1,0 +1,66 @@
+main_menu:
+  map_selection_screen: Maps
+  credits_screen: Credits
+  config_screen: Config
+  quit: Quit
+navbar:
+  back_button_tooltip: Back
+config_screen:
+  language_label: Language
+map_selection_screen:
+  play_map: Play Map
+  edit_map: Edit Map
+  delete_map: Delete map
+map_editor:
+  dialog:
+    exit_tooltip: Exit and return to Map Selection Screen
+    unsaved_changes_dialog_text: The current map has unsaved changes! Do you really want to quit and discard the changes?
+    unsaved_changes_dialog_title: There are unsaved changes!
+    save_tooltip: Save Map or Set Map Properties
+    save_dialog_file_name_tooltip: Type a file name here.
+    save_dialog_title: Edit Properties and Save Map
+    save_dialog_map_title_tooltip: Type a map title here
+    save_dialog_map_author_tooltip: Type an author name here
+    save_dialog_map_author: Map Author
+    save_dialog_map_name: Map Name
+    save_dialog_map_hash: Map Hash
+    save_dialog_overwrite: Do you want to overwrite the map?
+  buttons:
+    currently_selected: currently selected
+common_buttons:
+  yes: Yes
+  no: No
+  ok: Ok
+  save: Save
+  cancel: Cancel
+tile:
+  air: Air
+  wall: Wall
+  playerspawn: Player Spawn
+  door: Door
+  opendoor: Open Door
+  coin: Coin
+  key: Key
+  ladder: Ladder
+  spikes: Spikes
+  spikes_alt: Spikes
+  spikes_sloped: Sloped Spikes
+  spikes_wall_l: L Wall Spikes
+  spikes_wall_r: R Wall Spikes
+  spikes_wall_lr: LR Wall Spikes
+  spikes_wall_b: B Wall Spikes
+  spikes_wall_lb: LB Wall Spikes
+  spikes_wall_rb: RB Wall Spikes
+  spikes_wall_tb: TB Wall Spikes
+  spikes_wall_rltb: RLTB Wall Spikes
+  spikes_wall_rtb: RTB Wall Spikes
+  spikes_wall_ltb: LTB Wall Spikes
+  arrow_right: Right Arrow
+  arrow_left: Left Arrow
+  arrow_up: Up Arrow
+  arrow_down: Down Arrow
+debug:
+  map_presets:
+    empty5mx: Empty Psion 5mx-sized map
+    empty_sized: Empty map with border and size %{w}x%{h}
+    example_world: Example World

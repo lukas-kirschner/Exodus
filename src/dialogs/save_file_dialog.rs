@@ -5,7 +5,7 @@ use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 use crate::dialogs::UIDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::egui_textures::EguiButtonTextures;
+use crate::ui::egui_textures::EguiButtonTextures;
 
 #[derive(Eq, PartialEq)]
 enum SaveFileDialogState {
@@ -59,9 +59,10 @@ impl SaveFileDialog {
     }
 }
 
+
 impl UIDialog for SaveFileDialog {
-    fn dialog_title(&self) -> &str {
-        "Edit Properties and Save Map"
+    fn dialog_title(&self) -> String {
+        t!("map_editor.dialog.save_dialog_title")
     }
 
     fn draw(&mut self,
@@ -78,10 +79,10 @@ impl UIDialog for SaveFileDialog {
                         ui.scope(|ui| {
                             ui.set_width(row_width);
                             ui.centered_and_justified(|ui| {
-                                ui.text_edit_singleline(&mut self.file_name).on_hover_text("Type a file name here.");
+                                ui.text_edit_singleline(&mut self.file_name).on_hover_text(t!("map_editor.dialog.save_dialog_file_name_tooltip"));
                             });
                         });
-                        let save = ui.button("Save");
+                        let save = ui.button(t!("common_buttons.save"));
                         if save.clicked() {
                             let map_dir = directories.path_from_userinput(self.file_name.as_str());
                             debug!("{:?}", map_dir);
@@ -104,28 +105,28 @@ impl UIDialog for SaveFileDialog {
                 ui.scope(|ui| {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {
-                        ui.label("Map Name:");
-                        ui.text_edit_singleline(&mut self.map_title).on_hover_text("Type a map title here")
+                        ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_name")));
+                        ui.text_edit_singleline(&mut self.map_title).on_hover_text(t!("map_editor.dialog.save_dialog_map_title_tooltip"))
                     });
                 });
                 ui.scope(|ui| {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {
-                        ui.label("Map Author:");
-                        ui.text_edit_singleline(&mut self.map_author).on_hover_text("Type an author name here")
+                        ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_author")));
+                        ui.text_edit_singleline(&mut self.map_author).on_hover_text(t!("map_editor.dialog.save_dialog_map_author_tooltip"))
                     });
                 });
                 ui.scope(|ui| {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {
-                        ui.label("Map UUID:");
+                        ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_hash")));
                         ui.label(self.hash.as_str());
                     });
                 });
             });
             ui.scope(|ui| {
                 ui.horizontal(|ui| {
-                    let res = ui.button("Cancel");
+                    let res = ui.button(t!("common_buttons.cancel"));
                     if res.clicked() {
                         self.state = SaveFileDialogState::CANCELLED;
                     }
@@ -137,21 +138,21 @@ impl UIDialog for SaveFileDialog {
                         let etext = if self.state == SaveFileDialogState::ERROR {
                             format!("Error: {}", self.error_text.as_str())
                         } else {
-                            "Do you want to overwrite the map?".to_string()
+                            t!("map_editor.dialog.save_dialog_overwrite")
                         };
                         ui.label(etext.as_str());
                         if self.state == SaveFileDialogState::ERROR {
-                            let res = ui.button("Ok");
+                            let res = ui.button(t!("common_buttons.ok"));
                             if res.clicked() {
                                 self.state = SaveFileDialogState::CHOOSING;
                             }
                         } else {
-                            let res = ui.button("Yes");
+                            let res = ui.button(t!("common_buttons.yes"));
                             if res.clicked() {
                                 // We do not save the file here, but rely on the caller to save the file for us.
                                 self.state = SaveFileDialogState::DONE;
                             }
-                            let res = ui.button("No");
+                            let res = ui.button(t!("common_buttons.no"));
                             if res.clicked() {
                                 self.state = SaveFileDialogState::CHOOSING;
                             }

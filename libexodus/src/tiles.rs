@@ -183,6 +183,37 @@ impl Tile {
             TileKind::COLLECTIBLE => { false }
         }
     }
+    /// Get a unique string id, describing this tile. Suitable for i18n keys.
+    /// Consists only of underscores and lower-case characters.
+    pub fn str_id(&self) -> &str {
+        match self {
+            Tile::AIR => "air",
+            Tile::WALL => "wall",
+            Tile::PLAYERSPAWN => "playerspawn",
+            Tile::DOOR => "door",
+            Tile::OPENDOOR => "opendoor",
+            Tile::COIN => "coin",
+            Tile::KEY => "key",
+            Tile::LADDER => "ladder",
+            Tile::SPIKES => "spikes",
+            Tile::SPIKESALT => "spikes_alt",
+            Tile::SPIKESSLOPED => "spikes_sloped",
+            Tile::WALLSPIKESL => "spikes_wall_l",
+            Tile::WALLSPIKESR => "spikes_wall_r",
+            Tile::WALLSPIKESLR => "spikes_wall_lr",
+            Tile::WALLSPIKESB => "spikes_wall_b",
+            Tile::WALLSPIKESLB => "spikes_wall_lb",
+            Tile::WALLSPIKESRB => "spikes_wall_rb",
+            Tile::WALLSPIKESTB => "spikes_wall_tb",
+            Tile::WALLSPIKESRLTB => "spikes_wall_rltb",
+            Tile::WALLSPIKESRTB => "spikes_wall_rtb",
+            Tile::WALLSPIKESLTB => "spikes_wall_ltb",
+            Tile::ARROWRIGHT => "arrow_right",
+            Tile::ARROWLEFT => "arrow_left",
+            Tile::ARROWUP => "arrow_up",
+            Tile::ARROWDOWN => "arrow_down",
+        }
+    }
 }
 
 impl fmt::Display for Tile {

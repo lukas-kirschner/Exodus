@@ -2,7 +2,7 @@ use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::UIDialog;
-use crate::egui_textures::EguiButtonTextures;
+use crate::ui::egui_textures::EguiButtonTextures;
 
 #[derive(Eq, PartialEq)]
 enum UnsavedChangesDialogState {
@@ -29,8 +29,8 @@ impl UnsavedChangesDialog {
 }
 
 impl UIDialog for UnsavedChangesDialog {
-    fn dialog_title(&self) -> &str {
-        "There are unsaved changes!"
+    fn dialog_title(&self) -> String {
+        t!("map_editor.dialog.unsaved_changes_dialog_title")
     }
 
     fn draw(&mut self,
@@ -42,8 +42,8 @@ impl UIDialog for UnsavedChangesDialog {
             ui.label(self.message.as_str());
             ui.scope(|ui| {
                 ui.horizontal_top(|ui| {
-                    let yes_btn = ui.button("Yes");
-                    let no_btn = ui.button("No");
+                    let yes_btn = ui.button(t!("common_buttons.yes"));
+                    let no_btn = ui.button(t!("common_buttons.no"));
                     if yes_btn.clicked() {
                         self.state = UnsavedChangesDialogState::YES;
                     }

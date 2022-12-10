@@ -1,0 +1,66 @@
+main_menu:
+  map_selection_screen: Karten
+  credits_screen: Über...
+  config_screen: Einstellungen
+  quit: Beenden
+navbar:
+  back_button_tooltip: Zurück
+config_screen:
+  language_label: Sprache
+map_selection_screen:
+  play_map: Karte spielen
+  edit_map: Karte bearbeiten
+  delete_map: Karte löschen
+map_editor:
+  dialog:
+    exit_tooltip: Beenden und zur Kartenauswahl zurückkehren
+    unsaved_changes_dialog_text: Es gibt nicht gespeicherte Änderungen in der aktuellen Karte! Editor beenden und Änderungen verwerfen?
+    unsaved_changes_dialog_title: Änderungen verwerfen?
+    save_tooltip: Karte speichern und Einstellungen ändern
+    save_dialog_file_name_tooltip: Dateiname
+    save_dialog_title: Karte speichern und Einstellungen ändern
+    save_dialog_map_title_tooltip: Titel der Karte
+    save_dialog_map_author_tooltip: Autor der Karte
+    save_dialog_map_author: Autor
+    save_dialog_map_name: Name
+    save_dialog_map_hash: Prüfsumme
+    save_dialog_overwrite: Soll die Karte überschrieben werden?
+  buttons:
+    currently_selected: momentan gewählt
+common_buttons:
+  yes: Ja
+  no: Nein
+  ok: Ok
+  save: Speichern
+  cancel: Abbrechen
+tile:
+  air: Luft
+  wall: Mauer
+  playerspawn: Spawn
+  door: Tür
+  opendoor: Geöffnete Tür
+  coin: Münze
+  key: Schlüssel
+  ladder: Leiter
+  spikes: Stachel
+  spikes_alt: Stachel
+  spikes_sloped: Stachel mit Stufe
+  spikes_wall_l: Mauer mit Stachel links
+  spikes_wall_r: Mauer mit Stachel rechts
+  spikes_wall_lr: Mauer mit Stachel seitlich
+  spikes_wall_b: Mauer mit Stachel unten
+  spikes_wall_lb: Mauerecke mit Stacheln links
+  spikes_wall_rb: Mauerecke mit Stacheln rechts
+  spikes_wall_tb: Mauer mit Stacheln oben/unten
+  spikes_wall_rltb: Mauerstück mit Stacheln
+  spikes_wall_rtb: Mauerendstück mit Stacheln rechts
+  spikes_wall_ltb: Mauerendstück mit Stacheln links
+  arrow_right: Pfeil nach rechts
+  arrow_left: Pfeil nach links
+  arrow_up: Pfeil nach oben
+  arrow_down: Pfeil nach unten
+debug:
+  map_presets:
+    empty5mx: Leere Karte in Größe des 5MX
+    empty_sized: Leere Karte mit Rahmen und Größe %{w}x%{h}
+    example_world: Beispiel-Karte

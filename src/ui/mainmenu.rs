@@ -3,7 +3,7 @@ use bevy::app::AppExit;
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Frame;
 use crate::{AppState};
-use crate::uicontrols::{BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
 
 /// Set up the UI for the Main Menu
 fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
@@ -27,7 +27,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let maps_btn = ui.button("Maps");
+                            let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
                             if maps_btn.clicked() {
                                 state
                                     .set(AppState::MapSelectionScreen)
@@ -38,7 +38,7 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let credits_btn = ui.button("Credits");
+                            let credits_btn = ui.button(t!("main_menu.credits_screen"));
                             if credits_btn.clicked() {
                                 state
                                     .set(AppState::CreditsScreen)
@@ -49,7 +49,18 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
-                            let quit_btn = ui.button("Quit");
+                            let config_btn = ui.button(t!("main_menu.config_screen"));
+                            if config_btn.clicked() {
+                                state
+                                    .set(AppState::ConfigScreen)
+                                    .expect("Could not switch state to Config Screen");
+                            }
+                        });
+                    });
+                    ui.scope(|ui| {
+                        ui.set_height(BUTTON_HEIGHT);
+                        ui.centered_and_justified(|ui| {
+                            let quit_btn = ui.button(t!("main_menu.quit"));
                             if quit_btn.clicked() {
                                 exit.send(AppExit);
                             }

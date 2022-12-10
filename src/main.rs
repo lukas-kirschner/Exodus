@@ -1,28 +1,28 @@
 use std::fs;
+use std::path::PathBuf;
 use bevy::asset::LoadState;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
-use indoc::printdoc;
+use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
-use crate::creditsscreen::CreditsScreen;
 use crate::game::constants::TEXTURE_SIZE;
 use crate::game::GamePlugin;
-use crate::mainmenu::MainMenu;
 use crate::mapeditor::MapEditorPlugin;
-use crate::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::uicontrols::{egui_fonts, UiSizeChangedEvent, WindowUiOverlayInfo};
+use crate::ui::egui_textures::egui_fonts;
+use crate::ui::{Ui, UiSizeChangedEvent};
+use crate::ui::uicontrols::WindowUiOverlayInfo;
+
+#[macro_use]
+extern crate rust_i18n;
+i18n!("locales");
 
 mod game;
-mod mainmenu;
-mod creditsscreen;
-mod uicontrols;
-mod mapselectionscreen;
 mod mapeditor;
 mod util;
 mod dialogs;
-mod egui_textures;
+mod ui;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -34,6 +34,7 @@ pub enum AppState {
     MainMenu,
     MapSelectionScreen,
     CreditsScreen,
+    ConfigScreen,
     Playing,
     MapEditor,
     MapEditorDialog,
@@ -43,6 +44,12 @@ pub enum AppState {
 #[derive(Resource)]
 pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
+}
+
+#[derive(Resource)]
+pub struct GameConfig {
+    pub config: Config,
+    pub file: PathBuf,
 }
 
 impl FromWorld for GameDirectoriesWrapper {
@@ -56,6 +63,7 @@ impl FromWorld for GameDirectoriesWrapper {
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
 fn game_init(
+    mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
     mut ctx: ResMut<EguiContext>,
 ) {
@@ -67,14 +75,25 @@ fn game_init(
         fs::create_dir_all(&directories.game_directories.config_dir)
             .expect(format!("Could not create the config directory at {}!", directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid>")).as_str());
     }
-    printdoc! {"
-    Using directory structure:
-        Maps directory: {maps_dir}
-        Config Directory: {config_dir}
-    ",
-        maps_dir = &directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"),
-        config_dir = &directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>")
-    }
+    info!("Set Maps Directory to {}",&directories.game_directories.maps_dir.as_path().to_str().unwrap_or("<Invalid Path>"));
+    info!("Set Config Directory to {}",&directories.game_directories.config_dir.as_path().to_str().unwrap_or("<Invalid Path>"));
+    let config_file = directories.game_directories.config_file();
+    info!("Loading Config File {}",config_file.as_path().to_str().unwrap_or("<Invalid Path>"));
+    let config = Config::load_from_file(config_file.as_path())
+        .map_err(|e| {
+            if config_file.exists() {
+                error!("Could not load config file - resorting to default config! {}",e.to_string())
+            } else {
+                warn!("The config file does not exist")
+            }
+        })
+        .unwrap_or(Config::default());
+    debug!("Loaded Config with language {}",config.game_language.to_string());
+    rust_i18n::set_locale(config.game_language.locale());
+    commands.insert_resource(GameConfig {
+        config,
+        file: config_file,
+    });
     // Initialize Styling and fonts for egui
     egui_fonts(ctx.ctx_mut());
 }
@@ -270,9 +289,7 @@ fn main() {
         .add_system(resize_notificator)
         .add_plugin(EguiPlugin)
         .add_plugin(GamePlugin)
-        .add_plugin(MainMenu)
-        .add_plugin(MapSelectionScreenPlugin)
-        .add_plugin(CreditsScreen)
+        .add_plugin(Ui)
         .add_plugin(MapEditorPlugin)
         .add_plugin(LoadingPlugin)
         .run();
