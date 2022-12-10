@@ -8,7 +8,7 @@ pub mod save_file_dialog;
 pub mod unsaved_changes_dialog;
 
 pub trait UIDialog {
-    fn dialog_title(&self) -> &str;
+    fn dialog_title(&self) -> String;
     fn draw(&mut self,
             ui: &mut Ui,
             egui_textures: &EguiButtonTextures,

@@ -69,8 +69,8 @@ fn tile_kind_selector_button_for(
                     ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
                 }
             }
-                .on_hover_text(tile.to_string())
-                .on_disabled_hover_text(format!("{} (currently selected)", tile)) // unfortunately there is no on_disabled_hover_text_at_pointer
+                .on_hover_text(t!(format!("tile.{}",tile.str_id()).as_str()))
+                .on_disabled_hover_text(format!("{} ({})", t!(format!("tile.{}",tile.str_id()).as_str()), t!("map_editor.buttons.currently_selected"))) // unfortunately there is no on_disabled_hover_text_at_pointer
             ;
         if button.clicked() {
             selected_tile.tile = tile.clone();
@@ -86,7 +86,7 @@ fn mapeditor_ui(
     egui_textures: Res<EguiButtonTextures>,
     player: Query<&PlayerSpawnComponent>,
     mut state: ResMut<State<AppState>>,
-    worldwrapper: ResMut<MapWrapper>,
+    mut worldwrapper: ResMut<MapWrapper>,
     current_window_size: ResMut<WindowUiOverlayInfo>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
 ) {
@@ -102,12 +102,12 @@ fn mapeditor_ui(
                             ui.set_height(MAPEDITOR_BUTTON_SIZE);
                             ui.set_width(MAPEDITOR_BUTTON_SIZE);
                             ui.centered_and_justified(|ui| {
-                                let xbutton = ui.button(NAVBAR_BACK_TEXT).on_hover_text("Exit and return to Map Selection Screen");
+                                let xbutton = ui.button(NAVBAR_BACK_TEXT).on_hover_text(t!("map_editor.dialog.exit_tooltip"));
                                 if xbutton.clicked() {
                                     if worldwrapper.world.is_dirty() {
                                         commands.insert_resource(MapEditorDialogResource {
                                             ui_dialog: Box::new(UnsavedChangesDialog::new(
-                                                "The current map has unsaved changes! Do you really want to quit and discard the changes?"
+                                                t!("map_editor.dialog.unsaved_changes_dialog_text").as_str()
                                             )),
                                         });
                                         state.set(AppState::MapEditorDialog).expect("Could not change state to overwrite dialog!");
@@ -122,8 +122,9 @@ fn mapeditor_ui(
                             ui.set_height(MAPEDITOR_BUTTON_SIZE);
                             ui.set_width(MAPEDITOR_BUTTON_SIZE);
                             ui.centered_and_justified(|ui| {
-                                let sbutton = ui.button("S").on_hover_text("Save Map or Set Map Properties");
+                                let sbutton = ui.button("S").on_hover_text(t!("map_editor.dialog.save_tooltip"));
                                 if sbutton.clicked() {
+                                    worldwrapper.world.recompute_hash();
                                     commands.insert_resource(MapEditorDialogResource {
                                         ui_dialog: Box::new(SaveFileDialog::new(
                                             worldwrapper.world.get_filename(),

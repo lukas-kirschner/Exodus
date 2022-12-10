@@ -48,18 +48,19 @@ fn load_maps(
     //If we are in debug mode, insert the debug maps
     if cfg!(debug_assertions) {
         let mut example_map = GameWorld::exampleworld();
+        example_map.set_name(t!("debug.map_presets.example_world").as_str());
         example_map.recompute_hash();
         maps.maps.push(MapWrapper {
             world: example_map,
         });
         let mut psion_sized_map = presets::map_with_border(35, 15);
-        psion_sized_map.set_name("Empty Psion 5mx-sized map");
+        psion_sized_map.set_name(t!("debug.map_presets.empty5mx").as_str());
         psion_sized_map.recompute_hash();
         maps.maps.push(MapWrapper { world: psion_sized_map });
         // Fill the list to test scrolling
         for i in 1..=20 {
             let mut map = presets::map_with_border(24 + i, i + 3);
-            map.set_name(format!("Empty {}x{} world", 24 + i, i + 3).as_str());
+            map.set_name(t!("debug.map_presets.empty_sized", h=(i+3).to_string().as_str(),w=(24+i).to_string().as_str()).as_str());
             map.recompute_hash();
             maps.maps.push(MapWrapper {
                 world: map,
@@ -139,7 +140,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(BUTTON_HEIGHT);
                                             ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let play_btn = ui.button(PLAY_TEXT).on_hover_text("Play Map");
+                                                let play_btn = ui.button(PLAY_TEXT).on_hover_text(t!("map_selection_screen.play_map"));
                                                 if play_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::PLAY { map_index: i });
                                                 }
@@ -149,7 +150,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(BUTTON_HEIGHT);
                                             ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let edit_btn = ui.button(EDIT_TEXT).on_hover_text("Edit Map");
+                                                let edit_btn = ui.button(EDIT_TEXT).on_hover_text(t!("map_selection_screen.edit_map"));
                                                 if edit_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::EDIT { map_index: i });
                                                 }
@@ -159,7 +160,7 @@ fn map_selection_screen_ui(
                                             ui.set_height(BUTTON_HEIGHT);
                                             ui.set_width(BUTTON_HEIGHT);
                                             ui.centered_and_justified(|ui| {
-                                                let delete_btn = ui.button(DELETE_TEXT).on_hover_text("Delete Map");
+                                                let delete_btn = ui.button(DELETE_TEXT).on_hover_text(t!("map_selection_screen.delete_map"));
                                                 if delete_btn.clicked() {
                                                     commands.insert_resource(MapSelectionScreenAction::DELETE { map_index: i });
                                                 }

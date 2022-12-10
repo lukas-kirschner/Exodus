@@ -27,7 +27,7 @@ impl Default for WindowUiOverlayInfo {
 pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
     if *app_state.current() != AppState::MainMenu {
         if keys.just_pressed(KeyCode::Escape) {
-            app_state.set(AppState::MainMenu).expect("Could not go back to Main Menu");
+            app_state.set(AppState::MainMenu).expect("Could not return to Main Menu");
             keys.reset(KeyCode::Escape);
         }
     }
@@ -43,7 +43,8 @@ pub fn add_navbar(
             ui.scope(|ui| {
                 ui.set_width(BUTTON_HEIGHT);
                 ui.centered_and_justified(|ui| {
-                    let back_button = ui.button(NAVBAR_BACK_TEXT);
+                    let back_button = ui.button(NAVBAR_BACK_TEXT)
+                        .on_hover_text(t!("navbar.back_button_tooltip"));
 
                     if back_button.clicked() {
                         state

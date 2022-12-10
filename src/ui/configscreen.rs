@@ -44,6 +44,7 @@ fn config_screen_ui(
                             ui.scope(|ui| {
                                 ui.set_height(UIMARGIN);
                             });
+                            ui.label(format!("{}:", t!("config_screen.language_label")));
                             let selected_lang = res_config.config.game_language.to_string();
                             egui::ComboBox::from_id_source("lang_box")
                                 .selected_text(format!("{}", &selected_lang))
