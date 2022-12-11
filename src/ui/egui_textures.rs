@@ -5,7 +5,7 @@ use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, TextureId};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile};
-use crate::{CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
+use crate::{TilesetManager, CurrentPlayerTextureAtlasHandle};
 use strum::IntoEnumIterator;
 
 #[derive(Resource)]
@@ -43,13 +43,13 @@ fn convert(
 
 /// Convert Bevy Textures to Egui Textures to show those on the buttons
 pub fn atlas_to_egui_textures(
-    texture_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
+    texture_atlas_handle: Res<TilesetManager>,
     player_atlas_handle: Res<CurrentPlayerTextureAtlasHandle>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut egui_ctx: ResMut<EguiContext>,
 ) {
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.handle).expect("The texture atlas of the tile set has not yet been loaded!");
+    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the tile set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
     for tile in Tile::iter() {

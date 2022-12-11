@@ -7,9 +7,12 @@ use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
+use libexodus::tilesets::Tileset;
+use strum::IntoEnumIterator;
 use crate::game::constants::TEXTURE_SIZE;
 use crate::game::GamePlugin;
 use crate::mapeditor::MapEditorPlugin;
+use crate::tileset_manager::{file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager};
 use crate::ui::egui_textures::egui_fonts;
 use crate::ui::{Ui, UiSizeChangedEvent};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
@@ -23,6 +26,7 @@ mod mapeditor;
 mod util;
 mod dialogs;
 mod ui;
+mod tileset_manager;
 
 // We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
 // TODO !!! Textures are CC-BY-SA 3.0
@@ -45,6 +49,7 @@ pub enum AppState {
 pub struct GameDirectoriesWrapper {
     pub game_directories: GameDirectories,
 }
+
 
 #[derive(Resource)]
 pub struct GameConfig {
@@ -98,19 +103,6 @@ fn game_init(
     egui_fonts(ctx.ctx_mut());
 }
 
-#[derive(Resource)]
-pub struct RpgSpriteHandles {
-    // TODO Change to include metadata of textures
-    handles: Vec<HandleUntyped>,
-}
-
-impl FromWorld for RpgSpriteHandles {
-    fn from_world(_: &mut World) -> Self {
-        RpgSpriteHandles {
-            handles: vec![],
-        }
-    }
-}
 
 #[derive(Resource)]
 pub struct PlayerSpriteHandles {
@@ -144,19 +136,6 @@ fn load_textures(
 }
 
 #[derive(Resource)]
-pub struct CurrentMapTextureAtlasHandle {
-    pub handle: Handle<TextureAtlas>,
-}
-
-impl FromWorld for CurrentMapTextureAtlasHandle {
-    fn from_world(_: &mut World) -> Self {
-        CurrentMapTextureAtlasHandle {
-            handle: Handle::default()
-        }
-    }
-}
-
-#[derive(Resource)]
 pub struct CurrentPlayerTextureAtlasHandle {
     pub handle: Handle<TextureAtlas>,
 }
@@ -176,6 +155,7 @@ fn check_and_init_textures(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut tileset_manager: ResMut<TilesetManager>,
 ) {
     if let LoadState::Loaded =
     asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id))
@@ -184,21 +164,27 @@ fn check_and_init_textures(
         asset_server.get_group_load_state(player_sprite_handles.handles.iter().map(|handle| handle.id))
         {
             // Load Tilesets
-            for handle in &sprite_handles.handles {
-                let handle = handle.typed_weak();
+            for tileset in Tileset::iter() {
+                let tileset: Tileset = tileset;
+                let mut textures_folder = PathBuf::from("tilesets");
+                textures_folder.push(file_name_for_tileset(&tileset));
+                let handle = find_handle_with_path(textures_folder.as_path(), &*asset_server, &sprite_handles.handles);
                 let texture_atlas = TextureAtlas::from_grid(
-                    handle,
-                    Vec2::splat(TEXTURE_SIZE as f32),
+                    handle.clone(),
+                    Vec2::splat(tileset.texture_size() as f32),
                     16,
                     16,
                     None,
                     None,
                 );
                 let atlas_handle = texture_atlases.add(texture_atlas);
-                // TODO Keep a database of all loaded textures here to allow using multiple textures
-                commands.insert_resource(CurrentMapTextureAtlasHandle { handle: atlas_handle.clone() });
+                tileset_manager.set_handle(tileset, atlas_handle);
+                debug!("Successfully loaded texture atlas {0} with tile size {1}x{1}",
+                    asset_server.get_handle_path(handle).unwrap().path().to_str().unwrap(),
+                    tileset.texture_size()
+                );
             }
-            // Load Player Texture Sets
+            // Load Player Texture Sets. TODO Change everything to use one single atlas
             for handle in &player_sprite_handles.handles {
                 let handle = handle.typed_weak();
                 let texture_atlas = TextureAtlas::from_grid(
@@ -227,6 +213,7 @@ impl Plugin for LoadingPlugin {
         app
             .init_resource::<RpgSpriteHandles>()
             .init_resource::<PlayerSpriteHandles>()
+            .init_resource::<TilesetManager>()
             .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(load_textures))
             .add_system_set(SystemSet::on_update(AppState::Loading).with_system(check_and_init_textures))
         ;

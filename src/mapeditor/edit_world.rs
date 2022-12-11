@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use libexodus::tiles::Tile;
-use crate::{AppState, CurrentMapTextureAtlasHandle};
+use crate::{AppState, TilesetManager};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
 use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
@@ -60,7 +60,7 @@ fn replace_world_tile_at(
     mut commands: &mut Commands,
     map: &mut MapWrapper,
     tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
-    atlas: &CurrentMapTextureAtlasHandle,
+    atlas: &TilesetManager,
 ) {
     if let Some(current_world_tile) = map.world.get(pos.x as i32, pos.y as i32) {
         assert_ne!(*new_tile, *current_world_tile, "replace_world_tile_at() must be called with a tile different from the tile currently present in the world at {} ({})", pos, *new_tile);
@@ -95,7 +95,7 @@ fn mouse_down_handler(
     buttons: Res<Input<MouseButton>>,
     current_tile: Res<SelectedTile>,
     mut tile_entity_query: Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
-    atlas: Res<CurrentMapTextureAtlasHandle>,
+    atlas: Res<TilesetManager>,
 ) {
     let (camera, camera_transform) = q_camera.get_single().expect("There were multiple cameras spawned");
     if buttons.just_pressed(MouseButton::Left) {

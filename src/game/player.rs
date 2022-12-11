@@ -5,7 +5,7 @@ use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
+use crate::{AppState, CurrentPlayerTextureAtlasHandle, TilesetManager};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -62,7 +62,7 @@ pub fn despawn_dead_player(
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
-    current_map_texture_handle: Res<CurrentMapTextureAtlasHandle>,
+    current_map_texture_handle: Res<TilesetManager>,
     tiles_query: Query<Entity, With<WorldTile>>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {

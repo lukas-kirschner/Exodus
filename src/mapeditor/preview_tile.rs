@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE};
+use crate::{App, AppState, TilesetManager, CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE};
 use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -40,7 +40,7 @@ fn destroy_preview_tile(
 /// Spawn a WALL PreviewTile at an invisible position
 pub fn setup_preview_tile(
     mut commands: Commands,
-    current_texture_atlas: Res<CurrentMapTextureAtlasHandle>,
+    current_texture_atlas: Res<TilesetManager>,
 ) {
     let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
     commands
@@ -55,7 +55,7 @@ pub fn setup_preview_tile(
                 index: Tile::WALL.atlas_index().unwrap(),
                 ..default()
             },
-            texture_atlas: current_texture_atlas.handle.clone(),
+            texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
                 translation: Vec3::new(-1 as f32, -1 as f32, MAPEDITOR_PREVIEWTILE_Z),
                 scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
@@ -71,7 +71,7 @@ fn set_preview_tile_texture(
     texture_atlas_handle: &mut Handle<TextureAtlas>,
     texture_atlas_sprite: &mut TextureAtlasSprite,
     preview_tile: &mut PreviewTile,
-    current_texture_atlas: &CurrentMapTextureAtlasHandle,
+    current_texture_atlas: &TilesetManager,
     current_player_atlas: &CurrentPlayerTextureAtlasHandle,
 ) {
     match *new_tile {
@@ -81,10 +81,10 @@ fn set_preview_tile_texture(
         }
         _ => {
             if let Some(atlas_index) = new_tile.atlas_index() {
-                *texture_atlas_handle = current_texture_atlas.handle.clone();
+                *texture_atlas_handle = current_texture_atlas.current_handle();
                 texture_atlas_sprite.index = atlas_index;
             } else {
-                *texture_atlas_handle = current_texture_atlas.handle.clone();
+                *texture_atlas_handle = current_texture_atlas.current_handle();
                 texture_atlas_sprite.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
             }
         }
@@ -99,7 +99,7 @@ fn update_preview_tile(
     map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(&mut PreviewTile, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &mut Transform)>,
-    current_texture_atlas: Res<CurrentMapTextureAtlasHandle>,
+    current_texture_atlas: Res<TilesetManager>,
     current_player_atlas: Res<CurrentPlayerTextureAtlasHandle>,
 ) {
     let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) = preview_tile_q.single_mut();
