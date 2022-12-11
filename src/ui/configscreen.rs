@@ -3,7 +3,8 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Frame;
 use libexodus::config::Language;
 use strum::IntoEnumIterator;
-use crate::{AppState, GameConfig};
+use libexodus::tilesets::Tileset;
+use crate::{AppState, GameConfig, TilesetManager};
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
 
@@ -29,6 +30,7 @@ fn config_screen_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut state: ResMut<State<AppState>>,
     mut res_config: ResMut<GameConfig>,
+    mut res_tileset: ResMut<TilesetManager>,
 ) {
     add_navbar(&mut egui_ctx, &mut state);
 
@@ -55,6 +57,16 @@ fn config_screen_ui(
                                     }
                                 });
                             ui.separator();
+                            ui.label(format!("{}:", t!("config_screen.tileset_label")));
+                            let selected_tileset = res_tileset.current_tileset().to_string();
+                            egui::ComboBox::from_id_source("tile_set_box")
+                                .selected_text(format!("{}", &selected_tileset))
+                                .show_ui(ui, |ui| {
+                                    ui.set_width(400.);
+                                    for tileset in Tileset::iter() {
+                                        ui.selectable_value(&mut res_tileset.current_tileset, tileset, &tileset.to_string());
+                                    }
+                                });
                         });
                     });
                 });

@@ -7,6 +7,7 @@ navbar:
   back_button_tooltip: Zurück
 config_screen:
   language_label: Sprache
+  tileset_label: Textur-Set
 map_selection_screen:
   play_map: Karte spielen
   edit_map: Karte bearbeiten

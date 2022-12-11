@@ -6,7 +6,7 @@ use libexodus::tilesets::Tileset;
 #[derive(Resource)]
 /// A struct that contains the handles for all tile sets and information about the current tile set
 pub struct TilesetManager {
-    current_tileset: Tileset,
+    pub current_tileset: Tileset,
     atlas_handle_for_tileset: HashMap<Tileset, Handle<TextureAtlas>>,
 }
 
