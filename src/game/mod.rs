@@ -1,15 +1,18 @@
 use bevy::prelude::*;
 use crate::AppState;
+use crate::game::pickup_item::PickupItemPlugin;
 
 pub mod constants;
 mod player;
 pub mod tilewrapper;
 pub mod scoreboard;
 mod ui;
-mod world;
+pub(crate) mod world;
+pub mod camera;
+mod pickup_item;
 
 use crate::game::player::PlayerPlugin;
-use crate::game::tilewrapper::{CoinPlugin, MapWrapper};
+use crate::game::tilewrapper::{MapWrapper, reset_score};
 use crate::game::ui::GameUIPlugin;
 use crate::game::world::WorldPlugin;
 
@@ -22,7 +25,7 @@ impl Plugin for GamePlugin {
             .add_plugin(WorldPlugin)
             .add_plugin(GameUIPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(CoinPlugin)
+            .add_plugin(PickupItemPlugin)
 
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(back_to_main_menu_controls)
@@ -30,6 +33,9 @@ impl Plugin for GamePlugin {
 
             .add_system_set(SystemSet::on_exit(AppState::Playing)
                 .with_system(cleanup)
+            )
+            .add_system_set(SystemSet::on_enter(AppState::Playing)
+                .with_system(reset_score).label("reset_score")
             )
         ;
     }

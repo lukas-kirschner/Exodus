@@ -1,0 +1,51 @@
+image: rustdocker/rust:stable
+
+stages:
+  - test
+  - build
+  - deploy
+before_script:
+  - apt-get --yes update && apt-get --yes upgrade
+  - apt-get install --no-install-recommends --yes libwayland-dev libxkbcommon-dev
+  - rustup update stable
+
+variables:
+  GIT_STRATEGY: clone
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_DEPTH: 1
+
+cache:
+  paths:
+    - target/release
+    - target/debug
+
+unit_test:
+  stage: test
+  script:
+    - cargo install cargo-tarpaulin
+    - cargo tarpaulin --workspace -v --out Xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: cobertura.xml
+
+build_release:
+  stage: build
+  script:
+    - cargo build --release
+  artifacts:
+    name: 'build-$CI_COMMIT_REF_SLUG'
+    paths:
+      - target/release/**/*.so
+      - target/release/**/*.dll
+      - target/release/exodus
+      - assets/**/*
+deploy_linux:
+  stage: deploy
+  script:
+    - echo "TODO Implement me!"
+  artifacts:
+    name: 'exodus-x64-linux-VERSION-BUILD'
+    paths:
+      - README.md

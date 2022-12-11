@@ -1,37 +1,29 @@
-use std::borrow::BorrowMut;
-use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{Frame, RichText, TextBuffer};
+use bevy_egui::egui::{Frame, RichText};
 use indoc::formatdoc;
-use crate::AppState;
-use crate::uicontrols::{add_navbar, menu_esc_control, MenuMaterials, NAVBAR_BACK_TEXT, UIMARGIN};
+use crate::{AppState, get_buildnr};
+use crate::ui::uicontrols::{add_navbar, menu_esc_control};
+use crate::ui::UIMARGIN;
 
 pub struct CreditsScreen;
 
-struct CreditsScreenData {
-    camera_entity: Entity,
-    ui_root: Entity,
-}
-
-#[derive(Component)]
-enum CreditsScreenButton {
-    Quit,
-}
-
 fn credits() -> String {
+    let buildnr = get_buildnr();
     let mut ret: String = formatdoc! {"
-        {program_name} Version {version}
+        {program_name} Version {version}{buildnr}
         based on the \"Space Exodus\" Psion EPOC game
         by David Sansome (2001)
 
         This program is licensed under a {license}.
-        The sprites were created by dancramp (CC BY 4.0)
+        The Tiny Platform Quest Sprites were created by dancramp (CC BY 4.0)
          https://opengameart.org/content/tiny-platform-quest-sprites
+         Changes were made to the original sprites.
         ",
             program_name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION"),
             license = "MIT License",
+            buildnr = buildnr,
     };
     if cfg!(debug_assertions) {
         ret.push_str(format!("\nDebug Build {build} ({date})",
