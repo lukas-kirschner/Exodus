@@ -5,7 +5,7 @@ use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use crate::{AppState, CurrentPlayerTextureAtlasHandle, TilesetManager};
+use crate::{AppState, TilesetManager};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -58,20 +58,20 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 /// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
 pub fn despawn_dead_player(
     mut commands: Commands,
-    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity, &Handle<TextureAtlas>)>,
+    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity)>,
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
     current_map_texture_handle: Res<TilesetManager>,
     tiles_query: Query<Entity, With<WorldTile>>,
 ) {
-    for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
+    for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned
             commands.entity(entity).despawn_recursive();
             // Spawn new player and reset scores
-            respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
+            respawn_player(&mut commands, &*current_map_texture_handle, &worldwrapper);
             scoreboard.reset();
             reset_world(commands, worldwrapper, tiles_query, current_map_texture_handle);
             return;
@@ -263,18 +263,18 @@ pub fn player_movement(
 
 fn respawn_player(
     commands: &mut Commands,
-    atlas_handle_player: Handle<TextureAtlas>,
-    worldwrapper: &ResMut<MapWrapper>,
+    atlas_handle_player: &TilesetManager,
+    worldwrapper: &MapWrapper,
 ) {
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
-            texture_atlas: atlas_handle_player.clone(),
+            texture_atlas: atlas_handle_player.current_handle().clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE_PLAYER as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / atlas_handle_player.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
@@ -285,10 +285,10 @@ fn respawn_player(
 
 pub fn setup_player(
     mut commands: Commands,
-    current_texture_atlas: Res<CurrentPlayerTextureAtlasHandle>,
+    current_texture_atlas: Res<TilesetManager>,
     worldwrapper: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, (*current_texture_atlas).handle.clone(), &worldwrapper);
+    respawn_player(&mut commands, &*current_texture_atlas, &worldwrapper);
 }
 
 pub fn keyboard_controls(

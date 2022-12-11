@@ -43,13 +43,13 @@ impl Player {
     /// Get the atlas index of the player sprite facing right.
     /// TODO: Animation when player is walking?
     fn atlas_index_right() -> usize {
-        0
+        255
     }
     ///
     /// Get the atlas index of the player sprite facing left.
     /// TODO: Animation when player is walking?
     fn atlas_index_left() -> usize {
-        4
+        249
     }
     ///
     /// Get the atlas index facing in the correct direction

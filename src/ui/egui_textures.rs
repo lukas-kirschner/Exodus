@@ -5,7 +5,7 @@ use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, TextureId};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile};
-use crate::{TilesetManager, CurrentPlayerTextureAtlasHandle};
+use crate::{TilesetManager};
 use strum::IntoEnumIterator;
 
 #[derive(Resource)]
@@ -45,7 +45,6 @@ fn convert(
 /// Convert Bevy Textures to Egui Textures to show those on the buttons
 pub fn atlas_to_egui_textures(
     texture_atlas_handle: Res<TilesetManager>,
-    player_atlas_handle: Res<CurrentPlayerTextureAtlasHandle>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut egui_ctx: ResMut<EguiContext>,
@@ -59,9 +58,9 @@ pub fn atlas_to_egui_textures(
         }
     }
     let mut textures_p = HashMap::new();
-    // The Player Spawn needs a special texture, since it comes from a different atlas:
+    // The Player Spawn needs a special atlas index:
     let player = Player::new(); // TODO The Query is not working in this stage, unfortunately
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&player_atlas_handle.handle).expect("The texture atlas of the player set has not yet been loaded!");
+    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the player set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     textures_p.insert(player.atlas_index(), convert(texture_atlas, texture_handle, &mut egui_ctx, &player.atlas_index()));
     commands.insert_resource(EguiButtonTextures {

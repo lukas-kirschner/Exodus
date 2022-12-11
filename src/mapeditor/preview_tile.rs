@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, TilesetManager, CurrentPlayerTextureAtlasHandle};
+use crate::{App, AppState, TilesetManager};
 use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -72,11 +72,10 @@ fn set_preview_tile_texture(
     texture_atlas_sprite: &mut TextureAtlasSprite,
     preview_tile: &mut PreviewTile,
     current_texture_atlas: &TilesetManager,
-    current_player_atlas: &CurrentPlayerTextureAtlasHandle,
 ) {
     match *new_tile {
         Tile::PLAYERSPAWN => {
-            *texture_atlas_handle = current_player_atlas.handle.clone();
+            *texture_atlas_handle = current_texture_atlas.current_handle();
             texture_atlas_sprite.index = Player::new().atlas_index();
         }
         _ => {
@@ -100,11 +99,10 @@ fn update_preview_tile(
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(&mut PreviewTile, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &mut Transform)>,
     current_texture_atlas: Res<TilesetManager>,
-    current_player_atlas: Res<CurrentPlayerTextureAtlasHandle>,
 ) {
     let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) = preview_tile_q.single_mut();
     if current_tile.tile != preview_tile.current_tile {
-        set_preview_tile_texture(&current_tile.tile, &mut texture_atlas_handle, &mut texture_atlas_sprite, &mut preview_tile, &*current_texture_atlas, &*current_player_atlas);
+        set_preview_tile_texture(&current_tile.tile, &mut texture_atlas_handle, &mut texture_atlas_sprite, &mut preview_tile, &*current_texture_atlas);
     }
     let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
     if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {

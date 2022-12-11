@@ -1,7 +1,5 @@
 /// (1000 / rows) - margins; // Size of a tile, all tiles are square
 pub const TILE_SIZE: f32 = 1.0;
-/// Texture size in pixels
-pub const TEXTURE_SIZE_PLAYER: usize = 32;
 /// The Player's Z coordinate
 pub const PLAYER_Z: f32 = -1.0;
 /// The World Tiles' Z coordinate
