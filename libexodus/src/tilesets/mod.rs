@@ -40,8 +40,8 @@ impl Tileset {
     }
     pub fn texture_size(&self) -> usize {
         match self {
-            Tileset::TinyPlatformQuestTiles => 32,
-            Tileset::Classic => 32,
+            Tileset::TinyPlatformQuestTiles => 16,
+            Tileset::Classic => 16,
         }
     }
 }

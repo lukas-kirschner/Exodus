@@ -28,6 +28,9 @@ impl TilesetManager {
         self.atlas_handle_for_tileset.get(&self.current_tileset)
             .expect(format!("No Texture Atlas was initialized for {}", self.current_tileset).as_str()).clone()
     }
+    pub fn current_tileset(&self) -> &Tileset {
+        &self.current_tileset
+    }
 }
 
 /// Get the file name of the tile set

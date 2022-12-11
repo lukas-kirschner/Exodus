@@ -274,7 +274,7 @@ fn respawn_player(
             texture_atlas: atlas_handle_player.clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE_PLAYER as f32),
                 ..default()
             },
             ..Default::default()

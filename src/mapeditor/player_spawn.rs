@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use libexodus::player::Player;
 use crate::game::constants::{PLAYER_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
-use crate::{CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE};
+use crate::{CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE_PLAYER, TilesetManager};
 
 #[derive(Component)]
 pub struct PlayerSpawnComponent {
@@ -13,6 +13,7 @@ pub fn init_player_spawn(
     mut commands: Commands,
     current_texture_atlas: Res<CurrentPlayerTextureAtlasHandle>,
     worldwrapper: ResMut<MapWrapper>,
+    tileset: Res<TilesetManager>,
 ) {
     // Code Duplication from player.rs - but we need to change things later
     let player: PlayerSpawnComponent = PlayerSpawnComponent { player: Player::new() };
@@ -23,7 +24,7 @@ pub fn init_player_spawn(
             texture_atlas: current_texture_atlas.handle.clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE_PLAYER as f32),
                 ..default()
             },
             ..Default::default()

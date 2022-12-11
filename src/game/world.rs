@@ -4,7 +4,7 @@ use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::AppState;
 use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
-use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
+use crate::game::constants::{TILE_SIZE, WORLD_Z};
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
 use crate::tileset_manager::TilesetManager;
@@ -75,7 +75,7 @@ pub fn spawn_tile(
             texture_atlas: map_texture_atlas.current_handle(),
             transform: Transform {
                 translation: tile_position.extend(WORLD_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / map_texture_atlas.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()

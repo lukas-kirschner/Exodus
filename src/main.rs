@@ -9,7 +9,7 @@ use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
-use crate::game::constants::TEXTURE_SIZE;
+use crate::game::constants::TEXTURE_SIZE_PLAYER;
 use crate::game::GamePlugin;
 use crate::mapeditor::MapEditorPlugin;
 use crate::tileset_manager::{file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager};
@@ -189,7 +189,7 @@ fn check_and_init_textures(
                 let handle = handle.typed_weak();
                 let texture_atlas = TextureAtlas::from_grid(
                     handle,
-                    Vec2::splat(TEXTURE_SIZE as f32),
+                    Vec2::splat(TEXTURE_SIZE_PLAYER as f32),
                     16,
                     16,
                     None,

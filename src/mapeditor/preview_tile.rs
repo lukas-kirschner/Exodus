@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, TilesetManager, CurrentPlayerTextureAtlasHandle, TEXTURE_SIZE};
+use crate::{App, AppState, TilesetManager, CurrentPlayerTextureAtlasHandle};
 use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -58,7 +58,7 @@ pub fn setup_preview_tile(
             texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
                 translation: Vec3::new(-1 as f32, -1 as f32, MAPEDITOR_PREVIEWTILE_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / current_texture_atlas.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..default()
