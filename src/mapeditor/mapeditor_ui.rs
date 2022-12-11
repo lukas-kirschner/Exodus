@@ -149,6 +149,7 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::LADDER, &mut selected_tile, player_it);
                         ui.separator();
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::EXIT, &mut selected_tile, player_it);
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
                         ui.separator();
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);

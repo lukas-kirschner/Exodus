@@ -60,6 +60,7 @@ tile:
   arrow_left: Pfeil nach links
   arrow_up: Pfeil nach oben
   arrow_down: Pfeil nach unten
+  exit: Ziel
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX

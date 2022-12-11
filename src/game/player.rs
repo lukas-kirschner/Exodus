@@ -202,7 +202,7 @@ pub fn player_movement(
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(entity).despawn_recursive();
-                                sprite.index = 80; // Angel texture
+                                sprite.index = 222; // Angel texture
                                 //TODO trigger GameOverEvent?
                                 commands.spawn(SpriteSheetBundle {
                                     sprite: sprite.clone(),
@@ -230,6 +230,7 @@ pub fn player_movement(
                         TileKind::KEY => {}
                         TileKind::DOOR => {}
                         TileKind::COLLECTIBLE => {}
+                        TileKind::EXIT => {} // TODO Insert Finished Player Component
                     }
                 }
                 player.pop_movement_queue();

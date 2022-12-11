@@ -102,6 +102,7 @@ impl GameWorld {
             TileKind::KEY => {}
             TileKind::DOOR => {}
             TileKind::COLLECTIBLE => {}
+            TileKind::EXIT => {}
         }
         self
     }

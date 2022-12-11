@@ -60,6 +60,7 @@ tile:
   arrow_left: Left Arrow
   arrow_up: Up Arrow
   arrow_down: Down Arrow
+  exit: Exit
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map

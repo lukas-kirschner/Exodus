@@ -36,6 +36,9 @@ pub enum TileKind {
     ///
     /// A ladder
     LADDER,
+    ///
+    /// The map exit
+    EXIT,
 }
 
 pub type AtlasIndex = usize;
@@ -93,6 +96,8 @@ pub enum Tile {
     ARROWUP,
     /// An arrow that points down
     ARROWDOWN,
+    /// The map exit
+    EXIT,
 }
 
 impl Tile {
@@ -124,6 +129,7 @@ impl Tile {
             Tile::ARROWLEFT => TileKind::COLLECTIBLE,
             Tile::ARROWUP => TileKind::COLLECTIBLE,
             Tile::ARROWDOWN => TileKind::COLLECTIBLE,
+            Tile::EXIT => TileKind::EXIT,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -153,6 +159,7 @@ impl Tile {
             Tile::ARROWLEFT => Some(36),
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
+            Tile::EXIT => Some(40),
         };
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -167,6 +174,7 @@ impl Tile {
             TileKind::KEY => { false }
             TileKind::DOOR => { true }
             TileKind::COLLECTIBLE => { false }
+            TileKind::EXIT => { false }
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
@@ -181,6 +189,7 @@ impl Tile {
             TileKind::KEY => { false }
             TileKind::DOOR => { false }
             TileKind::COLLECTIBLE => { false }
+            TileKind::EXIT => { false }
         }
     }
     /// Get a unique string id, describing this tile. Suitable for i18n keys.
@@ -212,6 +221,7 @@ impl Tile {
             Tile::ARROWLEFT => "arrow_left",
             Tile::ARROWUP => "arrow_up",
             Tile::ARROWDOWN => "arrow_down",
+            Tile::EXIT => "exit"
         }
     }
 }
@@ -244,6 +254,7 @@ impl fmt::Display for Tile {
             Tile::ARROWLEFT => "Arrow Left",
             Tile::ARROWUP => "Arrow Up",
             Tile::ARROWDOWN => "Arrow Down",
+            Tile::EXIT => "Exit",
         })
     }
 }

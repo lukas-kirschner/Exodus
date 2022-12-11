@@ -214,6 +214,7 @@ impl Tile {
             Tile::ARROWLEFT => 0x33,
             Tile::ARROWUP => 0x34,
             Tile::ARROWDOWN => 0x35,
+            Tile::EXIT => 0x11,
         }
     }
 
@@ -222,6 +223,7 @@ impl Tile {
             0x00 => Some(Tile::AIR),
             0x01 => Some(Tile::WALL),
             0x10 => Some(Tile::PLAYERSPAWN),
+            0x11 => Some(Tile::EXIT),
             0x20 => Some(Tile::DOOR),
             0x21 => Some(Tile::OPENDOOR),
             0x30 => Some(Tile::COIN),
