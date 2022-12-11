@@ -89,6 +89,9 @@ impl GameWorld {
             .set(10, 3, WALL)
             .set(10, 2, WALL)
 
+            .set(7, 4, ARROWUP)
+            .set(7, 1, ARROWLEFT)
+            .set(7, 7, ARROWUP)
             .set(7, 5, WALL)
             .set(10, 5, WALL)
             .set(7, 6, LADDER)
@@ -111,6 +114,7 @@ impl GameWorld {
             .set(6, 10, SPIKES)
 
             .set(8, 10, WALL)
+            .set(8, 14, EXIT)
             .set(9, 10, WALL)
             .set(10, 10, WALL)
             .set(10, 11, WALL)
@@ -118,6 +122,7 @@ impl GameWorld {
             .set(10, 14, WALL)
             .set(11, 14, WALL)
             .set(12, 14, WALL)
+            .set(13, 13, EXIT)
             .set(12, 13, WALL)
             .set(14, 13, WALL)
             .set(15, 13, WALL)
@@ -141,6 +146,7 @@ impl GameWorld {
             .set(18, 1, SPIKES)
 
             .set(27, 1, WALL)
+            .set(28, 1, EXIT)
             .set(29, 1, WALL)
 
             .set(24, 5, WALL)
@@ -153,6 +159,13 @@ impl GameWorld {
             .set(31, 5, WALL)
             .set(27, 4, WALL)
             .set(28, 4, WALL)
+
+            .set(24, 4, COIN)
+            .set(25, 4, COIN)
+            .set(26, 4, COIN)
+            .set(29, 4, COIN)
+            .set(30, 4, COIN)
+            .set(31, 4, COIN)
 
             .set(21, 8, WALL)
             .set(22, 8, WALL)
@@ -167,9 +180,11 @@ impl GameWorld {
             .set(31, 8, WALL)
             .set(32, 8, WALL)
             .set(33, 8, WALL)
+            .set(21, 9, ARROWLEFT)
             .set(24, 9, SPIKES)
             .set(26, 9, SPIKES)
             .set(30, 9, SPIKES)
+            .set(33, 9, ARROWRIGHT)
 
             .set(23, 12, WALL)
             .set(23, 13, WALL)
