@@ -156,11 +156,6 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::PLAYERSPAWN, &mut selected_tile, player_it);
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::EXIT, &mut selected_tile, player_it);
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::DOOR, &mut selected_tile, player_it);
-                        ui.separator();
-                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
-                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
-                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
-                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
                     });
                 });
                 ui.scope(|ui| {
@@ -176,6 +171,11 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESLTB, &mut selected_tile, player_it);
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRTB, &mut selected_tile, player_it);
                         tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::WALLSPIKESRLTB, &mut selected_tile, player_it);
+                        ui.separator();
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWLEFT, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWDOWN, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWRIGHT, &mut selected_tile, player_it);
+                        tile_kind_selector_button_for(ui, egui_textures.borrow(), &Tile::ARROWUP, &mut selected_tile, player_it);
                     })
                 });
             });
