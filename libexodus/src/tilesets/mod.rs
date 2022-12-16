@@ -34,7 +34,7 @@ impl Display for Color {
 impl Tileset {
     pub fn background_color(&self) -> Color {
         match self {
-            Tileset::TinyPlatformQuestTiles => (0xa0, 0xa0, 0xa0).into(),
+            Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90).into(),
             Tileset::Classic => (0xff, 0xff, 0xff).into(),
         }
     }
