@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use bevy::prelude::*;
+use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
 use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::FontFamily::Proportional;
-use bevy_egui::egui::{FontId, TextureId};
+use bevy_egui::egui::{FontId, Pos2, TextureId};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile};
 use crate::{TilesetManager};
@@ -23,23 +24,63 @@ impl FromWorld for EguiButtonTextures {
     }
 }
 
+fn scale_texture(
+    uv: &Rect,
+    assets: &mut Assets<Image>,
+    texture_handle: &Handle<Image>,
+) -> (Handle<Image>, usize) {
+    const target_size: usize = 32;
+    let image = assets.get(texture_handle).unwrap();
+    let scale: f64 = (uv.max.x as f64 - uv.min.x as f64) / target_size as f64;
+    assert_eq!(scale, (uv.max.y as f64 - uv.min.y as f64) / target_size as f64, "Expected square textures!");
+    let rgba_image = image.clone().try_into_dynamic().unwrap().into_rgba8();
+    let data = rgba_image.as_raw();
+    assert!(image.texture_descriptor.format == TextureFormat::Rgba8UnormSrgb,
+            "Image format {:?} expected! Got {:?} instead",
+            TextureFormat::Rgba8UnormSrgb,
+            image.texture_descriptor.format);
+    let mut target_arr = Vec::with_capacity(target_size * target_size * 4);
+    for y in 0..target_size {
+        for x in (0..target_size * 4).step_by(4) {
+            let real_x = x / 4;
+            let x_nearest: i32 = ((((real_x + uv.min.x as usize) as f64 + 0.5) * scale).floor() as i32) * 4;
+            let y_nearest: i32 = (((y + uv.min.y as usize) as f64 + 0.5) * scale).floor() as i32;
+            println!("From ({},{})", x_nearest, y_nearest);
+            for offset in 0..4 {
+                assert_eq!((x_nearest / 4) * 4, x_nearest, "x_nearest was not divisible by 4!");
+                let pixel = data[(x_nearest + (x_nearest * y_nearest) + offset as i32) as usize];
+                // target_arr[x + (x * y) + offset] = pixel;
+                target_arr.push(pixel);
+            }
+            println!("Set ({},{}) to ({},{},{},{})", x, y, target_arr[x + (x * y) + 0], target_arr[x + (x * y) + 1], target_arr[x + (x * y) + 2], target_arr[x + (x * y) + 3]);
+        }
+    }
+    (assets.add(Image::new(
+        Extent3d {
+            width: target_size as u32,
+            height: target_size as u32,
+            depth_or_array_layers: 1,
+        },
+        TextureDimension::D2,
+        target_arr,
+        image.texture_descriptor.format.clone())), target_size)
+}
+
 fn convert(
     texture_atlas: &TextureAtlas,
     texture_handle: &Handle<Image>,
     egui_ctx: &mut ResMut<EguiContext>,
     atlas_index: &AtlasIndex,
+    assets: &mut Assets<Image>,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
-    // TODO Up/downscale to egui texture size (32px)
     let rect: Rect = texture_atlas.textures[*atlas_index];
-    let uv: egui::Rect = egui::Rect::from_min_max(
-        egui::pos2(rect.min.x / texture_atlas.size.x, rect.min.y / texture_atlas.size.y),
-        egui::pos2(rect.max.x / texture_atlas.size.x, rect.max.y / texture_atlas.size.y),
-    );
-    let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
+    let (mut handle, size) = scale_texture(&rect, assets, texture_handle);
+    let uv: egui::Rect = egui::Rect::from_min_max(Pos2::new(0., 0.), Pos2::new(1., 1.));
+    let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
-    let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
+    handle.make_strong(assets);
+    let tex: TextureId = egui_ctx.add_image(handle); // Move the handle, binding the lifetime to egui
     (tex, rect_vec2, uv)
-    // TODO if the button size is smaller than the texture size, Egui textures need to be resized here
 }
 
 /// Convert Bevy Textures to Egui Textures to show those on the buttons
@@ -48,21 +89,20 @@ pub fn atlas_to_egui_textures(
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut egui_ctx: ResMut<EguiContext>,
+    mut assets: ResMut<Assets<Image>>,
 ) {
     let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the tile set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
     for tile in Tile::iter() {
         if let Some(atlas_index) = tile.atlas_index() {
-            textures.insert(atlas_index, convert(texture_atlas, texture_handle, &mut egui_ctx, &atlas_index));
+            textures.insert(atlas_index, convert(texture_atlas, texture_handle, &mut egui_ctx, &atlas_index, &mut *assets));
         }
-    }
+    }//TODO unify
     let mut textures_p = HashMap::new();
     // The Player Spawn needs a special atlas index:
-    let player = Player::new(); // TODO The Query is not working in this stage, unfortunately
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the player set has not yet been loaded!");
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
-    textures_p.insert(player.atlas_index(), convert(texture_atlas, texture_handle, &mut egui_ctx, &player.atlas_index()));
+    let player = Player::new();
+    textures_p.insert(player.atlas_index(), convert(texture_atlas, texture_handle, &mut egui_ctx, &player.atlas_index(), &mut *assets));
     commands.insert_resource(EguiButtonTextures {
         textures,
         player_textures: textures_p,
