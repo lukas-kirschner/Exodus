@@ -35,7 +35,6 @@ fn convert(
         egui::pos2(rect.min.x / texture_atlas.size.x, rect.min.y / texture_atlas.size.y),
         egui::pos2(rect.max.x / texture_atlas.size.x, rect.max.y / texture_atlas.size.y),
     );
-    let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
     let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
     (tex, egui::Vec2::splat(32.0), uv)
