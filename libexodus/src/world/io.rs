@@ -191,6 +191,10 @@ impl Tile {
         match *self {
             Tile::AIR => 0x00,
             Tile::WALL => 0x01,
+            Tile::WALLNATURE => 0x02,
+            Tile::WALLCOBBLE => 0x03,
+            Tile::WALLSMOOTH => 0x04,
+            Tile::WALLCHISELED => 0x05,
             Tile::PLAYERSPAWN => 0x10,
             Tile::DOOR => 0x20,
             Tile::OPENDOOR => 0x21,
@@ -214,6 +218,7 @@ impl Tile {
             Tile::ARROWLEFT => 0x33,
             Tile::ARROWUP => 0x34,
             Tile::ARROWDOWN => 0x35,
+            Tile::EXIT => 0x11,
         }
     }
 
@@ -221,7 +226,12 @@ impl Tile {
         match byte {
             0x00 => Some(Tile::AIR),
             0x01 => Some(Tile::WALL),
+            0x02 => Some(Tile::WALLNATURE),
+            0x03 => Some(Tile::WALLCOBBLE),
+            0x04 => Some(Tile::WALLSMOOTH),
+            0x05 => Some(Tile::WALLCHISELED),
             0x10 => Some(Tile::PLAYERSPAWN),
+            0x11 => Some(Tile::EXIT),
             0x20 => Some(Tile::DOOR),
             0x21 => Some(Tile::OPENDOOR),
             0x30 => Some(Tile::COIN),

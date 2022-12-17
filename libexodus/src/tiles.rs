@@ -36,6 +36,9 @@ pub enum TileKind {
     ///
     /// A ladder
     LADDER,
+    ///
+    /// The map exit
+    EXIT,
 }
 
 pub type AtlasIndex = usize;
@@ -47,6 +50,14 @@ pub enum Tile {
     AIR,
     /// A tile of Wall, a solid block that cannot be destroyed
     WALL,
+    /// An alternative Wall with a "nature" texture
+    WALLNATURE,
+    /// An alternative Wall with a "cobblestone" texture
+    WALLCOBBLE,
+    /// An alternative Wall with a "smooth" texture
+    WALLSMOOTH,
+    /// An alternative Wall with a "chiseled" texture
+    WALLCHISELED,
     /// The position where the player spawns
     PLAYERSPAWN,
     /// A door that can be opened with a key
@@ -93,6 +104,8 @@ pub enum Tile {
     ARROWUP,
     /// An arrow that points down
     ARROWDOWN,
+    /// The map exit
+    EXIT,
 }
 
 impl Tile {
@@ -101,6 +114,10 @@ impl Tile {
         match self {
             Tile::AIR => TileKind::AIR,
             Tile::WALL => TileKind::SOLID,
+            Tile::WALLNATURE => TileKind::SOLID,
+            Tile::WALLCOBBLE => TileKind::SOLID,
+            Tile::WALLSMOOTH => TileKind::SOLID,
+            Tile::WALLCHISELED => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
@@ -124,12 +141,17 @@ impl Tile {
             Tile::ARROWLEFT => TileKind::COLLECTIBLE,
             Tile::ARROWUP => TileKind::COLLECTIBLE,
             Tile::ARROWDOWN => TileKind::COLLECTIBLE,
+            Tile::EXIT => TileKind::EXIT,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
         return match self {
             Tile::AIR => None,
             Tile::WALL => Some(58),
+            Tile::WALLNATURE => Some(130),
+            Tile::WALLCOBBLE => Some(123),
+            Tile::WALLSMOOTH => Some(57),
+            Tile::WALLCHISELED => Some(52),
             Tile::PLAYERSPAWN => None,
             Tile::COIN => Some(217),
             Tile::LADDER => Some(220),
@@ -153,6 +175,7 @@ impl Tile {
             Tile::ARROWLEFT => Some(36),
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
+            Tile::EXIT => Some(40),
         };
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -167,6 +190,7 @@ impl Tile {
             TileKind::KEY => { false }
             TileKind::DOOR => { true }
             TileKind::COLLECTIBLE => { false }
+            TileKind::EXIT => { false }
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
@@ -181,6 +205,7 @@ impl Tile {
             TileKind::KEY => { false }
             TileKind::DOOR => { false }
             TileKind::COLLECTIBLE => { false }
+            TileKind::EXIT => { false }
         }
     }
     /// Get a unique string id, describing this tile. Suitable for i18n keys.
@@ -189,6 +214,10 @@ impl Tile {
         match self {
             Tile::AIR => "air",
             Tile::WALL => "wall",
+            Tile::WALLNATURE => "wallnature",
+            Tile::WALLCOBBLE => "wallcobble",
+            Tile::WALLSMOOTH => "wallsmooth",
+            Tile::WALLCHISELED => "wallchiseled",
             Tile::PLAYERSPAWN => "playerspawn",
             Tile::DOOR => "door",
             Tile::OPENDOOR => "opendoor",
@@ -212,6 +241,7 @@ impl Tile {
             Tile::ARROWLEFT => "arrow_left",
             Tile::ARROWUP => "arrow_up",
             Tile::ARROWDOWN => "arrow_down",
+            Tile::EXIT => "exit",
         }
     }
 }
@@ -221,6 +251,10 @@ impl fmt::Display for Tile {
         write!(f, "{}", match self {
             Tile::AIR => "Air",
             Tile::WALL => "Wall",
+            Tile::WALLNATURE => "Wall (Nature)",
+            Tile::WALLCOBBLE => "Wall (Cobblestone)",
+            Tile::WALLSMOOTH => "Wall (Smooth)",
+            Tile::WALLCHISELED => "Wall (Chiseled)",
             Tile::PLAYERSPAWN => "Player Spawn",
             Tile::COIN => "Coin",
             Tile::LADDER => "Ladder",
@@ -244,6 +278,7 @@ impl fmt::Display for Tile {
             Tile::ARROWLEFT => "Arrow Left",
             Tile::ARROWUP => "Arrow Up",
             Tile::ARROWDOWN => "Arrow Down",
+            Tile::EXIT => "Exit",
         })
     }
 }

@@ -5,6 +5,7 @@ pub mod movement;
 pub mod directions;
 pub mod directories;
 pub mod config;
+pub mod tilesets;
 
 #[cfg(test)]
 mod tests {

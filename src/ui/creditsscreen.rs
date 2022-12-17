@@ -16,8 +16,9 @@ fn credits() -> String {
         by David Sansome (2001)
 
         This program is licensed under a {license}.
-        The sprites were created by dancramp (CC BY 4.0)
+        The Tiny Platform Quest Sprites were created by dancramp (CC BY 4.0)
          https://opengameart.org/content/tiny-platform-quest-sprites
+         Changes were made to the original sprites.
         ",
             program_name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION"),

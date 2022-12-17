@@ -7,6 +7,7 @@ navbar:
   back_button_tooltip: Zurück
 config_screen:
   language_label: Sprache
+  tileset_label: Textur-Set
 map_selection_screen:
   play_map: Karte spielen
   edit_map: Karte bearbeiten
@@ -36,6 +37,10 @@ common_buttons:
 tile:
   air: Luft
   wall: Mauer
+  wallnature: Mauer
+  wallcobble: Mauer
+  wallsmooth: Mauer
+  wallchiseled: Mauer
   playerspawn: Spawn
   door: Tür
   opendoor: Geöffnete Tür
@@ -59,6 +64,7 @@ tile:
   arrow_left: Pfeil nach links
   arrow_up: Pfeil nach oben
   arrow_down: Pfeil nach unten
+  exit: Ziel
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX

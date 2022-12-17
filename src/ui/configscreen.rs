@@ -3,7 +3,8 @@ use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Frame;
 use libexodus::config::Language;
 use strum::IntoEnumIterator;
-use crate::{AppState, GameConfig};
+use libexodus::tilesets::Tileset;
+use crate::{AppState, GameConfig, TilesetManager};
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
 
@@ -19,7 +20,7 @@ impl Plugin for ConfigScreen {
                 .with_system(menu_esc_control)
             )
             .add_system_set(SystemSet::on_exit(AppState::ConfigScreen)
-                .with_system(save_config)
+                .with_system(save_and_apply_config)
             )
         ;
     }
@@ -55,6 +56,16 @@ fn config_screen_ui(
                                     }
                                 });
                             ui.separator();
+                            ui.label(format!("{}:", t!("config_screen.tileset_label")));
+                            let selected_tileset = res_config.config.tile_set.to_string();
+                            egui::ComboBox::from_id_source("tile_set_box")
+                                .selected_text(format!("{}", &selected_tileset))
+                                .show_ui(ui, |ui| {
+                                    ui.set_width(400.);
+                                    for tileset in Tileset::iter() {
+                                        ui.selectable_value(&mut res_config.config.tile_set, tileset, &tileset.to_string());
+                                    }
+                                });
                         });
                     });
                 });
@@ -62,8 +73,9 @@ fn config_screen_ui(
         });
 }
 
-fn save_config(
+fn save_and_apply_config(
     res_config: Res<GameConfig>,
+    mut res_tileset: ResMut<TilesetManager>,
 ) {
     res_config.config.save_to_file(res_config.file.as_path())
         .map_err(|err| {
@@ -72,5 +84,8 @@ fn save_config(
         .map(|_| {
             debug!("Saved Config File to {}",res_config.file.as_path().to_str().unwrap());
         }).unwrap_or(());
+    // Set Locale
     rust_i18n::set_locale(res_config.config.game_language.locale());
+    // Set Tile Set
+    res_tileset.current_tileset = res_config.config.tile_set;
 }

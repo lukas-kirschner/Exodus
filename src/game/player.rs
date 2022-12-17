@@ -5,7 +5,7 @@ use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use crate::{AppState, CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
+use crate::{AppState, TilesetManager};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -28,6 +28,10 @@ impl Plugin for PlayerPlugin {
             .add_system_set(SystemSet::on_update(AppState::Playing)
                 .with_system(despawn_dead_player)
             )
+            .add_system_set(SystemSet::on_update(AppState::Playing)
+                .with_system(despawn_exited_player)
+            )
+            .add_event::<GameWonEvent>()
         ;
     }
 }
@@ -39,6 +43,11 @@ pub struct PlayerComponent {
 
 #[derive(Component)]
 pub struct DeadPlayerComponent {
+    pub player: Player,
+}
+
+#[derive(Component)]
+pub struct ExitingPlayerComponent {
     pub player: Player,
 }
 
@@ -58,20 +67,20 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 /// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
 pub fn despawn_dead_player(
     mut commands: Commands,
-    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity, &Handle<TextureAtlas>)>,
+    mut dead_players: Query<(&mut DeadPlayerComponent, &mut TextureAtlasSprite, &mut Transform, Entity)>,
     time: Res<Time>,
     worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
-    current_map_texture_handle: Res<CurrentMapTextureAtlasHandle>,
+    current_map_texture_handle: Res<TilesetManager>,
     tiles_query: Query<Entity, With<WorldTile>>,
 ) {
-    for (mut _dead_player, mut sprite, mut transform, entity, texture_atlas_player) in dead_players.iter_mut() {
+    for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned
+            // The player has fully decayed and can be despawned. TODO Trigger event here
             commands.entity(entity).despawn_recursive();
             // Spawn new player and reset scores
-            respawn_player(&mut commands, texture_atlas_player.clone(), &worldwrapper);
+            respawn_player(&mut commands, &*current_map_texture_handle, &worldwrapper);
             scoreboard.reset();
             reset_world(commands, worldwrapper, tiles_query, current_map_texture_handle);
             return;
@@ -79,6 +88,30 @@ pub fn despawn_dead_player(
         sprite.color.set_a(new_a);
         transform.translation.y += DEAD_PLAYER_ASCEND_SPEED * time.delta_seconds();
         transform.scale += Vec3::splat(DEAD_PLAYER_ZOOM_SPEED * time.delta_seconds());
+    }
+}
+
+struct GameWonEvent;
+
+///
+/// Handler that takes care of despawning the player after he exited the game through an exit
+fn despawn_exited_player(
+    mut commands: Commands,
+    mut exited_players: Query<(&mut TextureAtlasSprite, &mut Transform, Entity), With<ExitingPlayerComponent>>,
+    time: Res<Time>,
+    mut event_writer: EventWriter<GameWonEvent>,
+) {
+    for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
+        let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
+        if new_a <= 0.0 {
+            // The player has fully decayed and can be despawned. TODO Trigger event here
+            commands.entity(entity).despawn_recursive();
+            event_writer.send(GameWonEvent);
+            return;
+        }
+        sprite.color.set_a(new_a);
+        transform.translation.y += EXITED_PLAYER_ASCEND_SPEED * time.delta_seconds();
+        transform.scale += Vec3::splat(EXITED_PLAYER_ZOOM_SPEED * time.delta_seconds());
     }
 }
 
@@ -202,14 +235,13 @@ pub fn player_movement(
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(entity).despawn_recursive();
-                                sprite.index = 80; // Angel texture
-                                //TODO trigger GameOverEvent?
+                                sprite.index = 222; // Angel texture
                                 commands.spawn(SpriteSheetBundle {
                                     sprite: sprite.clone(),
                                     texture_atlas: handle.clone(),
                                     transform: Transform {
                                         translation: transform.translation,
-                                        scale: transform.scale * Vec3::splat(1.2), // Make the angel slightly bigger
+                                        scale: transform.scale * Vec3::splat(1.2),
                                         ..default()
                                     },
                                     ..Default::default()
@@ -230,6 +262,17 @@ pub fn player_movement(
                         TileKind::KEY => {}
                         TileKind::DOOR => {}
                         TileKind::COLLECTIBLE => {}
+                        TileKind::EXIT => {
+                            commands.entity(entity).despawn_recursive();
+                            sprite.index = 247; // Player turning their back to the camera
+                            commands.spawn(SpriteSheetBundle {
+                                sprite: sprite.clone(),
+                                texture_atlas: handle.clone(),
+                                transform: transform.clone(),
+                                ..default()
+                            })
+                                .insert(ExitingPlayerComponent { player: player.clone() });
+                        }
                     }
                 }
                 player.pop_movement_queue();
@@ -263,18 +306,18 @@ pub fn player_movement(
 
 fn respawn_player(
     commands: &mut Commands,
-    atlas_handle_player: Handle<TextureAtlas>,
-    worldwrapper: &ResMut<MapWrapper>,
+    atlas_handle_player: &TilesetManager,
+    worldwrapper: &MapWrapper,
 ) {
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
     commands
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
-            texture_atlas: atlas_handle_player.clone(),
+            texture_atlas: atlas_handle_player.current_handle().clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / atlas_handle_player.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
@@ -285,10 +328,10 @@ fn respawn_player(
 
 pub fn setup_player(
     mut commands: Commands,
-    current_texture_atlas: Res<CurrentPlayerTextureAtlasHandle>,
+    current_texture_atlas: Res<TilesetManager>,
     worldwrapper: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, (*current_texture_atlas).handle.clone(), &worldwrapper);
+    respawn_player(&mut commands, &*current_texture_atlas, &worldwrapper);
 }
 
 pub fn keyboard_controls(

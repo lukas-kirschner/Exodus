@@ -2,11 +2,12 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use crate::{AppState, CurrentMapTextureAtlasHandle};
+use crate::AppState;
 use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
-use crate::game::constants::{TEXTURE_SIZE, TILE_SIZE, WORLD_Z};
+use crate::game::constants::{TILE_SIZE, WORLD_Z};
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
+use crate::tileset_manager::TilesetManager;
 
 pub struct WorldPlugin;
 
@@ -63,7 +64,7 @@ pub fn insert_door_wrappers(
 /// Spawn a single tile at the given position
 pub fn spawn_tile(
     commands: &mut Commands,
-    map_texture_atlas: &CurrentMapTextureAtlasHandle,
+    map_texture_atlas: &TilesetManager,
     atlas_index: usize,
     tile_position: &Vec2,
     tile: &Tile,
@@ -71,10 +72,10 @@ pub fn spawn_tile(
     let mut bundle: EntityCommands = commands
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(atlas_index),
-            texture_atlas: map_texture_atlas.handle.clone(),
+            texture_atlas: map_texture_atlas.current_handle(),
             transform: Transform {
                 translation: tile_position.extend(WORLD_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / TEXTURE_SIZE as f32),
+                scale: Vec3::splat(TILE_SIZE as f32 / map_texture_atlas.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
@@ -87,8 +88,12 @@ pub fn spawn_tile(
 pub fn setup_game_world(
     mut commands: Commands,
     mut worldwrapper: ResMut<MapWrapper>,
-    the_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
+    the_atlas_handle: Res<TilesetManager>,
 ) {
+    // Set Background Color
+    let bg_color = the_atlas_handle.current_tileset.background_color();
+    commands.insert_resource(ClearColor(Color::rgb_u8(bg_color.r, bg_color.g, bg_color.b)));
+    // Load the world
     let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {
@@ -113,7 +118,7 @@ pub fn reset_world(
     mut commands: Commands,
     mut worldwrapper: ResMut<MapWrapper>,
     tiles_query: Query<Entity, With<WorldTile>>,
-    the_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
+    the_atlas_handle: Res<TilesetManager>,
 ) {
     for entity in tiles_query.iter() {
         commands.entity(entity).despawn_recursive();

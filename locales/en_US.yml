@@ -7,6 +7,7 @@ navbar:
   back_button_tooltip: Back
 config_screen:
   language_label: Language
+  tileset_label: Tile Set
 map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
@@ -36,6 +37,10 @@ common_buttons:
 tile:
   air: Air
   wall: Wall
+  wallnature: Wall
+  wallcobble: Wall
+  wallsmooth: Wall
+  wallchiseled: Wall
   playerspawn: Player Spawn
   door: Door
   opendoor: Open Door
@@ -59,6 +64,7 @@ tile:
   arrow_left: Left Arrow
   arrow_up: Up Arrow
   arrow_down: Down Arrow
+  exit: Exit
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map

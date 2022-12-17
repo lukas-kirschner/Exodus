@@ -5,7 +5,7 @@ use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, TextureId};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile};
-use crate::{CurrentMapTextureAtlasHandle, CurrentPlayerTextureAtlasHandle};
+use crate::{TilesetManager};
 use strum::IntoEnumIterator;
 
 #[derive(Resource)]
@@ -29,7 +29,8 @@ fn convert(
     egui_ctx: &mut ResMut<EguiContext>,
     atlas_index: &AtlasIndex,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
-    let rect: bevy::math::Rect = texture_atlas.textures[*atlas_index];
+    // TODO Up/downscale to egui texture size (32px)
+    let rect: Rect = texture_atlas.textures[*atlas_index];
     let uv: egui::Rect = egui::Rect::from_min_max(
         egui::pos2(rect.min.x / texture_atlas.size.x, rect.min.y / texture_atlas.size.y),
         egui::pos2(rect.max.x / texture_atlas.size.x, rect.max.y / texture_atlas.size.y),
@@ -37,19 +38,18 @@ fn convert(
     let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
     let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
-    (tex, rect_vec2, uv)
+    (tex, egui::Vec2::splat(32.0), uv)
     // TODO if the button size is smaller than the texture size, Egui textures need to be resized here
 }
 
 /// Convert Bevy Textures to Egui Textures to show those on the buttons
 pub fn atlas_to_egui_textures(
-    texture_atlas_handle: Res<CurrentMapTextureAtlasHandle>,
-    player_atlas_handle: Res<CurrentPlayerTextureAtlasHandle>,
+    texture_atlas_handle: Res<TilesetManager>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut egui_ctx: ResMut<EguiContext>,
 ) {
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.handle).expect("The texture atlas of the tile set has not yet been loaded!");
+    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the tile set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
     for tile in Tile::iter() {
@@ -58,9 +58,9 @@ pub fn atlas_to_egui_textures(
         }
     }
     let mut textures_p = HashMap::new();
-    // The Player Spawn needs a special texture, since it comes from a different atlas:
+    // The Player Spawn needs a special atlas index:
     let player = Player::new(); // TODO The Query is not working in this stage, unfortunately
-    let texture_atlas: &TextureAtlas = texture_atlases.get(&player_atlas_handle.handle).expect("The texture atlas of the player set has not yet been loaded!");
+    let texture_atlas: &TextureAtlas = texture_atlases.get(&texture_atlas_handle.current_handle()).expect("The texture atlas of the player set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     textures_p.insert(player.atlas_index(), convert(texture_atlas, texture_handle, &mut egui_ctx, &player.atlas_index()));
     commands.insert_resource(EguiButtonTextures {

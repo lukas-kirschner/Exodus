@@ -4,15 +4,18 @@ use std::io;
 use std::io::{BufReader, BufWriter, ErrorKind, Read, Write};
 use std::path::Path;
 use strum_macros::{EnumIter, EnumCount as EnumCountMacro};
+use crate::tilesets::Tileset;
 
 pub struct Config {
     pub game_language: Language,
+    pub tile_set: Tileset,
 }
 
 impl Default for Config {
     fn default() -> Self {
         return Config {
-            game_language: Language::default()
+            game_language: Language::default(),
+            tile_set: Tileset::TinyPlatformQuestTiles,
         };
     }
 }
@@ -61,6 +64,22 @@ impl Language {
     }
 }
 
+impl Tileset {
+    pub const fn to_bytes(&self) -> u8 {
+        match self {
+            Tileset::TinyPlatformQuestTiles => 0x00,
+            Tileset::Classic => 0x01,
+        }
+    }
+    pub const fn from_bytes(byte: u8) -> Option<Self> {
+        match byte {
+            0x00 => Some(Tileset::TinyPlatformQuestTiles),
+            0x01 => Some(Tileset::Classic),
+            _ => None
+        }
+    }
+}
+
 // Serialization/Deserialization
 impl Config {
     pub fn save_to_file(&self, path: &Path) -> std::io::Result<()> {
@@ -80,6 +99,8 @@ impl Config {
     fn serialize<T: Write>(&self, file: &mut T) -> std::io::Result<()> {
         let language_b = self.game_language.to_bytes();
         file.write(&[language_b])?;
+        let tileset_b = self.tile_set.to_bytes();
+        file.write(&[tileset_b])?;
         Ok(())
     }
     fn parse<T: Read>(&mut self, file: &mut T) -> std::io::Result<()> {
@@ -89,6 +110,13 @@ impl Config {
         self.game_language = Language::from_bytes(lang_buf[0])
             .ok_or(io::Error::new(ErrorKind::Other,
                                   format!("Invalid Language 0x{:02X}", lang_buf[0]),
+            ))?;
+        // Read Tile set
+        let mut tileset_buf = [0u8; 1];
+        file.read_exact(&mut tileset_buf)?;
+        self.tile_set = Tileset::from_bytes(tileset_buf[0])
+            .ok_or(io::Error::new(ErrorKind::Other,
+                                  format!("Invalid Tileset 0x{:02X}", tileset_buf[0]),
             ))?;
 
         Ok(())
@@ -106,9 +134,21 @@ mod tests {
         for lang in Language::iter() {
             let reference = &lang;
             let actual = Language::from_bytes(reference.to_bytes());
-            assert!(actual.is_some(), "Deserializing Language {} (0x{:02X}) resulted in an error: Language not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Tile::from_bytes()));
+            assert!(actual.is_some(), "Deserializing Language {} (0x{:02X}) resulted in an error: Language not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Language::from_bytes()));
             let actual = actual.unwrap();
             assert_eq!(*reference, actual, "The Language {} (0x{:02X}) deserialized into Language {} (0x{:02X}) !",
+                       reference.to_string(), reference.to_bytes(), actual.to_string(), actual.to_bytes(), );
+        }
+    }
+
+    #[test]
+    fn test_bidirectional_serialization_for_tileset() {
+        for lang in Tileset::iter() {
+            let reference = &lang;
+            let actual = Tileset::from_bytes(reference.to_bytes());
+            assert!(actual.is_some(), "Deserializing Tile Set {} (0x{:02X}) resulted in an error: Tile Set not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Tileset::from_bytes()));
+            let actual = actual.unwrap();
+            assert_eq!(*reference, actual, "The Tile Set {} (0x{:02X}) deserialized into Tile Set {} (0x{:02X}) !",
                        reference.to_string(), reference.to_bytes(), actual.to_string(), actual.to_bytes(), );
         }
     }
@@ -122,6 +162,7 @@ mod tests {
         let result = result_config.parse(&mut buf);
         assert!(result.is_ok(), "Config failed to parse with error: {}", result.unwrap_err().to_string());
         assert_eq!(config.game_language, result_config.game_language);
+        assert_eq!(config.tile_set, result_config.tile_set);
     }
 
     #[test]
@@ -134,6 +175,14 @@ mod tests {
     fn test_write_and_read_german_config() {
         let mut config = Config::default();
         config.game_language = Language::GERMAN;
+        test_write_and_read_config(&mut config);
+    }
+
+    #[test]
+    fn test_write_and_read_german_config_classic() {
+        let mut config = Config::default();
+        config.game_language = Language::GERMAN;
+        config.tile_set = Tileset::Classic;
         test_write_and_read_config(&mut config);
     }
 }
