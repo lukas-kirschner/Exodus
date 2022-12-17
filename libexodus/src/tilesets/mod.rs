@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
-use strum_macros::EnumIter;
+use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, EnumIter)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, EnumIter, EnumCountMacro)]
 pub enum Tileset {
     TinyPlatformQuestTiles,
     Classic,
