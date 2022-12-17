@@ -34,9 +34,9 @@ impl Display for Color {
 impl Tileset {
     pub fn background_color(&self) -> Color {
         match self {
-            Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90).into(),
-            Tileset::Classic => (0xff, 0xff, 0xff).into(),
-        }
+            Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90),
+            Tileset::Classic => (0xff, 0xff, 0xff),
+        }.into()
     }
     pub fn texture_size(&self) -> usize {
         match self {
@@ -52,5 +52,25 @@ impl Display for Tileset {
             Tileset::TinyPlatformQuestTiles => write!(f, "Tiny Platform Quest Tiles"),
             Tileset::Classic => write!(f, "Classic"),
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::tilesets::Color;
+
+    #[test]
+    fn test_color_from_tuple() {
+        let color = Color::from((255, 255, 255));
+        assert_eq!(color.r, 255);
+        assert_eq!(color.g, 255);
+        assert_eq!(color.b, 255);
+    }
+
+    #[test]
+    fn test_color_to_html() {
+        let color = Color::from((255, 255, 255));
+        assert_eq!("#FFFFFF", color.to_string());
     }
 }
