@@ -5,7 +5,7 @@ use bevy_egui::egui::Align;
 use crate::AppState;
 use crate::ui::{BUTTON_HEIGHT, NAVBAR_BACK_TEXT};
 
-#[derive(Resource, PartialEq, Copy, Clone)]
+#[derive(Resource, PartialEq, Copy, Clone, Debug)]
 pub struct WindowUiOverlayInfo {
     pub top: f32,
     pub bottom: f32,

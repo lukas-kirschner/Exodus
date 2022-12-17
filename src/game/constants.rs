@@ -18,10 +18,16 @@ pub const COLLECTIBLE_PICKUP_DISTANCE: f32 = 0.1;
 pub const _UI_FONT_SIZE: f32 = 30 as f32;
 /// The speed a dead player ascends to heaven at
 pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
-/// The speed a dead player ascends to heaven at
+/// The speed a dead player zooms while ascending
 pub const DEAD_PLAYER_ZOOM_SPEED: f32 = 0.1;
 /// The speed a dead player decays
 pub const DEAD_PLAYER_DECAY_SPEED: f32 = 2.0;
+/// The speed a player who exited the game ascends at
+pub const EXITED_PLAYER_ASCEND_SPEED: f32 = 0.01;
+/// The speed a player zooms while exiting
+pub const EXITED_PLAYER_ZOOM_SPEED: f32 = -0.1;
+/// The speed a player decays while exiting
+pub const EXITED_PLAYER_DECAY_SPEED: f32 = 2.0;
 /// The button size for the map editor
 pub const MAPEDITOR_BUTTON_SIZE: f32 = 38.;
 /// The speed a pickup item ascends
