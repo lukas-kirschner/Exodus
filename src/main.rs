@@ -70,6 +70,7 @@ fn game_init(
     mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
     mut ctx: ResMut<EguiContext>,
+    mut res_tileset: ResMut<TilesetManager>,
 ) {
     if !directories.game_directories.maps_dir.as_path().exists() {
         fs::create_dir_all(&directories.game_directories.maps_dir)
@@ -94,6 +95,7 @@ fn game_init(
         .unwrap_or(Config::default());
     debug!("Loaded Config with language {}",config.game_language.to_string());
     rust_i18n::set_locale(config.game_language.locale());
+    res_tileset.current_tileset = config.tile_set;
     commands.insert_resource(GameConfig {
         config,
         file: config_file,
@@ -125,7 +127,7 @@ fn check_and_init_textures(
     mut tileset_manager: ResMut<TilesetManager>,
 ) {
     if let LoadState::Loaded =
-    asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id))
+        asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id))
     {
         // Load Tilesets
         for tileset in Tileset::iter() {

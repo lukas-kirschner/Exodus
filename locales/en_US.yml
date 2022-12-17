@@ -37,6 +37,10 @@ common_buttons:
 tile:
   air: Air
   wall: Wall
+  wallnature: Wall
+  wallcobble: Wall
+  wallsmooth: Wall
+  wallchiseled: Wall
   playerspawn: Player Spawn
   door: Door
   opendoor: Open Door

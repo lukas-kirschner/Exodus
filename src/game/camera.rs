@@ -40,7 +40,7 @@ pub fn rescale_camera(
     } else {
         window_space_height_pixels / (map_height_px as f32)
     };
-    *camera_transform = Transform::from_scale(Vec3::splat(1. / (camera_scale * texture_size as f32)));
+    camera_transform.scale = Vec3::splat(1. / (camera_scale * texture_size as f32));
 
     // Translate the camera, such that the center of the game board is shifted up or down, according to the UI margins
     // Shift the world to the middle of the screen

@@ -38,7 +38,7 @@ fn convert(
     let rect_vec2: egui::Vec2 = egui::Vec2::new(rect.max.x - rect.min.x, rect.max.y - rect.min.y);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
     let tex: TextureId = egui_ctx.add_image(texture_handle.clone_weak());
-    (tex, rect_vec2, uv)
+    (tex, egui::Vec2::splat(32.0), uv)
     // TODO if the button size is smaller than the texture size, Egui textures need to be resized here
 }
 

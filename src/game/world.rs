@@ -90,6 +90,10 @@ pub fn setup_game_world(
     mut worldwrapper: ResMut<MapWrapper>,
     the_atlas_handle: Res<TilesetManager>,
 ) {
+    // Set Background Color
+    let bg_color = the_atlas_handle.current_tileset.background_color();
+    commands.insert_resource(ClearColor(Color::rgb_u8(bg_color.r, bg_color.g, bg_color.b)));
+    // Load the world
     let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {

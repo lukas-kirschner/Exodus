@@ -50,6 +50,14 @@ pub enum Tile {
     AIR,
     /// A tile of Wall, a solid block that cannot be destroyed
     WALL,
+    /// An alternative Wall with a "nature" texture
+    WALLNATURE,
+    /// An alternative Wall with a "cobblestone" texture
+    WALLCOBBLE,
+    /// An alternative Wall with a "smooth" texture
+    WALLSMOOTH,
+    /// An alternative Wall with a "chiseled" texture
+    WALLCHISELED,
     /// The position where the player spawns
     PLAYERSPAWN,
     /// A door that can be opened with a key
@@ -106,6 +114,10 @@ impl Tile {
         match self {
             Tile::AIR => TileKind::AIR,
             Tile::WALL => TileKind::SOLID,
+            Tile::WALLNATURE => TileKind::SOLID,
+            Tile::WALLCOBBLE => TileKind::SOLID,
+            Tile::WALLSMOOTH => TileKind::SOLID,
+            Tile::WALLCHISELED => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
@@ -136,6 +148,10 @@ impl Tile {
         return match self {
             Tile::AIR => None,
             Tile::WALL => Some(58),
+            Tile::WALLNATURE => Some(130),
+            Tile::WALLCOBBLE => Some(123),
+            Tile::WALLSMOOTH => Some(57),
+            Tile::WALLCHISELED => Some(52),
             Tile::PLAYERSPAWN => None,
             Tile::COIN => Some(217),
             Tile::LADDER => Some(220),
@@ -198,6 +214,10 @@ impl Tile {
         match self {
             Tile::AIR => "air",
             Tile::WALL => "wall",
+            Tile::WALLNATURE => "wallnature",
+            Tile::WALLCOBBLE => "wallcobble",
+            Tile::WALLSMOOTH => "wallsmooth",
+            Tile::WALLCHISELED => "wallchiseled",
             Tile::PLAYERSPAWN => "playerspawn",
             Tile::DOOR => "door",
             Tile::OPENDOOR => "opendoor",
@@ -221,7 +241,7 @@ impl Tile {
             Tile::ARROWLEFT => "arrow_left",
             Tile::ARROWUP => "arrow_up",
             Tile::ARROWDOWN => "arrow_down",
-            Tile::EXIT => "exit"
+            Tile::EXIT => "exit",
         }
     }
 }
@@ -231,6 +251,10 @@ impl fmt::Display for Tile {
         write!(f, "{}", match self {
             Tile::AIR => "Air",
             Tile::WALL => "Wall",
+            Tile::WALLNATURE => "Wall (Nature)",
+            Tile::WALLCOBBLE => "Wall (Cobblestone)",
+            Tile::WALLSMOOTH => "Wall (Smooth)",
+            Tile::WALLCHISELED => "Wall (Chiseled)",
             Tile::PLAYERSPAWN => "Player Spawn",
             Tile::COIN => "Coin",
             Tile::LADDER => "Ladder",

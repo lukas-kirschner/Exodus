@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
-use strum_macros::EnumIter;
+use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, EnumIter)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, EnumIter, EnumCountMacro)]
 pub enum Tileset {
     TinyPlatformQuestTiles,
     Classic,
@@ -34,7 +34,7 @@ impl Display for Color {
 impl Tileset {
     pub fn background_color(&self) -> Color {
         match self {
-            Tileset::TinyPlatformQuestTiles => (0xa0, 0xa0, 0xa0).into(),
+            Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90).into(),
             Tileset::Classic => (0xff, 0xff, 0xff).into(),
         }
     }
