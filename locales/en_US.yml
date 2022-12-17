@@ -70,3 +70,4 @@ debug:
     empty5mx: Empty Psion 5mx-sized map
     empty_sized: Empty map with border and size %{w}x%{h}
     example_world: Example World
+    showcase: Showcase Map

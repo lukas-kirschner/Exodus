@@ -70,3 +70,4 @@ debug:
     empty5mx: Leere Karte in Größe des 5MX
     empty_sized: Leere Karte mit Rahmen und Größe %{w}x%{h}
     example_world: Beispiel-Karte
+    showcase: Beispiel-Screenshot-Karte

@@ -60,4 +60,148 @@ impl GameWorld {
         ;
         world
     }
+    ///
+    /// The world that is shown in the thumbnail of the original game at https://web.archive.org/web/20010609173820/http://www.davidsansome.co.uk/pages/psion/exodus/index.htm
+    pub fn showcaseworld() -> Self {
+        let columns = 35;
+        let rows = 15;
+        let mut world: GameWorld = GameWorld::new(columns, rows);
+        world
+            .set_name("Showcase World")
+            .set_author("Debugger");
+        for c in 0..columns {
+            world.set(c, 0, WALL);
+        }
+        for r in 0..rows {
+            world.set(19, r, WALL);
+        }
+        world
+            .set(3, 1, WALL)
+            .set(0, 1, PLAYERSPAWN)
+            .set(3, 2, SPIKES)
+            .set(4, 1, WALL)
+            .set(4, 2, WALL)
+            .set(5, 2, WALL)
+            .set(5, 3, WALL)
+            .set(6, 3, WALL)
+            .set(7, 3, WALL)
+            .set(8, 3, WALL)
+            .set(9, 3, WALL)
+            .set(10, 3, WALL)
+            .set(10, 2, WALL)
+
+            .set(7, 4, ARROWUP)
+            .set(7, 1, ARROWLEFT)
+            .set(7, 7, ARROWUP)
+            .set(7, 5, WALL)
+            .set(10, 5, WALL)
+            .set(7, 6, LADDER)
+            .set(7, 7, LADDER)
+            .set(7, 8, LADDER)
+            .set(7, 9, LADDER)
+            .set(7, 10, LADDER)
+
+            .set(6, 9, WALL)
+            .set(5, 9, WALL)
+            .set(4, 9, WALL)
+            .set(3, 9, WALL)
+            .set(3, 10, WALL)
+            .set(3, 11, WALL)
+            .set(3, 12, WALL)
+            .set(3, 13, WALL)
+            .set(3, 14, WALL)
+            .set(4, 10, SPIKES)
+            .set(5, 10, SPIKES)
+            .set(6, 10, SPIKES)
+
+            .set(8, 10, WALL)
+            .set(8, 14, EXIT)
+            .set(9, 10, WALL)
+            .set(10, 10, WALL)
+            .set(10, 11, WALL)
+            .set(10, 12, WALL)
+            .set(10, 14, WALL)
+            .set(11, 14, WALL)
+            .set(12, 14, WALL)
+            .set(13, 13, EXIT)
+            .set(12, 13, WALL)
+            .set(14, 13, WALL)
+            .set(15, 13, WALL)
+            .set(16, 13, WALL)
+
+            .set(17, 13, LADDER)
+            .set(17, 12, LADDER)
+            .set(17, 11, LADDER)
+            .set(17, 10, LADDER)
+
+            .set(17, 9, WALL)
+            .set(16, 9, WALL)
+            .set(15, 9, WALL)
+            .set(14, 9, WALL)
+            .set(18, 9, WALL)
+
+            .set(12, 7, WALL)
+
+            .set(16, 1, WALL)
+            .set(17, 1, SPIKES)
+            .set(18, 1, SPIKES)
+
+            .set(27, 1, WALL)
+            .set(28, 1, EXIT)
+            .set(29, 1, WALL)
+
+            .set(24, 5, WALL)
+            .set(25, 5, WALL)
+            .set(26, 5, WALL)
+            .set(27, 5, WALL)
+            .set(28, 5, WALL)
+            .set(29, 5, WALL)
+            .set(30, 5, WALL)
+            .set(31, 5, WALL)
+            .set(27, 4, WALL)
+            .set(28, 4, WALL)
+
+            .set(24, 4, COIN)
+            .set(25, 4, COIN)
+            .set(26, 4, COIN)
+            .set(29, 4, COIN)
+            .set(30, 4, COIN)
+            .set(31, 4, COIN)
+
+            .set(21, 8, WALL)
+            .set(22, 8, WALL)
+            .set(23, 8, WALL)
+            .set(24, 8, WALL)
+            .set(25, 8, WALL)
+            .set(26, 8, WALL)
+            .set(27, 8, WALL)
+            .set(28, 8, WALL)
+            .set(29, 8, WALL)
+            .set(30, 8, WALL)
+            .set(31, 8, WALL)
+            .set(32, 8, WALL)
+            .set(33, 8, WALL)
+            .set(21, 9, ARROWLEFT)
+            .set(24, 9, SPIKES)
+            .set(26, 9, SPIKES)
+            .set(30, 9, SPIKES)
+            .set(33, 9, ARROWRIGHT)
+
+            .set(23, 12, WALL)
+            .set(23, 13, WALL)
+            .set(24, 13, WALL)
+            .set(25, 13, WALL)
+            .set(25, 12, WALL)
+            .set(26, 13, WALL)
+            .set(27, 12, WALL)
+            .set(27, 13, WALL)
+            .set(28, 13, WALL)
+            .set(29, 12, WALL)
+            .set(29, 13, WALL)
+            .set(30, 13, WALL)
+            .set(31, 12, WALL)
+            .set(31, 13, WALL)
+        ;
+        world
+    }
 }

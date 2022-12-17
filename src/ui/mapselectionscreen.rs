@@ -53,6 +53,12 @@ fn load_maps(
         maps.maps.push(MapWrapper {
             world: example_map,
         });
+        let mut showcasemap = GameWorld::showcaseworld();
+        showcasemap.set_name(t!("debug.map_presets.showcase").as_str());
+        showcasemap.recompute_hash();
+        maps.maps.push(MapWrapper {
+            world: showcasemap,
+        });
         let mut psion_sized_map = presets::map_with_border(35, 15);
         psion_sized_map.set_name(t!("debug.map_presets.empty5mx").as_str());
         psion_sized_map.recompute_hash();
