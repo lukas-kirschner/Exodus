@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use bevy::asset::LoadState;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use bevy::render::view::{Layer, RenderLayers};
+use bevy::render::view::Layer;
 use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use libexodus::config::Config;

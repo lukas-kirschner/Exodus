@@ -4,8 +4,8 @@ use bevy::render::view::RenderLayers;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::{AppState, LAYER_ID};
-use crate::game::camera::{destroy_camera, handle_ui_resize, LayerCamera, setup_camera};
-use crate::game::constants::{TILE_SIZE, WORLD_Z};
+use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
+use crate::game::constants::WORLD_Z;
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
 use crate::tileset_manager::TilesetManager;
@@ -77,7 +77,7 @@ pub fn spawn_tile(
             texture_atlas: map_texture_atlas.current_handle(),
             transform: Transform {
                 translation: tile_position.extend(WORLD_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / map_texture_atlas.current_tileset().texture_size() as f32),
+                scale: Vec3::splat(1.0 / map_texture_atlas.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
@@ -101,14 +101,15 @@ pub fn setup_game_world(
     let world: &mut GameWorld = &mut worldwrapper.world;
 
     for row in 0..world.height() {
-        let y = row as f32 * (TILE_SIZE);
         for col in 0..world.width() {
-            let x = col as f32 * (TILE_SIZE);
             let tile_position = Vec2::new(
-                x as f32,
-                y as f32,
+                col as f32,
+                row as f32,
             );
-            let tile = world.get(col as i32, row as i32).expect(format!("Coordinate {},{} not accessible in world of size {},{}", col, row, world.width(), world.height()).as_str());
+            let tile = world.get(col as i32, row as i32)
+                .expect(format!("Coordinate {},{} not accessible in world of size {},{}",
+                                col, row, world.width(), world.height())
+                    .as_str());
             if let Some(index) = tile.atlas_index() {
                 spawn_tile(&mut commands, &*the_atlas_handle, index, &tile_position, tile, &layer);
             }

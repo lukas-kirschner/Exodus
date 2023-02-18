@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use bevy::render::camera::{RenderTarget, ScalingMode};
 use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
-use bevy::render::view::{Layer, RenderLayers};
-use crate::game::constants::TILE_SIZE;
+use bevy::render::view::RenderLayers;
 use crate::game::tilewrapper::MapWrapper;
 use crate::{LAYER_ID, TilesetManager};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
@@ -112,7 +111,7 @@ pub fn setup_camera(
         transform: Transform::default(),
         ..default()
     };
-    let mut main_camera = Camera2dBundle {
+    let main_camera = Camera2dBundle {
         projection: OrthographicProjection {
             far: 1000.0,
             scaling_mode: ScalingMode::WindowSize,
@@ -121,10 +120,10 @@ pub fn setup_camera(
         transform: Transform::default(),
         ..default()
     };
-    let mut layer = RenderLayers::layer(LAYER_ID);
+    let layer = RenderLayers::layer(LAYER_ID);
     let new_size = WindowUiOverlayInfo {
-        top: TILE_SIZE,
-        bottom: TILE_SIZE,
+        top: 1.0,
+        bottom: 1.0,
         ..default()
     };
     commands.insert_resource::<WindowUiOverlayInfo>(new_size.clone());

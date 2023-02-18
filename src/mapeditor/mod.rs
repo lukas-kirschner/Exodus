@@ -1,4 +1,4 @@
-use bevy::math::{Vec2Swizzles, Vec3Swizzles};
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use libexodus::tiles::Tile;

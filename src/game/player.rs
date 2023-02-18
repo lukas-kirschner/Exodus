@@ -7,7 +7,6 @@ use libexodus::player::Player;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
 use crate::{AppState, LAYER_ID, TilesetManager};
-use crate::game::camera::LayerCamera;
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -326,7 +325,7 @@ fn respawn_player(
             texture_atlas: atlas_handle_player.current_handle().clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / atlas_handle_player.current_tileset().texture_size() as f32),
+                scale: Vec3::splat(1.0 / atlas_handle_player.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
