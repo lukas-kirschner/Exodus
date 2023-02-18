@@ -65,7 +65,9 @@ pub fn compute_cursor_position_in_world(
     if let Some(screen_pos) = wnd.cursor_position() {
         if let Some(screen_pos) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
             if let Some(screen_pos) = layer_camera.viewport_to_world(layer_camera_transform, screen_pos.origin.xy()) {
-                return Some(((screen_pos.origin.x + 0.5) as i32 + map.world.width() as i32, (screen_pos.origin.y + 0.5) as i32 + map.world.height() as i32));
+                let mut ret = ((screen_pos.origin.x + 0.5) + map.world.width() as f32, (screen_pos.origin.y + 0.5) + map.world.height() as f32);
+                ret = (ret.0 - 0.5, ret.1 + 3.25); // TODO This is a workaround for a bug of unknown reason, see issue #60
+                return Some((ret.0 as i32, ret.1 as i32));
             }
         }
     }
