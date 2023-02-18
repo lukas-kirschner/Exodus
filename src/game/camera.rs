@@ -1,11 +1,13 @@
-use bevy::prelude::*;
-use bevy::render::camera::{RenderTarget, ScalingMode};
-use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
-use bevy::render::view::RenderLayers;
 use crate::game::tilewrapper::MapWrapper;
-use crate::{LAYER_ID, TilesetManager};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::UiSizeChangedEvent;
+use crate::{TilesetManager, LAYER_ID};
+use bevy::prelude::*;
+use bevy::render::camera::{RenderTarget, ScalingMode};
+use bevy::render::render_resource::{
+    Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+};
+use bevy::render::view::RenderLayers;
 
 #[derive(Component)]
 pub struct MainCamera;
@@ -26,7 +28,13 @@ pub fn handle_ui_resize(
 ) {
     for _ in event.iter() {
         let mut camera_transform = camera_query.single_mut();
-        rescale_camera(&window.get_primary().unwrap(), &*map, &mut camera_transform, &*ui_info, tileset.current_tileset().texture_size());
+        rescale_camera(
+            &window.get_primary().unwrap(),
+            &*map,
+            &mut camera_transform,
+            &*ui_info,
+            tileset.current_tileset().texture_size(),
+        );
     }
 }
 
@@ -102,7 +110,8 @@ pub fn setup_camera(
             far: 1000.0,
             scaling_mode: ScalingMode::WindowSize,
             ..default()
-        }.into(),
+        }
+        .into(),
         camera: Camera {
             priority: -1,
             target: RenderTarget::Image(image_handle.clone()),
@@ -116,7 +125,8 @@ pub fn setup_camera(
             far: 1000.0,
             scaling_mode: ScalingMode::WindowSize,
             ..default()
-        }.into(),
+        }
+        .into(),
         transform: Transform::default(),
         ..default()
     };
@@ -127,7 +137,13 @@ pub fn setup_camera(
         ..default()
     };
     commands.insert_resource::<WindowUiOverlayInfo>(new_size.clone());
-    rescale_camera(&window.get_primary().unwrap(), &map, &mut layer_camera.transform, &new_size, tileset.current_tileset().texture_size());
+    rescale_camera(
+        &window.get_primary().unwrap(),
+        &map,
+        &mut layer_camera.transform,
+        &new_size,
+        tileset.current_tileset().texture_size(),
+    );
     commands.spawn((main_camera, MainCamera));
     commands.spawn((layer_camera, LayerCamera, layer));
     commands.spawn((
@@ -135,7 +151,7 @@ pub fn setup_camera(
             texture: image_handle.clone(),
             ..default()
         },
-        LayerImage
+        LayerImage,
     ));
 }
 

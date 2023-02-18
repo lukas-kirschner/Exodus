@@ -1,5 +1,5 @@
-use std::collections::LinkedList;
 use crate::movement::Movement;
+use std::collections::LinkedList;
 
 #[derive(Clone)]
 pub struct Player {
@@ -55,12 +55,8 @@ impl Player {
     /// Get the atlas index facing in the correct direction
     pub fn atlas_index(&self) -> usize {
         match self.facing_left {
-            true => {
-                Player::atlas_index_left()
-            }
-            false => {
-                Player::atlas_index_right()
-            }
+            true => Player::atlas_index_left(),
+            false => Player::atlas_index_right(),
         }
     }
 

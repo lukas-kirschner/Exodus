@@ -1,8 +1,8 @@
-use bevy_egui::egui::Ui;
-use libexodus::directories::GameDirectories;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::UIDialog;
 use crate::ui::egui_textures::EguiButtonTextures;
+use bevy_egui::egui::Ui;
+use libexodus::directories::GameDirectories;
 
 #[derive(Eq, PartialEq)]
 enum UnsavedChangesDialogState {
@@ -15,7 +15,6 @@ pub struct UnsavedChangesDialog {
     /// The message that is shown to the user
     message: String,
     state: UnsavedChangesDialogState,
-
 }
 
 impl UnsavedChangesDialog {
@@ -33,11 +32,7 @@ impl UIDialog for UnsavedChangesDialog {
         t!("map_editor.dialog.unsaved_changes_dialog_title")
     }
 
-    fn draw(&mut self,
-            ui: &mut Ui,
-            _egui_textures: &EguiButtonTextures,
-            _: &GameDirectories,
-    ) {
+    fn draw(&mut self, ui: &mut Ui, _egui_textures: &EguiButtonTextures, _: &GameDirectories) {
         ui.vertical_centered(|ui| {
             ui.label(self.message.as_str());
             ui.scope(|ui| {

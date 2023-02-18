@@ -1,9 +1,9 @@
+use crate::ui::{BUTTON_HEIGHT, NAVBAR_BACK_TEXT};
+use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
 use bevy_egui::egui::Align;
-use crate::AppState;
-use crate::ui::{BUTTON_HEIGHT, NAVBAR_BACK_TEXT};
+use bevy_egui::{egui, EguiContext};
 
 #[derive(Resource, PartialEq, Copy, Clone, Debug)]
 pub struct WindowUiOverlayInfo {
@@ -27,23 +27,23 @@ impl Default for WindowUiOverlayInfo {
 pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
     if *app_state.current() != AppState::MainMenu {
         if keys.just_pressed(KeyCode::Escape) {
-            app_state.set(AppState::MainMenu).expect("Could not return to Main Menu");
+            app_state
+                .set(AppState::MainMenu)
+                .expect("Could not return to Main Menu");
             keys.reset(KeyCode::Escape);
         }
     }
 }
 
-pub fn add_navbar(
-    egui_ctx: &mut ResMut<EguiContext>,
-    state: &mut ResMut<State<AppState>>,
-) {
+pub fn add_navbar(egui_ctx: &mut ResMut<EguiContext>, state: &mut ResMut<State<AppState>>) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
         ui.set_height(BUTTON_HEIGHT);
         ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
             ui.scope(|ui| {
                 ui.set_width(BUTTON_HEIGHT);
                 ui.centered_and_justified(|ui| {
-                    let back_button = ui.button(NAVBAR_BACK_TEXT)
+                    let back_button = ui
+                        .button(NAVBAR_BACK_TEXT)
                         .on_hover_text(t!("navbar.back_button_tooltip"));
 
                     if back_button.clicked() {

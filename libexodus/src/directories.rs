@@ -1,14 +1,14 @@
+use directories::ProjectDirs;
 ///
 /// This file contains code used to build and query file system directories
 /// and does not contain any save/load or other functional logic.
 ///
 use std::error::Error;
-use std::{fmt};
+use std::fmt;
 use std::fmt::Formatter;
 use std::fs::metadata;
-use std::path::{PathBuf};
-use directories::ProjectDirs;
-use walkdir::{WalkDir};
+use std::path::PathBuf;
+use walkdir::WalkDir;
 
 #[derive(Debug)]
 pub struct InvalidSystemConfigurationError {
@@ -36,8 +36,12 @@ pub enum InvalidMapNameError {
 impl fmt::Display for InvalidMapNameError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            InvalidMapNameError::EmptyName => { write!(f, "Empty file name!") }
-            InvalidMapNameError::InvalidCharacter { c } => { write!(f, "Invalid character in map file name: {}", c) }
+            InvalidMapNameError::EmptyName => {
+                write!(f, "Empty file name!")
+            },
+            InvalidMapNameError::InvalidCharacter { c } => {
+                write!(f, "Invalid character in map file name: {}", c)
+            },
         }
     }
 }
@@ -65,35 +69,43 @@ impl GameDirectories {
         let game_base_dir = basedir_struct.data_dir();
         let game_maps_dir = game_base_dir.join("maps");
         let game_config_dir = game_base_dir.join("config");
-        Ok(
-            GameDirectories {
-                _base_dir: PathBuf::from(game_base_dir),
-                maps_dir: PathBuf::from(game_maps_dir),
-                config_dir: PathBuf::from(game_config_dir),
-            }
-        )
+        Ok(GameDirectories {
+            _base_dir: PathBuf::from(game_base_dir),
+            maps_dir: PathBuf::from(game_maps_dir),
+            config_dir: PathBuf::from(game_config_dir),
+        })
     }
 
     /// Iterate over all map files that are found inside the maps folder and all subfolders.
-    pub fn iter_maps(self: &Self) -> impl Iterator<Item=walkdir::DirEntry> + '_ {
+    pub fn iter_maps(self: &Self) -> impl Iterator<Item = walkdir::DirEntry> + '_ {
         WalkDir::new(&self.maps_dir)
             .into_iter()
-            .filter_map(|e| e.map_err(|error| {
-                eprintln!("{}", error);
-                error
-            }).ok())
+            .filter_map(|e| {
+                e.map_err(|error| {
+                    eprintln!("{}", error);
+                    error
+                })
+                .ok()
+            })
             .filter(|file| {
                 let meta = metadata(file.path());
                 meta.is_ok() && meta.unwrap().is_file()
             })
             .filter(|file| {
-                let ret = file.path().extension()
+                let ret = file
+                    .path()
+                    .extension()
                     .and_then(|s| Some(s.to_ascii_lowercase()))
                     .unwrap_or("".into())
-                    == GameDirectories::MAP_FILE_SUFFIX.to_ascii_lowercase().as_str();
+                    == GameDirectories::MAP_FILE_SUFFIX
+                        .to_ascii_lowercase()
+                        .as_str();
                 if cfg!(debug_assertions) {
                     if !ret {
-                        println!("Skipped {} because its file extension did not match.", file.path().to_str().unwrap());
+                        println!(
+                            "Skipped {} because its file extension did not match.",
+                            file.path().to_str().unwrap()
+                        );
                     }
                 }
                 ret
@@ -104,44 +116,63 @@ impl GameDirectories {
     ///  and converting all printable characters to lower-case.
     /// If the file name that results from converting the name is invalid, an error is returned.
     pub fn path_from_mapname(self: &Self, map_name: &str) -> Result<PathBuf, InvalidMapNameError> {
-        let map_file_name: String = map_name.trim().chars().map(|c| {
-            if c.is_whitespace() {
-                '_'
-            } else {
-                c.to_ascii_lowercase()
-            }
-        }).collect();
+        let map_file_name: String = map_name
+            .trim()
+            .chars()
+            .map(|c| {
+                if c.is_whitespace() {
+                    '_'
+                } else {
+                    c.to_ascii_lowercase()
+                }
+            })
+            .collect();
         if map_file_name.is_empty() {
             return Err(InvalidMapNameError::EmptyName);
         }
-        let map_folder: PathBuf = self.maps_dir.join(format!("{}.{}", map_file_name, GameDirectories::MAP_FILE_SUFFIX));
+        let map_folder: PathBuf = self.maps_dir.join(format!(
+            "{}.{}",
+            map_file_name,
+            GameDirectories::MAP_FILE_SUFFIX
+        ));
         Ok(map_folder)
     }
 
     /// Get the path of a map with the given user input path.
     /// The user input is sanitized and resolved as subdirectory of the maps folder.
     /// If the file name that results from converting the name is invalid, an error is returned.
-    pub fn path_from_userinput(self: &Self, user_input: &str) -> Result<PathBuf, InvalidMapNameError> {
+    pub fn path_from_userinput(
+        self: &Self,
+        user_input: &str,
+    ) -> Result<PathBuf, InvalidMapNameError> {
         let user_input_t = user_input.trim();
-        let map_subdir_name: Result<String, InvalidMapNameError> = user_input_t.chars().map(|c: char| {
-            match c {
-                // see https://is.gd/VLNWIM
-                // TODO This needs to be changed once we support subdirectories
-                '<' | '>' | ':' | '"' | '|' | '/' | '\\' | '?' | '*' => Err(InvalidMapNameError::InvalidCharacter { c }),
-                _ => {
-                    if c.is_whitespace() {
-                        Ok('_')
-                    } else {
-                        Ok(c.to_ascii_lowercase())
-                    }
+        let map_subdir_name: Result<String, InvalidMapNameError> = user_input_t
+            .chars()
+            .map(|c: char| {
+                match c {
+                    // see https://is.gd/VLNWIM
+                    // TODO This needs to be changed once we support subdirectories
+                    '<' | '>' | ':' | '"' | '|' | '/' | '\\' | '?' | '*' => {
+                        Err(InvalidMapNameError::InvalidCharacter { c })
+                    },
+                    _ => {
+                        if c.is_whitespace() {
+                            Ok('_')
+                        } else {
+                            Ok(c.to_ascii_lowercase())
+                        }
+                    },
                 }
-            }
-        }).collect();
+            })
+            .collect();
         let map_subdir_name: String = map_subdir_name?;
         if map_subdir_name.is_empty() {
             return Err(InvalidMapNameError::EmptyName);
         }
-        let map_file_name: String = if map_subdir_name.as_str().ends_with(format!(".{}", GameDirectories::MAP_FILE_SUFFIX).as_str()) {
+        let map_file_name: String = if map_subdir_name
+            .as_str()
+            .ends_with(format!(".{}", GameDirectories::MAP_FILE_SUFFIX).as_str())
+        {
             map_subdir_name.to_string()
         } else {
             format!("{}.{}", map_subdir_name, GameDirectories::MAP_FILE_SUFFIX).to_string()

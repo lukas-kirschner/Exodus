@@ -1,21 +1,44 @@
+use crate::world::io::MAGICBYTES;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use crate::world::io::MAGICBYTES;
 
 #[derive(Debug)]
 #[repr(u8)]
 /// An error that might be thrown in a Game World Parser
 pub enum GameWorldParseError {
-    InvalidMagicBytes { expected: [u8; MAGICBYTES.len()], actual: [u8; MAGICBYTES.len()] },
+    InvalidMagicBytes {
+        expected: [u8; MAGICBYTES.len()],
+        actual: [u8; MAGICBYTES.len()],
+    },
     NotImplemented,
-    InvalidVersion { invalid_version: u8 },
-    IOError { io_error: std::io::Error },
-    BincodeError { bincode_error: Box<bincode::ErrorKind> },
-    InvalidMapWidth { max_width: usize, actual_width: usize },
-    InvalidMapHeight { max_height: usize, actual_height: usize },
-    UnexpectedEndOfTileData { position: usize, io_error: std::io::Error },
-    InvalidTile { tile_bytes: u8 },
-    HashMismatch { expected: [u8; 32], actual: [u8; 32] },
+    InvalidVersion {
+        invalid_version: u8,
+    },
+    IOError {
+        io_error: std::io::Error,
+    },
+    BincodeError {
+        bincode_error: Box<bincode::ErrorKind>,
+    },
+    InvalidMapWidth {
+        max_width: usize,
+        actual_width: usize,
+    },
+    InvalidMapHeight {
+        max_height: usize,
+        actual_height: usize,
+    },
+    UnexpectedEndOfTileData {
+        position: usize,
+        io_error: std::io::Error,
+    },
+    InvalidTile {
+        tile_bytes: u8,
+    },
+    HashMismatch {
+        expected: [u8; 32],
+        actual: [u8; 32],
+    },
 }
 
 impl Display for GameWorldParseError {
@@ -67,4 +90,3 @@ impl GameWorldParseError {
         }
     }
 }
-

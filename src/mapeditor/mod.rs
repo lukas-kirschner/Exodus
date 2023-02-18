@@ -1,19 +1,18 @@
-use bevy::math::Vec3Swizzles;
-use bevy::prelude::*;
-use bevy::render::camera::RenderTarget;
-use libexodus::tiles::Tile;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::edit_world::EditWorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
 use crate::mapeditor::preview_tile::MapEditorPreviewTilePlugin;
+use bevy::math::Vec3Swizzles;
+use bevy::prelude::*;
+use bevy::render::camera::RenderTarget;
+use libexodus::tiles::Tile;
 
+mod edit_world;
 mod mapeditor_ui;
 mod player_spawn;
 mod preview_tile;
-mod edit_world;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(SystemLabel)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemLabel)]
 enum MapeditorSystems {
     /// The Game Board mouse handlers
     GameBoardMouseHandlers,
@@ -36,13 +35,11 @@ pub struct MapEditorPlugin;
 
 impl Plugin for MapEditorPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<MapWrapper>()
+        app.init_resource::<MapWrapper>()
             // The world plugin is already added here. Adding it twice causes an error
             .add_plugin(MapEditorUiPlugin)
             .add_plugin(MapEditorPreviewTilePlugin)
-            .add_plugin(EditWorldPlugin)
-        ;
+            .add_plugin(EditWorldPlugin);
     }
 }
 
@@ -64,8 +61,13 @@ pub fn compute_cursor_position_in_world(
     // check if the cursor is inside the window and get its position, then transform it back through both cameras
     if let Some(screen_pos) = wnd.cursor_position() {
         if let Some(screen_pos) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
-            if let Some(screen_pos) = layer_camera.viewport_to_world(layer_camera_transform, screen_pos.origin.xy()) {
-                let mut ret = ((screen_pos.origin.x + 0.5) + map.world.width() as f32, (screen_pos.origin.y + 0.5) + map.world.height() as f32);
+            if let Some(screen_pos) =
+                layer_camera.viewport_to_world(layer_camera_transform, screen_pos.origin.xy())
+            {
+                let mut ret = (
+                    (screen_pos.origin.x + 0.5) + map.world.width() as f32,
+                    (screen_pos.origin.y + 0.5) + map.world.height() as f32,
+                );
                 ret = (ret.0 - 0.5, ret.1 + 3.25); // TODO This is a workaround for a bug of unknown reason, see issue #60
                 return Some((ret.0 as i32, ret.1 as i32));
             }

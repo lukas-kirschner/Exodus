@@ -1,12 +1,11 @@
-use std::path::{Path, PathBuf};
 use crate::tiles::{Tile, TileKind};
-
+use std::path::{Path, PathBuf};
 
 pub mod exampleworlds;
-pub mod presets;
+pub mod hash;
 pub mod io;
 pub mod io_error;
-pub mod hash;
+pub mod presets;
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -56,7 +55,7 @@ impl GameWorld {
     pub fn get_filename(&self) -> Option<&Path> {
         match &self.filename {
             None => None,
-            Some(filename) => Some(filename.as_path())
+            Some(filename) => Some(filename.as_path()),
         }
     }
     /// Set the last used file name of this map
@@ -86,23 +85,23 @@ impl GameWorld {
     pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
         self.data[x][y] = tile;
         match &self.data[x][y].kind() {
-            TileKind::AIR => {}
-            TileKind::SOLID => {}
+            TileKind::AIR => {},
+            TileKind::SOLID => {},
             TileKind::DEADLY { .. } => {
                 //TODO
-            }
+            },
             TileKind::SPECIAL => {
                 //TODO
-            }
+            },
             TileKind::PLAYERSPAWN => {
                 self.playerspawn = (x, y);
-            }
-            TileKind::COIN => {}
-            TileKind::LADDER => {}
-            TileKind::KEY => {}
-            TileKind::DOOR => {}
-            TileKind::COLLECTIBLE => {}
-            TileKind::EXIT => {}
+            },
+            TileKind::COIN => {},
+            TileKind::LADDER => {},
+            TileKind::KEY => {},
+            TileKind::DOOR => {},
+            TileKind::COLLECTIBLE => {},
+            TileKind::EXIT => {},
         }
         self
     }
@@ -231,8 +230,8 @@ impl GameWorld {
                 match self.get(x as i32, y as i32).unwrap() {
                     Tile::OPENDOOR => {
                         self.set(x, y, Tile::DOOR);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 }
             }
         }

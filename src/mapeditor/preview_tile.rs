@@ -1,12 +1,14 @@
+use crate::game::camera::{LayerCamera, MainCamera};
+use crate::game::constants::{
+    MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z,
+};
+use crate::game::tilewrapper::MapWrapper;
+use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::{App, AppState, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, LAYER_ID, TilesetManager};
-use crate::game::camera::{LayerCamera, MainCamera};
-use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z};
-use crate::game::tilewrapper::MapWrapper;
-use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 
 #[derive(Component)]
 pub struct PreviewTile {
@@ -17,37 +19,27 @@ pub struct MapEditorPreviewTilePlugin;
 
 impl Plugin for MapEditorPreviewTilePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(AppState::MapEditor)
-                .with_system(setup_preview_tile)
-            )
-            .add_system_set(SystemSet::on_exit(AppState::MapEditor)
-                .with_system(destroy_preview_tile)
-            )
-            .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(update_preview_tile)
-            )
-        ;
+        app.add_system_set(
+            SystemSet::on_enter(AppState::MapEditor).with_system(setup_preview_tile),
+        )
+        .add_system_set(SystemSet::on_exit(AppState::MapEditor).with_system(destroy_preview_tile))
+        .add_system_set(SystemSet::on_update(AppState::MapEditor).with_system(update_preview_tile));
     }
 }
 
-fn destroy_preview_tile(
-    mut commands: Commands,
-    preview_tile_q: Query<(&PreviewTile, Entity)>,
-) {
+fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<(&PreviewTile, Entity)>) {
     let (_, ent) = preview_tile_q.single();
     commands.entity(ent).despawn();
 }
 
 /// Spawn a WALL PreviewTile at an invisible position
-pub fn setup_preview_tile(
-    mut commands: Commands,
-    current_texture_atlas: Res<TilesetManager>,
-) {
-    let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
+pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<TilesetManager>) {
+    let previewtile: PreviewTile = PreviewTile {
+        current_tile: Tile::WALL,
+    };
     let layer = RenderLayers::layer(LAYER_ID);
-    commands
-        .spawn((SpriteSheetBundle {
+    commands.spawn((
+        SpriteSheetBundle {
             sprite: TextureAtlasSprite {
                 color: Color::Rgba {
                     red: 1.0,
@@ -61,13 +53,16 @@ pub fn setup_preview_tile(
             texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
                 translation: Vec3::new(-1 as f32, -1 as f32, MAPEDITOR_PREVIEWTILE_Z),
-                scale: Vec3::splat(1.0 / current_texture_atlas.current_tileset().texture_size() as f32),
+                scale: Vec3::splat(
+                    1.0 / current_texture_atlas.current_tileset().texture_size() as f32,
+                ),
                 ..default()
             },
             ..default()
         },
-                previewtile,
-                layer));
+        previewtile,
+        layer,
+    ));
 }
 
 fn set_preview_tile_texture(
@@ -81,7 +76,7 @@ fn set_preview_tile_texture(
         Tile::PLAYERSPAWN => {
             *texture_atlas_handle = current_texture_atlas.current_handle();
             texture_atlas_sprite.index = Player::new().atlas_index();
-        }
+        },
         _ => {
             if let Some(atlas_index) = new_tile.atlas_index() {
                 *texture_atlas_handle = current_texture_atlas.current_handle();
@@ -90,7 +85,7 @@ fn set_preview_tile_texture(
                 *texture_atlas_handle = current_texture_atlas.current_handle();
                 texture_atlas_sprite.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
             }
-        }
+        },
     }
     preview_tile.current_tile = new_tile.clone();
 }
@@ -102,16 +97,35 @@ fn update_preview_tile(
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
-    mut preview_tile_q: Query<(&mut PreviewTile, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &mut Transform)>,
+    mut preview_tile_q: Query<(
+        &mut PreviewTile,
+        &mut Handle<TextureAtlas>,
+        &mut TextureAtlasSprite,
+        &mut Transform,
+    )>,
     current_texture_atlas: Res<TilesetManager>,
 ) {
-    let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) = preview_tile_q.single_mut();
+    let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) =
+        preview_tile_q.single_mut();
     if current_tile.tile != preview_tile.current_tile {
-        set_preview_tile_texture(&current_tile.tile, &mut texture_atlas_handle, &mut texture_atlas_sprite, &mut preview_tile, &*current_texture_atlas);
+        set_preview_tile_texture(
+            &current_tile.tile,
+            &mut texture_atlas_handle,
+            &mut texture_atlas_sprite,
+            &mut preview_tile,
+            &*current_texture_atlas,
+        );
     }
     let (layer_camera, layer_camera_transform) = q_layer_camera.single();
     let (main_camera, main_camera_transform) = q_main_camera.single();
-    if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, layer_camera, layer_camera_transform, main_camera, main_camera_transform, &*map) {
+    if let Some((world_x, world_y)) = compute_cursor_position_in_world(
+        &*wnds,
+        layer_camera,
+        layer_camera_transform,
+        main_camera,
+        main_camera_transform,
+        &*map,
+    ) {
         // The cursor is inside the window
         if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {
             transform.translation.x = world_x as f32;
