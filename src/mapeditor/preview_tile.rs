@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use bevy::render::view::{Layer, RenderLayers};
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
-use crate::{App, AppState, TilesetManager};
+use crate::{App, AppState, LAYER_ID, TilesetManager};
+use crate::game::camera::{LayerCamera, MainCamera};
 use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
@@ -43,8 +45,9 @@ pub fn setup_preview_tile(
     current_texture_atlas: Res<TilesetManager>,
 ) {
     let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
+    let layer = RenderLayers::layer(LAYER_ID);
     commands
-        .spawn(SpriteSheetBundle {
+        .spawn((SpriteSheetBundle {
             sprite: TextureAtlasSprite {
                 color: Color::Rgba {
                     red: 1.0,
@@ -62,8 +65,9 @@ pub fn setup_preview_tile(
                 ..default()
             },
             ..default()
-        })
-        .insert(previewtile);
+        },
+                previewtile,
+                layer));
 }
 
 fn set_preview_tile_texture(
@@ -94,7 +98,8 @@ fn set_preview_tile_texture(
 /// System to show a transparent preview tile on the map
 fn update_preview_tile(
     wnds: Res<Windows>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
+    q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
+    q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(&mut PreviewTile, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &mut Transform)>,
@@ -104,8 +109,9 @@ fn update_preview_tile(
     if current_tile.tile != preview_tile.current_tile {
         set_preview_tile_texture(&current_tile.tile, &mut texture_atlas_handle, &mut texture_atlas_sprite, &mut preview_tile, &*current_texture_atlas);
     }
-    let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
-    if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+    let (layer_camera, layer_camera_transform) = q_layer_camera.single();
+    let (main_camera, main_camera_transform) = q_main_camera.single();
+    if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, layer_camera, layer_camera_transform, main_camera, main_camera_transform, &*map) {
         // The cursor is inside the window
         if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {
             transform.translation.x = world_x as f32;
