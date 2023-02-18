@@ -65,7 +65,7 @@ pub fn compute_cursor_position_in_world(
     if let Some(screen_pos) = wnd.cursor_position() {
         if let Some(screen_pos) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
             if let Some(screen_pos) = layer_camera.viewport_to_world(layer_camera_transform, screen_pos.origin.xy()) {
-                return Some((screen_pos.origin.x as i32 + map.world.width() as i32, screen_pos.origin.y as i32 + map.world.height() as i32));
+                return Some(((screen_pos.origin.x + 0.5) as i32 + map.world.width() as i32, (screen_pos.origin.y + 0.5) as i32 + map.world.height() as i32));
             }
         }
     }
