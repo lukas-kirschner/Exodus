@@ -27,13 +27,12 @@ impl TilesetManager {
     pub fn current_handle(&self) -> Handle<TextureAtlas> {
         self.atlas_handle_for_tileset
             .get(&self.current_tileset)
-            .expect(
-                format!(
+            .unwrap_or_else(|| {
+                panic!(
                     "No Texture Atlas was initialized for {}",
                     self.current_tileset
                 )
-                .as_str(),
-            )
+            })
             .clone()
     }
     pub fn current_tileset(&self) -> &Tileset {

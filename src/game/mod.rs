@@ -41,13 +41,11 @@ fn back_to_main_menu_controls(
     mut keys: ResMut<Input<KeyCode>>,
     mut app_state: ResMut<State<AppState>>,
 ) {
-    if *app_state.current() == AppState::Playing {
-        if keys.just_pressed(KeyCode::Escape) {
-            app_state
-                .set(AppState::MainMenu)
-                .expect("Could not go back to Main Menu");
-            keys.reset(KeyCode::Escape);
-        }
+    if *app_state.current() == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
+        app_state
+            .set(AppState::MainMenu)
+            .expect("Could not go back to Main Menu");
+        keys.reset(KeyCode::Escape);
     }
 }
 

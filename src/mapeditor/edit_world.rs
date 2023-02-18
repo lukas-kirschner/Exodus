@@ -65,7 +65,7 @@ fn update_texture_at(
 fn replace_world_tile_at(
     pos: Vec2,
     new_tile: &Tile,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     map: &mut MapWrapper,
     tile_entity_query: &mut Query<
         (Entity, &mut Transform, &mut TextureAtlasSprite),
@@ -79,11 +79,11 @@ fn replace_world_tile_at(
         match *new_tile {
             Tile::AIR => {
                 // If a tile is replaced with air, it should just be deleted from the view:
-                delete_tile_at(&pos, &mut commands, tile_entity_query);
+                delete_tile_at(&pos, commands, tile_entity_query);
             },
             Tile::PLAYERSPAWN => {
                 // Delete the tile at the given position. This action does not do anything if the current tile is Air, so we skip that check
-                delete_tile_at(&pos, &mut commands, tile_entity_query);
+                delete_tile_at(&pos, commands, tile_entity_query);
             },
             _ => {
                 if *current_world_tile == Tile::AIR || *current_world_tile == Tile::PLAYERSPAWN {
@@ -91,7 +91,7 @@ fn replace_world_tile_at(
                     let layer: &RenderLayers = layer_query.single();
                     spawn_tile(
                         commands,
-                        &atlas,
+                        atlas,
                         new_tile.atlas_index().unwrap(),
                         &pos,
                         new_tile,
@@ -131,12 +131,12 @@ fn mouse_down_handler(
         .expect("There were multiple main cameras spawned");
     if buttons.just_pressed(MouseButton::Left) {
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-            &*wnds,
+            &wnds,
             layer_camera,
             layer_camera_transform,
             main_camera,
             main_camera_transform,
-            &*map,
+            &map,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
@@ -144,9 +144,9 @@ fn mouse_down_handler(
                         Vec2::new(world_x as f32, world_y as f32),
                         &current_tile.tile,
                         &mut commands,
-                        &mut *map,
+                        &mut map,
                         &mut tile_entity_query,
-                        &*atlas,
+                        &atlas,
                         layer_query,
                     );
                     map.world.set_dirty();
@@ -156,12 +156,12 @@ fn mouse_down_handler(
     } else if buttons.just_pressed(MouseButton::Right) {
         // On Right Click, replace the current tile with air
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-            &*wnds,
+            &wnds,
             layer_camera,
             layer_camera_transform,
             main_camera,
             main_camera_transform,
-            &*map,
+            &map,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
@@ -169,9 +169,9 @@ fn mouse_down_handler(
                         Vec2::new(world_x as f32, world_y as f32),
                         &Tile::AIR,
                         &mut commands,
-                        &mut *map,
+                        &mut map,
                         &mut tile_entity_query,
-                        &*atlas,
+                        &atlas,
                         layer_query,
                     );
                     map.world.set_dirty();
@@ -195,12 +195,12 @@ fn mouse_down_handler_playerspawn(
         let (main_camera, main_camera_transform) = q_main_camera.single();
         if buttons.just_pressed(MouseButton::Left) {
             if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-                &*wnds,
+                &wnds,
                 layer_camera,
                 layer_camera_transform,
                 main_camera,
                 main_camera_transform,
-                &*map,
+                &map,
             ) {
                 let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
                 translation.x = world_x as f32;

@@ -75,8 +75,8 @@ fn game_init(
     mut res_tileset: ResMut<TilesetManager>,
 ) {
     if !directories.game_directories.maps_dir.as_path().exists() {
-        fs::create_dir_all(&directories.game_directories.maps_dir).expect(
-            format!(
+        fs::create_dir_all(&directories.game_directories.maps_dir).unwrap_or_else(|_| {
+            panic!(
                 "Could not create the map directory at {}!",
                 directories
                     .game_directories
@@ -85,12 +85,11 @@ fn game_init(
                     .to_str()
                     .unwrap_or("<Invalid>")
             )
-            .as_str(),
-        );
+        });
     }
     if !directories.game_directories.config_dir.as_path().exists() {
-        fs::create_dir_all(&directories.game_directories.config_dir).expect(
-            format!(
+        fs::create_dir_all(&directories.game_directories.config_dir).unwrap_or_else(|_| {
+            panic!(
                 "Could not create the config directory at {}!",
                 directories
                     .game_directories
@@ -99,8 +98,7 @@ fn game_init(
                     .to_str()
                     .unwrap_or("<Invalid>")
             )
-            .as_str(),
-        );
+        });
     }
     info!(
         "Set Maps Directory to {}",
@@ -136,7 +134,7 @@ fn game_init(
                 warn!("The config file does not exist")
             }
         })
-        .unwrap_or(Config::default());
+        .unwrap_or_default();
     debug!(
         "Loaded Config with language {}",
         config.game_language.to_string()
@@ -154,7 +152,7 @@ fn game_init(
 fn load_asset_folder_or_panic(asset_server: &AssetServer, path: &str) -> Vec<HandleUntyped> {
     asset_server
         .load_folder(path)
-        .expect(format!("Could not find asset folder at {}", path).as_str())
+        .unwrap_or_else(|_| panic!("Could not find asset folder at {}", path))
 }
 
 fn load_textures(mut rpg_sprite_handles: ResMut<RpgSpriteHandles>, asset_server: Res<AssetServer>) {
@@ -179,7 +177,7 @@ fn check_and_init_textures(
             textures_folder.push(file_name_for_tileset(&tileset));
             let handle = find_handle_with_path(
                 textures_folder.as_path(),
-                &*asset_server,
+                &asset_server,
                 &sprite_handles.handles,
             );
             let texture_atlas = TextureAtlas::from_grid(
@@ -240,7 +238,7 @@ fn resize_notificator(
 pub(crate) fn get_buildnr() -> String {
     option_env!("BUILD_NUMBER")
         .map(|b| format!(".{}", b))
-        .unwrap_or("".to_string())
+        .unwrap_or_default()
 }
 
 fn main() {

@@ -89,7 +89,7 @@ pub fn atlas_to_egui_textures(
     });
 }
 
-pub fn egui_fonts(ctx: &egui::Context) -> () {
+pub fn egui_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
     fonts.font_data.insert(
         "exodus".to_owned(),

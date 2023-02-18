@@ -6,9 +6,9 @@ use libexodus::directories::GameDirectories;
 
 #[derive(Eq, PartialEq)]
 enum UnsavedChangesDialogState {
-    CHOOSING,
-    YES,
-    NO,
+    Choosing,
+    Yes,
+    No,
 }
 
 pub struct UnsavedChangesDialog {
@@ -22,7 +22,7 @@ impl UnsavedChangesDialog {
     pub fn new(message: &str) -> Self {
         UnsavedChangesDialog {
             message: String::from(message),
-            state: UnsavedChangesDialogState::CHOOSING,
+            state: UnsavedChangesDialogState::Choosing,
         }
     }
 }
@@ -40,10 +40,10 @@ impl UIDialog for UnsavedChangesDialog {
                     let yes_btn = ui.button(t!("common_buttons.yes"));
                     let no_btn = ui.button(t!("common_buttons.no"));
                     if yes_btn.clicked() {
-                        self.state = UnsavedChangesDialogState::YES;
+                        self.state = UnsavedChangesDialogState::Yes;
                     }
                     if no_btn.clicked() {
-                        self.state = UnsavedChangesDialogState::NO;
+                        self.state = UnsavedChangesDialogState::No;
                     }
                 })
             });
@@ -51,11 +51,11 @@ impl UIDialog for UnsavedChangesDialog {
     }
 
     fn is_done(&self) -> bool {
-        self.state == UnsavedChangesDialogState::YES
+        self.state == UnsavedChangesDialogState::Yes
     }
 
     fn is_cancelled(&self) -> bool {
-        self.state == UnsavedChangesDialogState::NO
+        self.state == UnsavedChangesDialogState::No
     }
 
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog> {

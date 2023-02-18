@@ -44,7 +44,7 @@ fn config_screen_ui(
                             ui.label(format!("{}:", t!("config_screen.language_label")));
                             let selected_lang = res_config.config.game_language.to_string();
                             egui::ComboBox::from_id_source("lang_box")
-                                .selected_text(format!("{}", &selected_lang))
+                                .selected_text(selected_lang)
                                 .show_ui(ui, |ui| {
                                     ui.set_width(400.);
                                     for lang in Language::iter() {
@@ -59,7 +59,7 @@ fn config_screen_ui(
                             ui.label(format!("{}:", t!("config_screen.tileset_label")));
                             let selected_tileset = res_config.config.tile_set.to_string();
                             egui::ComboBox::from_id_source("tile_set_box")
-                                .selected_text(format!("{}", &selected_tileset))
+                                .selected_text(selected_tileset)
                                 .show_ui(ui, |ui| {
                                     ui.set_width(400.);
                                     for tileset in Tileset::iter() {

@@ -47,11 +47,8 @@ pub struct WorldTile;
 pub struct DoorWrapper;
 
 pub fn insert_door_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
-    match tile.kind() {
-        TileKind::DOOR => {
-            bundle.insert(DoorWrapper);
-        },
-        _ => {},
+    if tile.kind() == TileKind::DOOR {
+        bundle.insert(DoorWrapper);
     }
 }
 
@@ -76,7 +73,7 @@ pub fn spawn_tile(
             ..Default::default()
         },
         WorldTile, // WorldTiles are attached to each world tile, while TileWrappers are only attached to non-interactive world tiles.
-        layer.clone(),
+        *layer,
     ));
     insert_wrappers(tile, &mut bundle);
     insert_door_wrappers(tile, &mut bundle);
@@ -99,20 +96,19 @@ pub fn setup_game_world(
     for row in 0..world.height() {
         for col in 0..world.width() {
             let tile_position = Vec2::new(col as f32, row as f32);
-            let tile = world.get(col as i32, row as i32).expect(
-                format!(
+            let tile = world.get(col as i32, row as i32).unwrap_or_else(|| {
+                panic!(
                     "Coordinate {},{} not accessible in world of size {},{}",
                     col,
                     row,
                     world.width(),
                     world.height()
                 )
-                .as_str(),
-            );
+            });
             if let Some(index) = tile.atlas_index() {
                 spawn_tile(
                     &mut commands,
-                    &*the_atlas_handle,
+                    &the_atlas_handle,
                     index,
                     &tile_position,
                     tile,

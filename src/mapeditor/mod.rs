@@ -73,5 +73,5 @@ pub fn compute_cursor_position_in_world(
             }
         }
     }
-    return None;
+    None
 }

@@ -83,7 +83,7 @@ pub fn despawn_dead_player(
             // The player has fully decayed and can be despawned. TODO Trigger event here
             commands.entity(entity).despawn_recursive();
             // Spawn new player and reset scores
-            respawn_player(&mut commands, &*current_map_texture_handle, &worldwrapper);
+            respawn_player(&mut commands, &current_map_texture_handle, &worldwrapper);
             scoreboard.reset();
             reset_world(
                 commands,
@@ -161,7 +161,7 @@ fn door_opened(
             target_x, target_y
         );
     }
-    return false;
+    false
 }
 
 pub fn player_movement(
@@ -210,7 +210,7 @@ pub fn player_movement(
                         target_x,
                         target_y,
                         &mut worldwrapper.world,
-                        &mut *scoreboard,
+                        &mut scoreboard,
                     ) {
                         debug!(
                             "Dropped movement {:?} to {},{} because a collision was detected.",
@@ -239,11 +239,11 @@ pub fn player_movement(
                 // Check player's x direction and change texture accordingly
                 set_player_direction(player, &mut sprite, true);
 
-                if transform.translation.x < target_x as f32 {
+                if transform.translation.x < target_x {
                     transform.translation.x += velocity_x * time.delta_seconds();
                 }
                 if transform.translation.x >= target_x {
-                    transform.translation.x = target_x as f32;
+                    transform.translation.x = target_x;
                 }
             } else {
                 if velocity_x < 0. {
@@ -325,7 +325,7 @@ pub fn player_movement(
                                 SpriteSheetBundle {
                                     sprite: sprite.clone(),
                                     texture_atlas: handle.clone(),
-                                    transform: transform.clone(),
+                                    transform: *transform,
                                     ..default()
                                 },
                                 ExitingPlayerComponent {
@@ -390,7 +390,7 @@ fn respawn_player(
     commands.spawn((
         SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
-            texture_atlas: atlas_handle_player.current_handle().clone(),
+            texture_atlas: atlas_handle_player.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
                     map_player_position_x as f32,
@@ -414,7 +414,7 @@ pub fn setup_player(
     current_texture_atlas: Res<TilesetManager>,
     worldwrapper: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, &*current_texture_atlas, &worldwrapper);
+    respawn_player(&mut commands, &current_texture_atlas, &worldwrapper);
 }
 
 pub fn keyboard_controls(

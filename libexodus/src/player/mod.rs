@@ -7,6 +7,12 @@ pub struct Player {
     facing_left: bool,
 }
 
+impl Default for Player {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Player {
     ///
     /// Create a new player

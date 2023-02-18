@@ -87,15 +87,15 @@ fn load_maps(mut maps: ResMut<Maps>, directories: Res<GameDirectoriesWrapper>) {
 
 #[derive(Resource)]
 enum MapSelectionScreenAction {
-    PLAY { map_index: usize },
-    DELETE { map_index: usize },
-    EDIT { map_index: usize },
-    NONE,
+    Play { map_index: usize },
+    Delete { map_index: usize },
+    Edit { map_index: usize },
+    None,
 }
 
 impl FromWorld for MapSelectionScreenAction {
     fn from_world(_: &mut World) -> Self {
-        MapSelectionScreenAction::NONE
+        MapSelectionScreenAction::None
     }
 }
 
@@ -106,27 +106,27 @@ fn map_selection_screen_execute_event_queue(
     mut state: ResMut<State<AppState>>,
 ) {
     match *action {
-        MapSelectionScreenAction::PLAY { map_index } => {
+        MapSelectionScreenAction::Play { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
             state.set(AppState::Playing).expect("Could not start game");
-            commands.insert_resource(MapSelectionScreenAction::NONE)
+            commands.insert_resource(MapSelectionScreenAction::None)
         },
-        MapSelectionScreenAction::DELETE { map_index } => {
+        MapSelectionScreenAction::Delete { map_index } => {
             //TODO Delete Map
             //TODO there is no need for locking here? Avoid deleting more maps than necessary
             maps.maps.remove(map_index);
-            commands.insert_resource(MapSelectionScreenAction::NONE)
+            commands.insert_resource(MapSelectionScreenAction::None)
         },
-        MapSelectionScreenAction::EDIT { map_index } => {
+        MapSelectionScreenAction::Edit { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
             state
                 .set(AppState::MapEditor)
                 .expect("Could not start map editor");
-            commands.insert_resource(MapSelectionScreenAction::NONE)
+            commands.insert_resource(MapSelectionScreenAction::None)
         },
-        MapSelectionScreenAction::NONE => {},
+        MapSelectionScreenAction::None => {},
     }
 }
 
@@ -164,7 +164,7 @@ fn map_selection_screen_ui(
                                                         ));
                                                     if play_btn.clicked() {
                                                         commands.insert_resource(
-                                                            MapSelectionScreenAction::PLAY {
+                                                            MapSelectionScreenAction::Play {
                                                                 map_index: i,
                                                             },
                                                         );
@@ -181,7 +181,7 @@ fn map_selection_screen_ui(
                                                         ));
                                                     if edit_btn.clicked() {
                                                         commands.insert_resource(
-                                                            MapSelectionScreenAction::EDIT {
+                                                            MapSelectionScreenAction::Edit {
                                                                 map_index: i,
                                                             },
                                                         );
@@ -198,7 +198,7 @@ fn map_selection_screen_ui(
                                                         ));
                                                     if delete_btn.clicked() {
                                                         commands.insert_resource(
-                                                            MapSelectionScreenAction::DELETE {
+                                                            MapSelectionScreenAction::Delete {
                                                                 map_index: i,
                                                             },
                                                         );

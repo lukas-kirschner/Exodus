@@ -66,18 +66,16 @@ fn tile_kind_selector_button_for(
         let button =
             if let Some(atlas_index) = tile.atlas_index() {
                 let (id, size, uv) = egui_textures.textures.get(&atlas_index)
-                    .expect(format!("Textures for {:?} were not loaded as Egui textures!", tile).as_str())
-                    ;
+                    .unwrap_or_else(|| panic!("Textures for {:?} were not loaded as Egui textures!", tile));
                 ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
-            } else {
-                if *tile == Tile::PLAYERSPAWN {
+            } else if *tile == Tile::PLAYERSPAWN {
                     let (id, size, uv) = egui_textures.player_textures.get(&player.player.atlas_index())
                         .expect("The Player Texture was not found in the Egui textures!");
                     ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
-                } else {
-                    ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
-                }
+            } else {
+                ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
             }
+
                 .on_hover_text(t!(format!("tile.{}",tile.str_id()).as_str()))
                 .on_disabled_hover_text(format!("{} ({})", t!(format!("tile.{}",tile.str_id()).as_str()), t!("map_editor.buttons.currently_selected"))) // unfortunately there is no on_disabled_hover_text_at_pointer
             ;
@@ -396,7 +394,7 @@ fn mapeditor_dialog(
         .show(egui_ctx.ctx_mut(), |ui| {
             dialog
                 .ui_dialog
-                .draw(ui, &*egui_textures, &directories.game_directories);
+                .draw(ui, &egui_textures, &directories.game_directories);
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {
@@ -433,7 +431,7 @@ fn mapeditor_dialog(
             state
                 .set(AppState::MapEditor)
                 .expect("Could not close dialog");
-        } else if let Some(_) = dialog.ui_dialog.as_unsaved_changes_dialog() {
+        } else if dialog.ui_dialog.as_unsaved_changes_dialog().is_some() {
             state
                 .set(AppState::MapSelectionScreen)
                 .expect("Could not exit Map Editor");

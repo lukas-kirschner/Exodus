@@ -69,21 +69,21 @@ impl GameWorld {
 impl GameWorld {
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
-        file.write(&MAGICBYTES)?;
+        file.write_all(&MAGICBYTES)?;
 
         // Write Map Version
-        file.write(&[CURRENT_MAP_VERSION])?;
+        file.write_all(&[CURRENT_MAP_VERSION])?;
 
         // Write Map Name
         let name_b = bincode::serialize(&self.name)?;
-        file.write(&name_b)?;
+        file.write_all(&name_b)?;
 
         // Write Map Author
         let author_b = bincode::serialize(&self.author)?;
-        file.write(&author_b)?;
+        file.write_all(&author_b)?;
 
         // Write cached UUID
-        file.write(&self.hash)?;
+        file.write_all(&self.hash)?;
 
         self.serialize_world_content(file)?;
 
@@ -95,14 +95,14 @@ impl GameWorld {
     ) -> Result<(), GameWorldParseError> {
         // Write Map Width and Height
         let width_b = bincode::serialize(&self.width())?;
-        file.write(&width_b)?;
+        file.write_all(&width_b)?;
         let height_b = bincode::serialize(&self.height())?;
-        file.write(&height_b)?;
+        file.write_all(&height_b)?;
 
         // Write Map Tiles
         for y in 0..self.height() {
             for x in 0..self.width() {
-                file.write(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
+                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
             }
         }
         Ok(())
@@ -137,7 +137,7 @@ impl GameWorld {
         match self.recompute_hash() {
             RecomputeHashResult::SAME => Ok(()),
             RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch {
-                expected: self.hash.clone(),
+                expected: self.hash,
                 actual: old_hash,
             }),
             RecomputeHashResult::ERROR { error } => Err(error),

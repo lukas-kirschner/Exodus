@@ -15,7 +15,7 @@ pub enum RecomputeHashResult {
 
 impl GameWorld {
     pub fn recompute_hash(&mut self) -> RecomputeHashResult {
-        let old_hash = self.hash.clone();
+        let old_hash = self.hash;
         let mut buf = ByteBuffer::new();
         match self.serialize_world_content(&mut buf) {
             Ok(()) => {},

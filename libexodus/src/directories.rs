@@ -71,13 +71,13 @@ impl GameDirectories {
         let game_config_dir = game_base_dir.join("config");
         Ok(GameDirectories {
             _base_dir: PathBuf::from(game_base_dir),
-            maps_dir: PathBuf::from(game_maps_dir),
-            config_dir: PathBuf::from(game_config_dir),
+            maps_dir: game_maps_dir,
+            config_dir: game_config_dir,
         })
     }
 
     /// Iterate over all map files that are found inside the maps folder and all subfolders.
-    pub fn iter_maps(self: &Self) -> impl Iterator<Item = walkdir::DirEntry> + '_ {
+    pub fn iter_maps(&self) -> impl Iterator<Item = walkdir::DirEntry> + '_ {
         WalkDir::new(&self.maps_dir)
             .into_iter()
             .filter_map(|e| {
@@ -95,19 +95,18 @@ impl GameDirectories {
                 let ret = file
                     .path()
                     .extension()
-                    .and_then(|s| Some(s.to_ascii_lowercase()))
-                    .unwrap_or("".into())
+                    .map(|s| s.to_ascii_lowercase())
+                    .unwrap_or_else(|| "".into())
                     == GameDirectories::MAP_FILE_SUFFIX
                         .to_ascii_lowercase()
                         .as_str();
-                if cfg!(debug_assertions) {
-                    if !ret {
-                        println!(
-                            "Skipped {} because its file extension did not match.",
-                            file.path().to_str().unwrap()
-                        );
-                    }
+                if cfg!(debug_assertions) && !ret {
+                    println!(
+                        "Skipped {} because its file extension did not match.",
+                        file.path().to_str().unwrap()
+                    );
                 }
+
                 ret
             })
     }
@@ -115,7 +114,7 @@ impl GameDirectories {
     /// Automatically converts the map name to a file name by replacing whitespaces with underscores
     ///  and converting all printable characters to lower-case.
     /// If the file name that results from converting the name is invalid, an error is returned.
-    pub fn path_from_mapname(self: &Self, map_name: &str) -> Result<PathBuf, InvalidMapNameError> {
+    pub fn path_from_mapname(&self, map_name: &str) -> Result<PathBuf, InvalidMapNameError> {
         let map_file_name: String = map_name
             .trim()
             .chars()
@@ -141,10 +140,7 @@ impl GameDirectories {
     /// Get the path of a map with the given user input path.
     /// The user input is sanitized and resolved as subdirectory of the maps folder.
     /// If the file name that results from converting the name is invalid, an error is returned.
-    pub fn path_from_userinput(
-        self: &Self,
-        user_input: &str,
-    ) -> Result<PathBuf, InvalidMapNameError> {
+    pub fn path_from_userinput(&self, user_input: &str) -> Result<PathBuf, InvalidMapNameError> {
         let user_input_t = user_input.trim();
         let map_subdir_name: Result<String, InvalidMapNameError> = user_input_t
             .chars()
@@ -173,9 +169,9 @@ impl GameDirectories {
             .as_str()
             .ends_with(format!(".{}", GameDirectories::MAP_FILE_SUFFIX).as_str())
         {
-            map_subdir_name.to_string()
+            map_subdir_name
         } else {
-            format!("{}.{}", map_subdir_name, GameDirectories::MAP_FILE_SUFFIX).to_string()
+            format!("{}.{}", map_subdir_name, GameDirectories::MAP_FILE_SUFFIX)
         };
         let map_folder: PathBuf = self.maps_dir.join(map_file_name);
         Ok(map_folder)

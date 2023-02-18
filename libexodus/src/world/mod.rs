@@ -227,11 +227,8 @@ impl GameWorld {
     pub fn reset_game_state(&mut self) {
         for x in 0..self.width() {
             for y in 0..self.height() {
-                match self.get(x as i32, y as i32).unwrap() {
-                    Tile::OPENDOOR => {
-                        self.set(x, y, Tile::DOOR);
-                    },
-                    _ => {},
+                if self.get(x as i32, y as i32).unwrap() == &Tile::OPENDOOR {
+                    self.set(x, y, Tile::DOOR);
                 }
             }
         }

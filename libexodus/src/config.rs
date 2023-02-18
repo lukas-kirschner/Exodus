@@ -13,10 +13,10 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        return Config {
+        Config {
             game_language: Language::default(),
             tile_set: Tileset::TinyPlatformQuestTiles,
-        };
+        }
     }
 }
 
@@ -98,26 +98,30 @@ impl Config {
 
     fn serialize<T: Write>(&self, file: &mut T) -> std::io::Result<()> {
         let language_b = self.game_language.to_bytes();
-        file.write(&[language_b])?;
+        file.write_all(&[language_b])?;
         let tileset_b = self.tile_set.to_bytes();
-        file.write(&[tileset_b])?;
+        file.write_all(&[tileset_b])?;
         Ok(())
     }
     fn parse<T: Read>(&mut self, file: &mut T) -> std::io::Result<()> {
         // Read Language
         let mut lang_buf = [0u8; 1];
         file.read_exact(&mut lang_buf)?;
-        self.game_language = Language::from_bytes(lang_buf[0]).ok_or(io::Error::new(
-            ErrorKind::Other,
-            format!("Invalid Language 0x{:02X}", lang_buf[0]),
-        ))?;
+        self.game_language = Language::from_bytes(lang_buf[0]).ok_or_else(|| {
+            io::Error::new(
+                ErrorKind::Other,
+                format!("Invalid Language 0x{:02X}", lang_buf[0]),
+            )
+        })?;
         // Read Tile set
         let mut tileset_buf = [0u8; 1];
         file.read_exact(&mut tileset_buf)?;
-        self.tile_set = Tileset::from_bytes(tileset_buf[0]).ok_or(io::Error::new(
-            ErrorKind::Other,
-            format!("Invalid Tileset 0x{:02X}", tileset_buf[0]),
-        ))?;
+        self.tile_set = Tileset::from_bytes(tileset_buf[0]).ok_or_else(|| {
+            io::Error::new(
+                ErrorKind::Other,
+                format!("Invalid Tileset 0x{:02X}", tileset_buf[0]),
+            )
+        })?;
 
         Ok(())
     }

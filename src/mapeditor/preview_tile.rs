@@ -52,7 +52,7 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
             },
             texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
-                translation: Vec3::new(-1 as f32, -1 as f32, MAPEDITOR_PREVIEWTILE_Z),
+                translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
                 scale: Vec3::splat(
                     1.0 / current_texture_atlas.current_tileset().texture_size() as f32,
                 ),
@@ -113,18 +113,18 @@ fn update_preview_tile(
             &mut texture_atlas_handle,
             &mut texture_atlas_sprite,
             &mut preview_tile,
-            &*current_texture_atlas,
+            &current_texture_atlas,
         );
     }
     let (layer_camera, layer_camera_transform) = q_layer_camera.single();
     let (main_camera, main_camera_transform) = q_main_camera.single();
     if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-        &*wnds,
+        &wnds,
         layer_camera,
         layer_camera_transform,
         main_camera,
         main_camera_transform,
-        &*map,
+        &map,
     ) {
         // The cursor is inside the window
         if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {

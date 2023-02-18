@@ -171,7 +171,7 @@ impl Tile {
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
-        return match self {
+        match self {
             Tile::AIR => None,
             Tile::WALL => Some(58),
             Tile::WALLNATURE => Some(130),
@@ -202,7 +202,7 @@ impl Tile {
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
             Tile::EXIT => Some(40),
-        };
+        }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
         match self.kind() {

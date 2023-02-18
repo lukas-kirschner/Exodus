@@ -44,7 +44,7 @@ pub fn check_ui_size_changed(
     event_writer: &mut EventWriter<UiSizeChangedEvent>,
 ) {
     if *new_size != *current_size {
-        *current_size = (*new_size).clone();
+        *current_size = *new_size;
         event_writer.send(UiSizeChangedEvent);
         debug!(
             "Changed UI Overlay to T {:?} B {:?} L {:?} R{:?}",
