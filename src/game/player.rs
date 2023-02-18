@@ -1,11 +1,12 @@
 use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
 use libexodus::directions::{FromDirection};
 use libexodus::directions::Directions::*;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
 use libexodus::tiles::{Tile, TileKind};
 use libexodus::world::GameWorld;
-use crate::{AppState, TilesetManager};
+use crate::{AppState, LAYER_ID, TilesetManager};
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -236,7 +237,8 @@ pub fn player_movement(
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(entity).despawn_recursive();
                                 sprite.index = 222; // Angel texture
-                                commands.spawn(SpriteSheetBundle {
+                                let layer = RenderLayers::layer(LAYER_ID);
+                                commands.spawn((SpriteSheetBundle {
                                     sprite: sprite.clone(),
                                     texture_atlas: handle.clone(),
                                     transform: Transform {
@@ -245,8 +247,10 @@ pub fn player_movement(
                                         ..default()
                                     },
                                     ..Default::default()
-                                })
-                                    .insert(DeadPlayerComponent { player: player.clone() });
+                                },
+                                                DeadPlayerComponent { player: player.clone() },
+                                                layer,
+                                ));
                                 // println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                             }
                         }
@@ -265,13 +269,16 @@ pub fn player_movement(
                         TileKind::EXIT => {
                             commands.entity(entity).despawn_recursive();
                             sprite.index = 247; // Player turning their back to the camera
-                            commands.spawn(SpriteSheetBundle {
+                            let layer = RenderLayers::layer(LAYER_ID);
+                            commands.spawn((SpriteSheetBundle {
                                 sprite: sprite.clone(),
                                 texture_atlas: handle.clone(),
                                 transform: transform.clone(),
                                 ..default()
-                            })
-                                .insert(ExitingPlayerComponent { player: player.clone() });
+                            },
+                                            ExitingPlayerComponent { player: player.clone() },
+                                            layer,
+                            ));
                         }
                     }
                 }
@@ -311,18 +318,20 @@ fn respawn_player(
 ) {
     let player: PlayerComponent = PlayerComponent { player: Player::new() };
     let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
+    let layer = RenderLayers::layer(LAYER_ID);
     commands
-        .spawn(SpriteSheetBundle {
+        .spawn((SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(player.player.atlas_index()),
             texture_atlas: atlas_handle_player.current_handle().clone(),
             transform: Transform {
                 translation: Vec3::new(map_player_position_x as f32, map_player_position_y as f32, PLAYER_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / atlas_handle_player.current_tileset().texture_size() as f32),
+                scale: Vec3::splat(1.0 / atlas_handle_player.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()
-        })
-        .insert(player);
+        },
+                player,
+                layer));
 }
 
 

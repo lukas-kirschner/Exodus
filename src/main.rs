@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use bevy::asset::LoadState;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
+use bevy::render::view::Layer;
 use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use libexodus::config::Config;
@@ -26,10 +27,6 @@ mod util;
 mod dialogs;
 mod ui;
 mod tileset_manager;
-
-// We use https://opengameart.org/content/tiny-platform-quest-sprites free textures
-// TODO !!! Textures are CC-BY-SA 3.0
-// TODO There is a bug in Bevy that causes adjacent textures from the atlas to leak through due to precision errors: https://github.com/bevyengine/bevy/issues/1949
 
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -63,6 +60,9 @@ impl FromWorld for GameDirectoriesWrapper {
         }
     }
 }
+
+/// The layer to draw the world and players onto
+pub const LAYER_ID: Layer = 1;
 
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
