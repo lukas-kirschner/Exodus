@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::{Frame, RichText};
-use indoc::formatdoc;
-use crate::{AppState, get_buildnr};
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
+use crate::{get_buildnr, AppState};
+use bevy::prelude::*;
+use bevy_egui::egui::{Frame, RichText};
+use bevy_egui::{egui, EguiContext};
+use indoc::formatdoc;
 
 pub struct CreditsScreen;
 
@@ -26,18 +26,20 @@ fn credits() -> String {
             buildnr = buildnr,
     };
     if cfg!(debug_assertions) {
-        ret.push_str(format!("\nDebug Build {build} ({date})",
-                             build = env!("GIT_SHORTHASH"),
-                             date = env!("GIT_SHORTDATE")).as_str());
+        ret.push_str(
+            format!(
+                "\nDebug Build {build} ({date})",
+                build = env!("GIT_SHORTHASH"),
+                date = env!("GIT_SHORTDATE")
+            )
+            .as_str(),
+        );
     }
     ret
 }
 
 /// Main Menu main routine
-fn credits_screen_ui(
-    mut egui_ctx: ResMut<EguiContext>,
-    mut state: ResMut<State<AppState>>,
-) {
+fn credits_screen_ui(mut egui_ctx: ResMut<EguiContext>, mut state: ResMut<State<AppState>>) {
     add_navbar(&mut egui_ctx, &mut state);
 
     egui::CentralPanel::default()
@@ -51,7 +53,10 @@ fn credits_screen_ui(
                             ui.scope(|ui| {
                                 ui.set_height(UIMARGIN);
                             });
-                            ui.heading(format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")).as_str());
+                            ui.heading(
+                                format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+                                    .as_str(),
+                            );
                             ui.separator();
                             ui.label(RichText::new(credits()).text_style(egui::TextStyle::Small));
                         });
@@ -63,13 +68,11 @@ fn credits_screen_ui(
 
 impl Plugin for CreditsScreen {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_update(AppState::CreditsScreen)
-                .with_system(credits_screen_ui)
-            )
-            .add_system_set(SystemSet::on_update(AppState::CreditsScreen)
-                .with_system(menu_esc_control)
-            )
-        ;
+        app.add_system_set(
+            SystemSet::on_update(AppState::CreditsScreen).with_system(credits_screen_ui),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::CreditsScreen).with_system(menu_esc_control),
+        );
     }
 }

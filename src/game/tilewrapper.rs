@@ -1,12 +1,12 @@
-use bevy::prelude::*;
-use libexodus::world::GameWorld;
-use libexodus::world::presets;
 use crate::game::scoreboard::Scoreboard;
+use bevy::prelude::*;
+use libexodus::world::presets;
+use libexodus::world::GameWorld;
 
 ///
 /// A wrapper around a GameWorld
 #[derive(Resource)]
-pub struct MapWrapper<> {
+pub struct MapWrapper {
     pub world: GameWorld,
 }
 
@@ -24,10 +24,7 @@ impl MapWrapper {
     }
 }
 
-
-pub fn reset_score(
-    mut scoreboard: ResMut<Scoreboard>
-) {
+pub fn reset_score(mut scoreboard: ResMut<Scoreboard>) {
     scoreboard.coins = 0;
     scoreboard.moves = 0;
 }

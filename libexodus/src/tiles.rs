@@ -1,8 +1,8 @@
-use std::fmt;
-use std::fmt::Formatter;
-use strum_macros::{EnumIter, EnumCount as EnumCountMacro};
 use crate::directions::FromDirection;
 use crate::directions::FromDirection::{FROMEAST, FROMNORTH, FROMSOUTH, FROMWEST};
+use std::fmt;
+use std::fmt::Formatter;
+use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TileKind {
@@ -121,19 +121,45 @@ impl Tile {
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
-            Tile::SPIKES => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
-            Tile::SPIKESALT => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
-            Tile::SPIKESSLOPED => TileKind::DEADLY { from: vec![FROMNORTH] },
-            Tile::WALLSPIKESL => TileKind::DEADLY { from: vec![FROMWEST] },
-            Tile::WALLSPIKESR => TileKind::DEADLY { from: vec![FROMEAST] },
-            Tile::WALLSPIKESLR => TileKind::DEADLY { from: vec![FROMEAST, FROMWEST] },
-            Tile::WALLSPIKESB => TileKind::DEADLY { from: vec![FROMSOUTH] },
-            Tile::WALLSPIKESLB => TileKind::DEADLY { from: vec![FROMWEST, FROMSOUTH] },
-            Tile::WALLSPIKESRB => TileKind::DEADLY { from: vec![FROMEAST, FROMSOUTH] },
-            Tile::WALLSPIKESTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH] },
-            Tile::WALLSPIKESRLTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST] },
-            Tile::WALLSPIKESRTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMEAST] },
-            Tile::WALLSPIKESLTB => TileKind::DEADLY { from: vec![FROMNORTH, FROMSOUTH, FROMWEST] },
+            Tile::SPIKES => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST],
+            },
+            Tile::SPIKESALT => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST],
+            },
+            Tile::SPIKESSLOPED => TileKind::DEADLY {
+                from: vec![FROMNORTH],
+            },
+            Tile::WALLSPIKESL => TileKind::DEADLY {
+                from: vec![FROMWEST],
+            },
+            Tile::WALLSPIKESR => TileKind::DEADLY {
+                from: vec![FROMEAST],
+            },
+            Tile::WALLSPIKESLR => TileKind::DEADLY {
+                from: vec![FROMEAST, FROMWEST],
+            },
+            Tile::WALLSPIKESB => TileKind::DEADLY {
+                from: vec![FROMSOUTH],
+            },
+            Tile::WALLSPIKESLB => TileKind::DEADLY {
+                from: vec![FROMWEST, FROMSOUTH],
+            },
+            Tile::WALLSPIKESRB => TileKind::DEADLY {
+                from: vec![FROMEAST, FROMSOUTH],
+            },
+            Tile::WALLSPIKESTB => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH],
+            },
+            Tile::WALLSPIKESRLTB => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST],
+            },
+            Tile::WALLSPIKESRTB => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH, FROMEAST],
+            },
+            Tile::WALLSPIKESLTB => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMSOUTH, FROMWEST],
+            },
             Tile::DOOR => TileKind::DOOR,
             Tile::KEY => TileKind::KEY,
             Tile::OPENDOOR => TileKind::AIR,
@@ -145,7 +171,7 @@ impl Tile {
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
-        return match self {
+        match self {
             Tile::AIR => None,
             Tile::WALL => Some(58),
             Tile::WALLNATURE => Some(130),
@@ -176,36 +202,36 @@ impl Tile {
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
             Tile::EXIT => Some(40),
-        };
+        }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
         match self.kind() {
-            TileKind::AIR => { false }
-            TileKind::SOLID => { true }
-            TileKind::DEADLY { from } => { !from.iter().any(|fromdir| *fromdir == *from_direction) }
-            TileKind::SPECIAL => { false }
-            TileKind::PLAYERSPAWN => { false }
-            TileKind::COIN => { false }
-            TileKind::LADDER => { false }
-            TileKind::KEY => { false }
-            TileKind::DOOR => { true }
-            TileKind::COLLECTIBLE => { false }
-            TileKind::EXIT => { false }
+            TileKind::AIR => false,
+            TileKind::SOLID => true,
+            TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
+            TileKind::SPECIAL => false,
+            TileKind::PLAYERSPAWN => false,
+            TileKind::COIN => false,
+            TileKind::LADDER => false,
+            TileKind::KEY => false,
+            TileKind::DOOR => true,
+            TileKind::COLLECTIBLE => false,
+            TileKind::EXIT => false,
         }
     }
     pub fn is_deadly_from(&self, from_direction: &FromDirection) -> bool {
         match self.kind() {
-            TileKind::AIR => { false }
-            TileKind::SOLID => { false }
-            TileKind::DEADLY { from } => { from.iter().any(|fromdir| *fromdir == *from_direction) }
-            TileKind::SPECIAL => { false }
-            TileKind::PLAYERSPAWN => { false }
-            TileKind::COIN => { false }
-            TileKind::LADDER => { false }
-            TileKind::KEY => { false }
-            TileKind::DOOR => { false }
-            TileKind::COLLECTIBLE => { false }
-            TileKind::EXIT => { false }
+            TileKind::AIR => false,
+            TileKind::SOLID => false,
+            TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
+            TileKind::SPECIAL => false,
+            TileKind::PLAYERSPAWN => false,
+            TileKind::COIN => false,
+            TileKind::LADDER => false,
+            TileKind::KEY => false,
+            TileKind::DOOR => false,
+            TileKind::COLLECTIBLE => false,
+            TileKind::EXIT => false,
         }
     }
     /// Get a unique string id, describing this tile. Suitable for i18n keys.
@@ -248,37 +274,41 @@ impl Tile {
 
 impl fmt::Display for Tile {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            Tile::AIR => "Air",
-            Tile::WALL => "Wall",
-            Tile::WALLNATURE => "Wall (Nature)",
-            Tile::WALLCOBBLE => "Wall (Cobblestone)",
-            Tile::WALLSMOOTH => "Wall (Smooth)",
-            Tile::WALLCHISELED => "Wall (Chiseled)",
-            Tile::PLAYERSPAWN => "Player Spawn",
-            Tile::COIN => "Coin",
-            Tile::LADDER => "Ladder",
-            Tile::SPIKES => "Spikes",
-            Tile::SPIKESALT => "Spikes (Alt Texture)",
-            Tile::SPIKESSLOPED => "Sloped Spikes",
-            Tile::WALLSPIKESL => "L Wall Spikes",
-            Tile::WALLSPIKESR => "R Wall Spikes",
-            Tile::WALLSPIKESLR => "LR Wall Spikes",
-            Tile::WALLSPIKESB => "B Wall Spikes",
-            Tile::WALLSPIKESLB => "LB Wall Spikes",
-            Tile::WALLSPIKESRB => "RB Wall Spikes",
-            Tile::WALLSPIKESTB => "TB Wall Spikes",
-            Tile::WALLSPIKESRLTB => "RLTB Wall Spikes",
-            Tile::WALLSPIKESRTB => "RTB Wall Spikes",
-            Tile::WALLSPIKESLTB => "LTB Wall Spikes",
-            Tile::DOOR => "Door",
-            Tile::OPENDOOR => "Open Door",
-            Tile::KEY => "Key",
-            Tile::ARROWRIGHT => "Arrow Right",
-            Tile::ARROWLEFT => "Arrow Left",
-            Tile::ARROWUP => "Arrow Up",
-            Tile::ARROWDOWN => "Arrow Down",
-            Tile::EXIT => "Exit",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Tile::AIR => "Air",
+                Tile::WALL => "Wall",
+                Tile::WALLNATURE => "Wall (Nature)",
+                Tile::WALLCOBBLE => "Wall (Cobblestone)",
+                Tile::WALLSMOOTH => "Wall (Smooth)",
+                Tile::WALLCHISELED => "Wall (Chiseled)",
+                Tile::PLAYERSPAWN => "Player Spawn",
+                Tile::COIN => "Coin",
+                Tile::LADDER => "Ladder",
+                Tile::SPIKES => "Spikes",
+                Tile::SPIKESALT => "Spikes (Alt Texture)",
+                Tile::SPIKESSLOPED => "Sloped Spikes",
+                Tile::WALLSPIKESL => "L Wall Spikes",
+                Tile::WALLSPIKESR => "R Wall Spikes",
+                Tile::WALLSPIKESLR => "LR Wall Spikes",
+                Tile::WALLSPIKESB => "B Wall Spikes",
+                Tile::WALLSPIKESLB => "LB Wall Spikes",
+                Tile::WALLSPIKESRB => "RB Wall Spikes",
+                Tile::WALLSPIKESTB => "TB Wall Spikes",
+                Tile::WALLSPIKESRLTB => "RLTB Wall Spikes",
+                Tile::WALLSPIKESRTB => "RTB Wall Spikes",
+                Tile::WALLSPIKESLTB => "LTB Wall Spikes",
+                Tile::DOOR => "Door",
+                Tile::OPENDOOR => "Open Door",
+                Tile::KEY => "Key",
+                Tile::ARROWRIGHT => "Arrow Right",
+                Tile::ARROWLEFT => "Arrow Left",
+                Tile::ARROWUP => "Arrow Up",
+                Tile::ARROWDOWN => "Arrow Down",
+                Tile::EXIT => "Exit",
+            }
+        )
     }
 }

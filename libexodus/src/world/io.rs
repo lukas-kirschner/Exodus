@@ -1,11 +1,11 @@
+use crate::tiles::Tile;
+use crate::world::hash::RecomputeHashResult;
+use crate::world::io_error::GameWorldParseError;
+use crate::world::GameWorld;
 use bincode;
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
-use crate::tiles::Tile;
-use crate::world::GameWorld;
-use crate::world::hash::RecomputeHashResult;
-use crate::world::io_error::GameWorldParseError;
 
 pub(crate) const CURRENT_MAP_VERSION: u8 = 0x01;
 pub(crate) const MAGICBYTES: [u8; 9] = [0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x4d, 0x61, 0x70];
@@ -57,7 +57,10 @@ impl GameWorld {
         let file: File = OpenOptions::new().create(true).write(true).open(path)?;
         let mut buf = BufWriter::new(file);
         self.serialize(&mut buf)?;
-        println!("Successfully saved map file {}", path.to_str().unwrap_or("<NONE>"));
+        println!(
+            "Successfully saved map file {}",
+            path.to_str().unwrap_or("<NONE>")
+        );
         Ok(())
     }
 }
@@ -66,37 +69,40 @@ impl GameWorld {
 impl GameWorld {
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
-        file.write(&MAGICBYTES)?;
+        file.write_all(&MAGICBYTES)?;
 
         // Write Map Version
-        file.write(&[CURRENT_MAP_VERSION])?;
+        file.write_all(&[CURRENT_MAP_VERSION])?;
 
         // Write Map Name
         let name_b = bincode::serialize(&self.name)?;
-        file.write(&name_b)?;
+        file.write_all(&name_b)?;
 
         // Write Map Author
         let author_b = bincode::serialize(&self.author)?;
-        file.write(&author_b)?;
+        file.write_all(&author_b)?;
 
         // Write cached UUID
-        file.write(&self.hash)?;
+        file.write_all(&self.hash)?;
 
         self.serialize_world_content(file)?;
 
         Ok(())
     }
-    pub(crate) fn serialize_world_content<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
+    pub(crate) fn serialize_world_content<T: Write>(
+        &self,
+        file: &mut T,
+    ) -> Result<(), GameWorldParseError> {
         // Write Map Width and Height
         let width_b = bincode::serialize(&self.width())?;
-        file.write(&width_b)?;
+        file.write_all(&width_b)?;
         let height_b = bincode::serialize(&self.height())?;
-        file.write(&height_b)?;
+        file.write_all(&height_b)?;
 
         // Write Map Tiles
         for y in 0..self.height() {
             for x in 0..self.width() {
-                file.write(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
+                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
             }
         }
         Ok(())
@@ -110,7 +116,10 @@ impl GameWorld {
         let mut buf: [u8; MAGICBYTES.len()] = [0; MAGICBYTES.len()];
         file.read_exact(&mut buf)?;
         if buf != MAGICBYTES {
-            return Err(GameWorldParseError::InvalidMagicBytes { expected: MAGICBYTES, actual: buf });
+            return Err(GameWorldParseError::InvalidMagicBytes {
+                expected: MAGICBYTES,
+                actual: buf,
+            });
         }
 
         // Parse Map Format
@@ -119,11 +128,18 @@ impl GameWorld {
         match buf[0] {
             CURRENT_MAP_VERSION => self.parse_current_version(file),
             // Add older versions here
-            _ => return Err(GameWorldParseError::InvalidVersion { invalid_version: buf[0] }),
+            _ => {
+                return Err(GameWorldParseError::InvalidVersion {
+                    invalid_version: buf[0],
+                })
+            },
         }?;
         match self.recompute_hash() {
             RecomputeHashResult::SAME => Ok(()),
-            RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch { expected: self.hash.clone(), actual: old_hash }),
+            RecomputeHashResult::CHANGED { old_hash } => Err(GameWorldParseError::HashMismatch {
+                expected: self.hash,
+                actual: old_hash,
+            }),
             RecomputeHashResult::ERROR { error } => Err(error),
         }
     }
@@ -134,7 +150,6 @@ impl GameWorld {
     /// Parse a map with the current version.
     /// The file read position must be already behind the version byte
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
-
         // Parse Map Name
         let name = self.parse_current_version_string(file)?;
         self.set_name(name.as_str());
@@ -150,10 +165,16 @@ impl GameWorld {
         let map_width: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
         let map_height: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
         if map_width > MAX_MAP_WIDTH || map_width == 0 {
-            return Err(GameWorldParseError::InvalidMapWidth { max_width: MAX_MAP_WIDTH, actual_width: map_width });
+            return Err(GameWorldParseError::InvalidMapWidth {
+                max_width: MAX_MAP_WIDTH,
+                actual_width: map_width,
+            });
         }
         if map_height > MAX_MAP_HEIGHT || map_height == 0 {
-            return Err(GameWorldParseError::InvalidMapHeight { max_height: MAX_MAP_HEIGHT, actual_height: map_height });
+            return Err(GameWorldParseError::InvalidMapHeight {
+                max_height: MAX_MAP_HEIGHT,
+                actual_height: map_height,
+            });
         }
         self.data = vec![vec![Tile::AIR; map_height]; map_width];
         assert_eq!(map_width, self.width());
@@ -163,20 +184,36 @@ impl GameWorld {
         for y in 0..self.height() {
             for x in 0..self.width() {
                 let mut buf = [0u8; 1];
-                file.read_exact(&mut buf).map_err(|e| GameWorldParseError::UnexpectedEndOfTileData { io_error: e, position: (y * x) + x })?;
-                self.set(x, y, Tile::from_bytes(buf[0]).ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?);
+                file.read_exact(&mut buf).map_err(|e| {
+                    GameWorldParseError::UnexpectedEndOfTileData {
+                        io_error: e,
+                        position: (y * x) + x,
+                    }
+                })?;
+                self.set(
+                    x,
+                    y,
+                    Tile::from_bytes(buf[0])
+                        .ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?,
+                );
             }
         }
 
         Ok(())
     }
     /// Parse a string
-    fn parse_current_version_string<T: Read>(&mut self, file: &mut T) -> Result<String, GameWorldParseError> {
+    fn parse_current_version_string<T: Read>(
+        &mut self,
+        file: &mut T,
+    ) -> Result<String, GameWorldParseError> {
         let string_value: String = bincode::deserialize_from(file)?;
         Ok(string_value)
     }
     /// Parse a UUID
-    fn parse_current_version_uuid<T: Read>(&mut self, file: &mut T) -> Result<[u8; HASH_LENGTH], GameWorldParseError> {
+    fn parse_current_version_uuid<T: Read>(
+        &mut self,
+        file: &mut T,
+    ) -> Result<[u8; HASH_LENGTH], GameWorldParseError> {
         let mut buf = [0u8; HASH_LENGTH];
         file.read_exact(&mut buf)?;
         Ok(buf)
@@ -254,27 +291,40 @@ impl Tile {
             0x33 => Some(Tile::ARROWLEFT),
             0x34 => Some(Tile::ARROWUP),
             0x35 => Some(Tile::ARROWDOWN),
-            _ => None
+            _ => None,
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use bincode::ErrorKind;
     use bytebuffer::ByteBuffer;
     use strum::{EnumCount, IntoEnumIterator};
-    use super::*;
 
     #[test]
     fn test_bidirectional_serialization_for_tiles() {
         for tile in Tile::iter() {
             let reference: &Tile = &tile;
             let actual = Tile::from_bytes(reference.to_bytes());
-            assert!(actual.is_some(), "Deserializing Tile {} (0x{:02X}) resulted in an error: Tile not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Tile::from_bytes()));
+            assert!(
+                actual.is_some(),
+                "Deserializing Tile {} (0x{:02X}) resulted in an error: Tile not found in {}",
+                reference.to_string(),
+                reference.to_bytes(),
+                stringify!(Tile::from_bytes())
+            );
             let actual = actual.unwrap();
-            assert_eq!(*reference, actual, "The Tile {} (0x{:02X}) deserialized into tile {} (0x{:02X}) !",
-                       reference.to_string(), reference.to_bytes(), actual.to_string(), actual.to_bytes(), );
+            assert_eq!(
+                *reference,
+                actual,
+                "The Tile {} (0x{:02X}) deserialized into tile {} (0x{:02X}) !",
+                reference.to_string(),
+                reference.to_bytes(),
+                actual.to_string(),
+                actual.to_bytes(),
+            );
         }
     }
 
@@ -282,11 +332,19 @@ mod tests {
         map.recompute_hash();
         let mut buf = ByteBuffer::new();
         let result = map.serialize(&mut buf);
-        assert!(result.is_ok(), "Map failed to serialize with error: {}", result.unwrap_err().to_string());
+        assert!(
+            result.is_ok(),
+            "Map failed to serialize with error: {}",
+            result.unwrap_err().to_string()
+        );
         let mut result_map = GameWorld::new(1, 1);
         buf.set_rpos(0);
         let result = result_map.parse(&mut buf);
-        assert!(result.is_ok(), "Map failed to parse with error: {}", result.unwrap_err().to_string());
+        assert!(
+            result.is_ok(),
+            "Map failed to parse with error: {}",
+            result.unwrap_err().to_string()
+        );
         assert_eq!(map.hash, result_map.hash);
         assert_eq!(map.author, result_map.author);
         assert_eq!(map.name, result_map.name);
@@ -297,11 +355,11 @@ mod tests {
     #[test]
     fn test_write_and_read_simple_map() {
         let mut reference_map = GameWorld::new(2, 2);
-        reference_map.set(0, 0, Tile::WALL)
+        reference_map
+            .set(0, 0, Tile::WALL)
             .set(1, 0, Tile::DOOR)
             .set(1, 1, Tile::PLAYERSPAWN)
-            .set(0, 1, Tile::AIR)
-        ;
+            .set(0, 1, Tile::AIR);
         test_write_and_read_map(&mut reference_map);
     }
 
@@ -316,8 +374,7 @@ mod tests {
         map.set(0, 0, Tile::WALL)
             .set(1, 0, Tile::DOOR)
             .set(1, 1, Tile::PLAYERSPAWN)
-            .set(0, 1, Tile::AIR)
-        ;
+            .set(0, 1, Tile::AIR);
         let mut buf = ByteBuffer::new();
         let result = map.serialize(&mut buf);
         assert!(result.is_ok());
@@ -330,34 +387,39 @@ mod tests {
         buf.set_rpos(0);
         let result = result_map.parse(&mut buf);
         assert!(&result.is_err(), "Map with invalid hash parsed correctly");
-        assert_eq!(9, result.as_ref().unwrap_err().numeric_error(), "Expected Hash Mismatch, got {:?}", &result);
+        assert_eq!(
+            9,
+            result.as_ref().unwrap_err().numeric_error(),
+            "Expected Hash Mismatch, got {:?}",
+            &result
+        );
     }
 
     #[test]
     fn test_write_and_read_map_with_empty_name() {
         let mut reference_map = GameWorld::new(2, 2);
-        reference_map.set(0, 0, Tile::WALL)
+        reference_map
+            .set(0, 0, Tile::WALL)
             .set(1, 0, Tile::DOOR)
             .set(1, 1, Tile::KEY)
             .set(0, 1, Tile::AIR)
             .set_name("")
             .set_author("John Doe")
-            .set_clean()
-        ;
+            .set_clean();
         test_write_and_read_map(&mut reference_map);
     }
 
     #[test]
     fn test_write_and_read_map_with_empty_author() {
         let mut reference_map = GameWorld::new(2, 2);
-        reference_map.set(0, 0, Tile::AIR)
+        reference_map
+            .set(0, 0, Tile::AIR)
             .set(1, 0, Tile::WALL)
             .set(1, 1, Tile::SPIKES)
             .set(0, 1, Tile::COIN)
             .set_name("Test Map")
             .set_author("")
-            .set_dirty()
-        ;
+            .set_dirty();
         test_write_and_read_map(&mut reference_map);
     }
 
@@ -377,10 +439,14 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidMagicBytes {
-            expected: MAGICBYTES,
-            actual: [0u8; 9],
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::InvalidMagicBytes {
+                expected: MAGICBYTES,
+                actual: [0u8; 9],
+            }
+            .numeric_error()
+        );
     }
 
     #[test]
@@ -393,9 +459,13 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidVersion {
-            invalid_version: 0xff
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::InvalidVersion {
+                invalid_version: 0xff
+            }
+            .numeric_error()
+        );
     }
 
     #[test]
@@ -409,9 +479,13 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::BincodeError {
-            bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::BincodeError {
+                bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
+            }
+            .numeric_error()
+        );
     }
 
     #[test]
@@ -426,9 +500,13 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::BincodeError {
-            bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::BincodeError {
+                bincode_error: Box::new(ErrorKind::InvalidCharEncoding)
+            }
+            .numeric_error()
+        );
     }
 
     #[test]
@@ -445,10 +523,14 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidMapWidth {
-            max_width: MAX_MAP_WIDTH,
-            actual_width: MAX_MAP_WIDTH + 1,
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::InvalidMapWidth {
+                max_width: MAX_MAP_WIDTH,
+                actual_width: MAX_MAP_WIDTH + 1,
+            }
+            .numeric_error()
+        );
     }
 
     #[test]
@@ -465,9 +547,13 @@ mod tests {
         let mut map = GameWorld::new(1, 1);
         let result = map.parse(&mut buf);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().numeric_error(), GameWorldParseError::InvalidMapWidth {
-            max_width: MAX_MAP_WIDTH,
-            actual_width: MAX_MAP_WIDTH + 1,
-        }.numeric_error());
+        assert_eq!(
+            result.unwrap_err().numeric_error(),
+            GameWorldParseError::InvalidMapWidth {
+                max_width: MAX_MAP_WIDTH,
+                actual_width: MAX_MAP_WIDTH + 1,
+            }
+            .numeric_error()
+        );
     }
 }

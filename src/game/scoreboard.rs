@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::World;
+use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct Scoreboard {

@@ -1,7 +1,7 @@
-use world::GameWorld;
 use crate::tiles::Tile::*;
 use crate::world;
 use crate::world::presets;
+use world::GameWorld;
 
 impl GameWorld {
     ///
@@ -56,8 +56,7 @@ impl GameWorld {
             .set(18, 1, ARROWLEFT)
             .set(17, 1, ARROWRIGHT)
             .set(16, 1, ARROWUP)
-            .set(13, 5, EXIT)
-        ;
+            .set(13, 5, EXIT);
         world
     }
     ///
@@ -66,9 +65,7 @@ impl GameWorld {
         let columns = 35;
         let rows = 15;
         let mut world: GameWorld = GameWorld::new(columns, rows);
-        world
-            .set_name("Showcase World")
-            .set_author("Debugger");
+        world.set_name("Showcase World").set_author("Debugger");
         for c in 0..columns {
             world.set(c, 0, WALL);
         }
@@ -89,7 +86,6 @@ impl GameWorld {
             .set(9, 3, WALL)
             .set(10, 3, WALL)
             .set(10, 2, WALL)
-
             .set(7, 4, ARROWUP)
             .set(7, 1, ARROWLEFT)
             .set(7, 7, ARROWUP)
@@ -100,7 +96,6 @@ impl GameWorld {
             .set(7, 8, LADDER)
             .set(7, 9, LADDER)
             .set(7, 10, LADDER)
-
             .set(6, 9, WALL)
             .set(5, 9, WALL)
             .set(4, 9, WALL)
@@ -113,7 +108,6 @@ impl GameWorld {
             .set(4, 10, SPIKES)
             .set(5, 10, SPIKES)
             .set(6, 10, SPIKES)
-
             .set(8, 10, WALL)
             .set(8, 14, EXIT)
             .set(9, 10, WALL)
@@ -128,28 +122,22 @@ impl GameWorld {
             .set(14, 13, WALL)
             .set(15, 13, WALL)
             .set(16, 13, WALL)
-
             .set(17, 13, LADDER)
             .set(17, 12, LADDER)
             .set(17, 11, LADDER)
             .set(17, 10, LADDER)
-
             .set(17, 9, WALL)
             .set(16, 9, WALL)
             .set(15, 9, WALL)
             .set(14, 9, WALL)
             .set(18, 9, WALL)
-
             .set(12, 7, WALL)
-
             .set(16, 1, WALL)
             .set(17, 1, SPIKES)
             .set(18, 1, SPIKES)
-
             .set(27, 1, WALL)
             .set(28, 1, EXIT)
             .set(29, 1, WALL)
-
             .set(24, 5, WALL)
             .set(25, 5, WALL)
             .set(26, 5, WALL)
@@ -160,14 +148,12 @@ impl GameWorld {
             .set(31, 5, WALL)
             .set(27, 4, WALL)
             .set(28, 4, WALL)
-
             .set(24, 4, COIN)
             .set(25, 4, COIN)
             .set(26, 4, COIN)
             .set(29, 4, COIN)
             .set(30, 4, COIN)
             .set(31, 4, COIN)
-
             .set(21, 8, WALL)
             .set(22, 8, WALL)
             .set(23, 8, WALL)
@@ -186,7 +172,6 @@ impl GameWorld {
             .set(26, 9, SPIKES)
             .set(30, 9, SPIKES)
             .set(33, 9, ARROWRIGHT)
-
             .set(23, 12, WALL)
             .set(23, 13, WALL)
             .set(24, 13, WALL)
@@ -200,8 +185,7 @@ impl GameWorld {
             .set(29, 13, WALL)
             .set(30, 13, WALL)
             .set(31, 12, WALL)
-            .set(31, 13, WALL)
-        ;
+            .set(31, 13, WALL);
         world
     }
 }

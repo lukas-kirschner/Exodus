@@ -1,21 +1,44 @@
+use crate::world::io::MAGICBYTES;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use crate::world::io::MAGICBYTES;
 
 #[derive(Debug)]
 #[repr(u8)]
 /// An error that might be thrown in a Game World Parser
 pub enum GameWorldParseError {
-    InvalidMagicBytes { expected: [u8; MAGICBYTES.len()], actual: [u8; MAGICBYTES.len()] },
+    InvalidMagicBytes {
+        expected: [u8; MAGICBYTES.len()],
+        actual: [u8; MAGICBYTES.len()],
+    },
     NotImplemented,
-    InvalidVersion { invalid_version: u8 },
-    IOError { io_error: std::io::Error },
-    BincodeError { bincode_error: Box<bincode::ErrorKind> },
-    InvalidMapWidth { max_width: usize, actual_width: usize },
-    InvalidMapHeight { max_height: usize, actual_height: usize },
-    UnexpectedEndOfTileData { position: usize, io_error: std::io::Error },
-    InvalidTile { tile_bytes: u8 },
-    HashMismatch { expected: [u8; 32], actual: [u8; 32] },
+    InvalidVersion {
+        invalid_version: u8,
+    },
+    IOError {
+        io_error: std::io::Error,
+    },
+    BincodeError {
+        bincode_error: Box<bincode::ErrorKind>,
+    },
+    InvalidMapWidth {
+        max_width: usize,
+        actual_width: usize,
+    },
+    InvalidMapHeight {
+        max_height: usize,
+        actual_height: usize,
+    },
+    UnexpectedEndOfTileData {
+        position: usize,
+        io_error: std::io::Error,
+    },
+    InvalidTile {
+        tile_bytes: u8,
+    },
+    HashMismatch {
+        expected: [u8; 32],
+        actual: [u8; 32],
+    },
 }
 
 impl Display for GameWorldParseError {
@@ -29,7 +52,7 @@ impl Display for GameWorldParseError {
             GameWorldParseError::BincodeError { bincode_error } => std::fmt::Display::fmt(&bincode_error, f),
             GameWorldParseError::InvalidMapWidth { max_width, actual_width } => write!(f, "Invalid Map Width: {} (Max allowed width: {})", actual_width, max_width),
             GameWorldParseError::InvalidMapHeight { max_height, actual_height } => write!(f, "Invalid Map Height: {} (Max allowed height: {})", actual_height, max_height),
-            GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error.to_string()),
+            GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error),
             GameWorldParseError::InvalidTile { tile_bytes } => write!(f, "Tile Byte not recognized as valid tile: 0x{:02x}", tile_bytes),
             GameWorldParseError::HashMismatch { expected, actual } => write!(f, "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}", expected, actual),
         }
@@ -67,4 +90,3 @@ impl GameWorldParseError {
         }
     }
 }
-
