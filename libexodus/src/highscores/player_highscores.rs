@@ -124,6 +124,13 @@ mod tests {
         assert_eq!(0, player_highscores.len());
         assert_eq!("Thorsten", player_highscores.player);
     }
+    #[test]
+    fn test_player_highscores_is_empty() {
+        let mut player_highscores = PlayerHighscores::new("Thorsten".to_string());
+        assert!(player_highscores.is_empty());
+        player_highscores.store_with_current_time(Highscore::new(3, 3));
+        assert!(!player_highscores.is_empty());
+    }
 
     #[test]
     fn test_player_highscores_get_best() {

@@ -80,8 +80,20 @@ mod tests {
 
     #[test]
     fn test_len_default() {
-        let database = HighscoresDatabase::new();
+        let database = HighscoresDatabase::default();
         assert_eq!(0, database.len());
+    }
+    #[test]
+    fn test_is_empty() {
+        let mut database = HighscoresDatabase::new();
+        assert!(database.is_empty());
+        database.put(
+            [0u8; 32],
+            "Thorsten".to_string(),
+            1337,
+            Highscore::new(10, 0),
+        );
+        assert!(!database.is_empty());
     }
 
     #[test]

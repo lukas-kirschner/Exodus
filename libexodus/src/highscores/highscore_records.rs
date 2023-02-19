@@ -73,6 +73,13 @@ mod tests {
         assert_eq!(0, score.coins());
         assert_eq!(3, score.moves());
     }
+    #[test]
+    fn test_is_empty() {
+        let mut records = HighscoreRecords::new([0u8; 32]);
+        assert!(records.is_empty());
+        records.put("Thorsten".to_string(), 0, Highscore::new(3, 0));
+        assert!(!records.is_empty());
+    }
 
     #[test]
     fn test_get_best() {
