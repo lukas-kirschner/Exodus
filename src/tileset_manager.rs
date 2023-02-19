@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use std::path::Path;
 use bevy::prelude::*;
 use libexodus::tilesets::Tileset;
+use std::collections::HashMap;
+use std::path::Path;
 
 #[derive(Resource)]
 /// A struct that contains the handles for all tile sets and information about the current tile set
@@ -25,8 +25,15 @@ impl TilesetManager {
     }
     /// Get a clone of the current handle
     pub fn current_handle(&self) -> Handle<TextureAtlas> {
-        self.atlas_handle_for_tileset.get(&self.current_tileset)
-            .expect(format!("No Texture Atlas was initialized for {}", self.current_tileset).as_str()).clone()
+        self.atlas_handle_for_tileset
+            .get(&self.current_tileset)
+            .unwrap_or_else(|| {
+                panic!(
+                    "No Texture Atlas was initialized for {}",
+                    self.current_tileset
+                )
+            })
+            .clone()
     }
     pub fn current_tileset(&self) -> &Tileset {
         &self.current_tileset
@@ -49,13 +56,15 @@ pub struct RpgSpriteHandles {
 
 impl FromWorld for RpgSpriteHandles {
     fn from_world(_: &mut World) -> Self {
-        RpgSpriteHandles {
-            handles: vec![],
-        }
+        RpgSpriteHandles { handles: vec![] }
     }
 }
 
-pub(crate) fn find_handle_with_path(path: &Path, asset_server: &AssetServer, handles: &[HandleUntyped]) -> Handle<Image> {
+pub(crate) fn find_handle_with_path(
+    path: &Path,
+    asset_server: &AssetServer,
+    handles: &[HandleUntyped],
+) -> Handle<Image> {
     for handle in handles {
         let p = asset_server.get_handle_path(handle.clone()).unwrap();
         let asset_path = p.path();

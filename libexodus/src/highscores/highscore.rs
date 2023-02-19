@@ -20,7 +20,6 @@ impl Highscore {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::highscores::highscore::Highscore;

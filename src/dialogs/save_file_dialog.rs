@@ -1,19 +1,19 @@
-use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
+use crate::dialogs::UIDialog;
+use crate::ui::egui_textures::EguiButtonTextures;
 use bevy::log::debug;
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
-use crate::dialogs::UIDialog;
-use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::ui::egui_textures::EguiButtonTextures;
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
 
 #[derive(Eq, PartialEq)]
 enum SaveFileDialogState {
-    CHOOSING,
-    OVERWRITE,
-    DONE,
-    ERROR,
-    CANCELLED,
+    Choosing,
+    Overwrite,
+    Done,
+    Error,
+    Cancelled,
 }
 
 pub struct SaveFileDialog {
@@ -31,18 +31,23 @@ pub struct SaveFileDialog {
     file_path: Option<PathBuf>,
     /// Error text that is shown when an error occurs
     error_text: String,
-
 }
 
 impl SaveFileDialog {
     /// Instantiate a new SaveFileDialog from the given world
     pub fn new(filename: Option<&Path>, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
         SaveFileDialog {
-            file_name: String::from(filename.map(|p| { p.file_name().unwrap_or(OsStr::new("")) }).unwrap_or(OsStr::new("")).to_str().unwrap_or("")),
+            file_name: String::from(
+                filename
+                    .map(|p| p.file_name().unwrap_or_else(|| OsStr::new("")))
+                    .unwrap_or_else(|| OsStr::new(""))
+                    .to_str()
+                    .unwrap_or(""),
+            ),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
             hash: String::from(uuid),
-            state: SaveFileDialogState::CHOOSING,
+            state: SaveFileDialogState::Choosing,
             file_path: None,
             error_text: "".to_string(),
         }
@@ -59,27 +64,30 @@ impl SaveFileDialog {
     }
 }
 
-
 impl UIDialog for SaveFileDialog {
     fn dialog_title(&self) -> String {
         t!("map_editor.dialog.save_dialog_title")
     }
 
-    fn draw(&mut self,
-            ui: &mut Ui,
-            _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
-            directories: &GameDirectories,
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
+        directories: &GameDirectories,
     ) {
-        let row_width = 500.;// TODO hard-coded numbers
+        let row_width = 500.; // TODO hard-coded numbers
         ui.vertical_centered_justified(|ui| {
-            ui.add_enabled_ui(self.state == SaveFileDialogState::CHOOSING, |ui| {
+            ui.add_enabled_ui(self.state == SaveFileDialogState::Choosing, |ui| {
                 // File Name and Save Button
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.scope(|ui| {
                             ui.set_width(row_width);
                             ui.centered_and_justified(|ui| {
-                                ui.text_edit_singleline(&mut self.file_name).on_hover_text(t!("map_editor.dialog.save_dialog_file_name_tooltip"));
+                                ui.text_edit_singleline(&mut self.file_name)
+                                    .on_hover_text(t!(
+                                        "map_editor.dialog.save_dialog_file_name_tooltip"
+                                    ));
                             });
                         });
                         let save = ui.button(t!("common_buttons.save"));
@@ -89,13 +97,13 @@ impl UIDialog for SaveFileDialog {
                             if let Ok(path) = map_dir {
                                 self.file_path = Some(path);
                                 self.state = if self.file_path.as_ref().unwrap().exists() {
-                                    SaveFileDialogState::OVERWRITE
+                                    SaveFileDialogState::Overwrite
                                 } else {
-                                    SaveFileDialogState::DONE
+                                    SaveFileDialogState::Done
                                 };
                             } else {
                                 self.error_text = map_dir.unwrap_err().to_string();
-                                self.state = SaveFileDialogState::ERROR;
+                                self.state = SaveFileDialogState::Error;
                             }
                         }
                     });
@@ -106,14 +114,19 @@ impl UIDialog for SaveFileDialog {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {
                         ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_name")));
-                        ui.text_edit_singleline(&mut self.map_title).on_hover_text(t!("map_editor.dialog.save_dialog_map_title_tooltip"))
+                        ui.text_edit_singleline(&mut self.map_title)
+                            .on_hover_text(t!("map_editor.dialog.save_dialog_map_title_tooltip"))
                     });
                 });
                 ui.scope(|ui| {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {
-                        ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_author")));
-                        ui.text_edit_singleline(&mut self.map_author).on_hover_text(t!("map_editor.dialog.save_dialog_map_author_tooltip"))
+                        ui.label(format!(
+                            "{}:",
+                            t!("map_editor.dialog.save_dialog_map_author")
+                        ));
+                        ui.text_edit_singleline(&mut self.map_author)
+                            .on_hover_text(t!("map_editor.dialog.save_dialog_map_author_tooltip"))
                     });
                 });
                 ui.scope(|ui| {
@@ -128,47 +141,51 @@ impl UIDialog for SaveFileDialog {
                 ui.horizontal(|ui| {
                     let res = ui.button(t!("common_buttons.cancel"));
                     if res.clicked() {
-                        self.state = SaveFileDialogState::CANCELLED;
+                        self.state = SaveFileDialogState::Cancelled;
                     }
                 });
             });
-            ui.add_visible_ui(self.state == SaveFileDialogState::ERROR || self.state == SaveFileDialogState::OVERWRITE, |ui| {
-                ui.scope(|ui| {
-                    ui.horizontal(|ui| {
-                        let etext = if self.state == SaveFileDialogState::ERROR {
-                            format!("Error: {}", self.error_text.as_str())
-                        } else {
-                            t!("map_editor.dialog.save_dialog_overwrite")
-                        };
-                        ui.label(etext.as_str());
-                        if self.state == SaveFileDialogState::ERROR {
-                            let res = ui.button(t!("common_buttons.ok"));
-                            if res.clicked() {
-                                self.state = SaveFileDialogState::CHOOSING;
+            ui.add_visible_ui(
+                self.state == SaveFileDialogState::Error
+                    || self.state == SaveFileDialogState::Overwrite,
+                |ui| {
+                    ui.scope(|ui| {
+                        ui.horizontal(|ui| {
+                            let etext = if self.state == SaveFileDialogState::Error {
+                                format!("Error: {}", self.error_text.as_str())
+                            } else {
+                                t!("map_editor.dialog.save_dialog_overwrite")
+                            };
+                            ui.label(etext.as_str());
+                            if self.state == SaveFileDialogState::Error {
+                                let res = ui.button(t!("common_buttons.ok"));
+                                if res.clicked() {
+                                    self.state = SaveFileDialogState::Choosing;
+                                }
+                            } else {
+                                let res = ui.button(t!("common_buttons.yes"));
+                                if res.clicked() {
+                                    // We do not save the file here, but rely on the caller to save the file for us.
+                                    self.state = SaveFileDialogState::Done;
+                                }
+                                let res = ui.button(t!("common_buttons.no"));
+                                if res.clicked() {
+                                    self.state = SaveFileDialogState::Choosing;
+                                }
                             }
-                        } else {
-                            let res = ui.button(t!("common_buttons.yes"));
-                            if res.clicked() {
-                                // We do not save the file here, but rely on the caller to save the file for us.
-                                self.state = SaveFileDialogState::DONE;
-                            }
-                            let res = ui.button(t!("common_buttons.no"));
-                            if res.clicked() {
-                                self.state = SaveFileDialogState::CHOOSING;
-                            }
-                        }
+                        });
                     });
-                });
-            });
+                },
+            );
         });
     }
 
     fn is_done(&self) -> bool {
-        self.state == SaveFileDialogState::DONE
+        self.state == SaveFileDialogState::Done
     }
 
     fn is_cancelled(&self) -> bool {
-        self.state == SaveFileDialogState::CANCELLED
+        self.state == SaveFileDialogState::Cancelled
     }
 
     fn as_save_file_dialog(&mut self) -> Option<&mut SaveFileDialog> {

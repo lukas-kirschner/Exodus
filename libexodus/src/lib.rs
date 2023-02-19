@@ -1,9 +1,9 @@
-pub mod world;
-pub mod tiles;
-pub mod player;
-pub mod movement;
+pub mod config;
 pub mod directions;
 pub mod directories;
-pub mod config;
-pub mod tilesets;
 pub mod highscores;
+pub mod movement;
+pub mod player;
+pub mod tiles;
+pub mod tilesets;
+pub mod world;

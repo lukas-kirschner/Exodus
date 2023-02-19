@@ -1,9 +1,9 @@
-use bevy::prelude::*;
-use bevy::app::AppExit;
-use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::Frame;
-use crate::{AppState};
 use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
+use crate::AppState;
+use bevy::app::AppExit;
+use bevy::prelude::*;
+use bevy_egui::egui::Frame;
+use bevy_egui::{egui, EguiContext};
 
 /// Set up the UI for the Main Menu
 fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
@@ -19,9 +19,12 @@ fn mainmenu_buttons(
     mut state: ResMut<State<AppState>>,
     mut exit: EventWriter<AppExit>,
 ) {
-    ui.scope(|ui| { // Scope for the buttons
-        ui.horizontal(|ui| { // Left-Align Buttons
-            ui.scope(|ui| { // Button Width
+    ui.scope(|ui| {
+        // Scope for the buttons
+        ui.horizontal(|ui| {
+            // Left-Align Buttons
+            ui.scope(|ui| {
+                // Button Width
                 ui.set_width(400.0);
                 ui.vertical_centered_justified(|ui| {
                     ui.scope(|ui| {
@@ -83,11 +86,16 @@ fn mainmenu_ui(
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.centered_and_justified(|ui| {
                 ui.scope(|ui| {
-                    ui.horizontal(|ui| { // Left-Justify everything
-                        ui.scope(|ui| { // Margin Left
+                    ui.horizontal(|ui| {
+                        // Left-Justify everything
+                        ui.scope(|ui| {
+                            // Margin Left
                             ui.set_width(UIMARGIN)
                         });
-                        ui.heading(format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")).as_str());
+                        ui.heading(
+                            format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+                                .as_str(),
+                        );
                         ui.separator();
                         mainmenu_buttons(ui, state, exit);
                     });

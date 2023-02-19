@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::highscores::highscore::Highscore;
 use crate::highscores::player_highscores::PlayerHighscores;
+use std::collections::HashMap;
 
 /// A highscores database for one single map
 pub struct HighscoreRecords {
@@ -17,23 +17,25 @@ impl HighscoreRecords {
     }
     /// Put the given highscore into the record, creating all necessary data structures automatically
     pub fn put(&mut self, player: String, timestamp: i64, highscore: Highscore) -> &mut Self {
-        self.player_records.entry(player.clone())
-            .or_insert(PlayerHighscores::new(player.clone()))
-            .store(timestamp, highscore)
-        ;
+        self.player_records
+            .entry(player.clone())
+            .or_insert_with(|| PlayerHighscores::new(player))
+            .store(timestamp, highscore);
         self
     }
     /// Put the given highscore with the current time into the record, creating all necessary data structures automatically
     pub fn put_with_current_time(&mut self, player: String, highscore: Highscore) -> &mut Self {
-        self.player_records.entry(player.clone())
-            .or_insert(PlayerHighscores::new(player.clone()))
-            .store_with_current_time(highscore)
-        ;
+        self.player_records
+            .entry(player.clone())
+            .or_insert_with(|| PlayerHighscores::new(player))
+            .store_with_current_time(highscore);
         self
     }
     /// Get the (best) highscore for the given player
     pub fn get_best(&self, player: &String) -> Option<(i64, &Highscore)> {
-        self.player_records.get(player).and_then(|player_highscores| player_highscores.best())
+        self.player_records
+            .get(player)
+            .and_then(|player_highscores| player_highscores.best())
     }
     /// Get the high scores for the given player
     pub fn get(&self, playername: &String) -> Option<&PlayerHighscores> {
@@ -47,14 +49,17 @@ impl HighscoreRecords {
     pub fn len(&self) -> usize {
         self.player_records.len()
     }
+    /// Check if this highscore record is empty
+    pub fn is_empty(&self) -> bool {
+        self.player_records.is_empty()
+    }
 }
-
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
     use crate::highscores::highscore::Highscore;
     use crate::highscores::highscore_records::HighscoreRecords;
+    use std::time::Duration;
 
     #[test]
     fn test_get() {
@@ -103,9 +108,9 @@ mod tests {
         let mut records = HighscoreRecords::new([0u8; 32]);
         records.put("Thorsten".to_string(), 1337, Highscore::new(5, 0));
         {
-            let mut highscore = records.get_mut(&"Thorsten".to_string());
+            let highscore = records.get_mut(&"Thorsten".to_string());
             assert!(highscore.is_some());
-            let mut highscore = highscore.unwrap();
+            let highscore = highscore.unwrap();
             assert_eq!(1, highscore.len());
             highscore.store(0, Highscore::new(3, 0));
         }

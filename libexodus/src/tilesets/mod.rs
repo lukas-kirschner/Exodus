@@ -36,7 +36,8 @@ impl Tileset {
         match self {
             Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90),
             Tileset::Classic => (0xff, 0xff, 0xff),
-        }.into()
+        }
+        .into()
     }
     pub fn texture_size(&self) -> usize {
         match self {
@@ -54,7 +55,6 @@ impl Display for Tileset {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

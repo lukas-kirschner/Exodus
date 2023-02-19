@@ -1,12 +1,14 @@
-use bevy::ecs::system::EntityCommands;
-use bevy::prelude::*;
-use libexodus::tiles::{Tile, TileKind};
-use crate::AppState;
-use crate::game::constants::{COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED, PICKUP_ITEM_ZOOM_SPEED};
+use crate::game::constants::{
+    COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
+    PICKUP_ITEM_ZOOM_SPEED,
+};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
-
+use crate::AppState;
+use bevy::ecs::system::EntityCommands;
+use bevy::prelude::*;
+use libexodus::tiles::{Tile, TileKind};
 
 #[derive(Component)]
 pub struct PickupItem;
@@ -34,26 +36,34 @@ pub struct PickupItemPlugin;
 
 impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_event::<CollectibleCollectedEvent>()
+        app.add_event::<CollectibleCollectedEvent>()
             // Collision Handlers
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<CoinWrapper>).after("player_movement")
+            .add_system_set(
+                SystemSet::on_update(AppState::Playing)
+                    .with_system(setup_collectible_event::<CoinWrapper>)
+                    .after("player_movement"),
             )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<KeyWrapper>).after("player_movement")
+            .add_system_set(
+                SystemSet::on_update(AppState::Playing)
+                    .with_system(setup_collectible_event::<KeyWrapper>)
+                    .after("player_movement"),
             )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<CollectibleWrapper>).after("player_movement")
+            .add_system_set(
+                SystemSet::on_update(AppState::Playing)
+                    .with_system(setup_collectible_event::<CollectibleWrapper>)
+                    .after("player_movement"),
             )
             // Event Handlers
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(collectible_collected_event).after("player_movement")
+            .add_system_set(
+                SystemSet::on_update(AppState::Playing)
+                    .with_system(collectible_collected_event)
+                    .after("player_movement"),
             )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(pickup_item_animation).after("player_movement")
-            )
-        ;
+            .add_system_set(
+                SystemSet::on_update(AppState::Playing)
+                    .with_system(pickup_item_animation)
+                    .after("player_movement"),
+            );
     }
 }
 
@@ -125,12 +135,14 @@ fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
                     collectible: coin_entity,
                 });
                 // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
-                commands.entity(coin_entity).remove::<WrapperType>().insert(PickupItem);
+                commands
+                    .entity(coin_entity)
+                    .remove::<WrapperType>()
+                    .insert(PickupItem);
             }
         }
     }
 }
-
 
 /// Event that despawns the collected collectible and executes the associated action
 fn collectible_collected_event(
@@ -150,20 +162,17 @@ fn collectible_collected_event(
 
 /// Insert the appropriate wrapper when a tile is set up in the game world.
 /// Must be called from the game board setup routine
-pub fn insert_wrappers(
-    tile: &Tile,
-    bundle: &mut EntityCommands,
-) {
+pub fn insert_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
     match tile.kind() {
         TileKind::COIN => {
             bundle.insert(CoinWrapper { coin_value: 1 });
-        }
+        },
         TileKind::KEY => {
             bundle.insert(KeyWrapper);
-        }
+        },
         TileKind::COLLECTIBLE => {
             bundle.insert(CollectibleWrapper);
-        }
-        _ => {}
+        },
+        _ => {},
     }
 }

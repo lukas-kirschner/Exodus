@@ -1,7 +1,6 @@
+use crate::highscores::highscore::Highscore;
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
-use chrono::NaiveDateTime;
-use crate::highscores::highscore::Highscore;
 
 /// A highscores entry for one single player and map
 pub struct PlayerHighscores {
@@ -21,9 +20,15 @@ impl PlayerHighscores {
     pub fn len(&self) -> usize {
         self.scores.len()
     }
+    /// Check if this highscores object is empty
+    pub fn is_empty(&self) -> bool {
+        self.scores.is_empty()
+    }
     /// Get the best highscore
     pub fn best(&self) -> Option<(i64, &Highscore)> {
-        self.scores.last().map(|phw| (phw.timestamp, &phw.highscore))
+        self.scores
+            .last()
+            .map(|phw| (phw.timestamp, &phw.highscore))
     }
     /// Store the given highscore with the current time
     pub fn store_with_current_time(&mut self, highscore: Highscore) {
@@ -48,10 +53,14 @@ struct PlayerHighscoresWrapper {
 
 impl PartialOrd for PlayerHighscoresWrapper {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(match (self.highscore.coins() as i32 - self.highscore.moves() as i32).cmp(&(other.highscore.coins() as i32 - other.highscore.moves() as i32)) {
-            Ordering::Equal => self.timestamp.cmp(&other.timestamp),
-            x @ _ => x,
-        })
+        Some(
+            match (self.highscore.coins() as i32 - self.highscore.moves() as i32)
+                .cmp(&(other.highscore.coins() as i32 - other.highscore.moves() as i32))
+            {
+                Ordering::Equal => self.timestamp.cmp(&other.timestamp),
+                x => x,
+            },
+        )
     }
 }
 
@@ -61,34 +70,51 @@ impl Ord for PlayerHighscoresWrapper {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::cmp::Ordering;
-    use std::time::Duration;
     use crate::highscores::highscore::Highscore;
     use crate::highscores::player_highscores::{PlayerHighscores, PlayerHighscoresWrapper};
+    use std::cmp::Ordering;
+    use std::time::Duration;
 
     #[test]
     fn test_total_ordering() {
-        let good_score = PlayerHighscoresWrapper { timestamp: 0, highscore: Highscore::new(5, 4) };
-        let bad_score = PlayerHighscoresWrapper { timestamp: 0, highscore: Highscore::new(6, 4) };
+        let good_score = PlayerHighscoresWrapper {
+            timestamp: 0,
+            highscore: Highscore::new(5, 4),
+        };
+        let bad_score = PlayerHighscoresWrapper {
+            timestamp: 0,
+            highscore: Highscore::new(6, 4),
+        };
         assert_eq!(Ordering::Greater, good_score.cmp(&bad_score));
         assert!(good_score > bad_score);
     }
 
     #[test]
     fn test_total_newest() {
-        let good_score = PlayerHighscoresWrapper { timestamp: 1, highscore: Highscore::new(6, 4) };
-        let bad_score = PlayerHighscoresWrapper { timestamp: 0, highscore: Highscore::new(6, 4) };
+        let good_score = PlayerHighscoresWrapper {
+            timestamp: 1,
+            highscore: Highscore::new(6, 4),
+        };
+        let bad_score = PlayerHighscoresWrapper {
+            timestamp: 0,
+            highscore: Highscore::new(6, 4),
+        };
         assert_eq!(Ordering::Greater, good_score.cmp(&bad_score));
         assert!(good_score > bad_score);
     }
 
     #[test]
     fn test_total_ordering_equal() {
-        let good_score = PlayerHighscoresWrapper { timestamp: 0, highscore: Highscore::new(5, 0) };
-        let equal_score = PlayerHighscoresWrapper { timestamp: 0, highscore: Highscore::new(5, 0) };
+        let good_score = PlayerHighscoresWrapper {
+            timestamp: 0,
+            highscore: Highscore::new(5, 0),
+        };
+        let equal_score = PlayerHighscoresWrapper {
+            timestamp: 0,
+            highscore: Highscore::new(5, 0),
+        };
         assert_eq!(Ordering::Equal, good_score.cmp(&equal_score));
     }
 
@@ -155,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_player_highscores_get_best_empty() {
-        let mut player_highscores = PlayerHighscores::new("Thorsten".to_string());
+        let player_highscores = PlayerHighscores::new("Thorsten".to_string());
         assert!(player_highscores.best().is_none());
     }
 }

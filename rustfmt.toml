@@ -1,0 +1,15 @@
+max_width = 100
+
+# Spaces per tab
+tab_spaces = 4
+
+fn_call_width = 60
+fn_args_layout = "Tall"
+
+newline_style = "Unix"
+
+match_block_trailing_comma = true
+
+reorder_imports = true
+
+use_try_shorthand = true
