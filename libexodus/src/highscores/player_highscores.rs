@@ -1,8 +1,14 @@
+use crate::exodus_serializable::ExodusSerializable;
 use crate::highscores::highscore::Highscore;
+use crate::highscores::io_error::HighscoreParseError;
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
+use std::io::{Read, Write};
 
-/// A highscores entry for one single player and map
+const CURRENT_PLAYERHIGHSCORE_VERSION: u8 = 0x01;
+
+/// A highscores entry for one single player.
+/// A highscore record typically exists per-map and contains all highscores for that specific player.
 pub struct PlayerHighscores {
     player: String,
     scores: BTreeSet<PlayerHighscoresWrapper>,
@@ -45,10 +51,104 @@ impl PlayerHighscores {
     }
 }
 
+/// Implementation for Serializer
+impl ExodusSerializable for PlayerHighscores {
+    type ParseError = HighscoreParseError;
+
+    fn serialize<T: Write>(&self, file: &mut T) -> Result<(), HighscoreParseError> {
+        // Write PlayerHighscore Version
+        file.write_all(&[CURRENT_PLAYERHIGHSCORE_VERSION])?;
+
+        // Store Player Name
+        let bin_name = bincode::serialize(&self.player)?;
+        file.write_all(&bin_name)?;
+
+        // Store Length of Highscores
+        let bin_highscore_length = bincode::serialize(&self.scores.len())?;
+        file.write_all(&bin_highscore_length)?;
+
+        // Store Highscores
+        for highscore in &self.scores {
+            highscore.serialize(file)?;
+        }
+        Ok(())
+    }
+
+    fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        let mut buf: [u8; 1] = [0; 1];
+        file.read_exact(&mut buf)?;
+        match buf[0] {
+            CURRENT_HIGHSCORE_VERSION => self.parse_current_version(file),
+            // Add older versions here
+            _ => {
+                return Err(HighscoreParseError::InvalidVersion {
+                    invalid_version: buf[0],
+                })
+            },
+        }?;
+
+        Ok(())
+    }
+
+    fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        // Parse Player Name
+        let p_name = bincode::deserialize_from::<&mut T, String>(file)?;
+        self.player = p_name;
+
+        // Parse length of highscores
+        let hs_len = bincode::deserialize_from::<&mut T, usize>(file)?;
+
+        // Deserialize Highscores
+        for _ in 0..hs_len {
+            let mut highscore = PlayerHighscoresWrapper::default();
+            highscore.parse(file)?;
+            if !self.scores.insert(highscore) {
+                return Err(HighscoreParseError::DuplicateHighscoreEntry);
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Eq, PartialEq, Debug)]
 struct PlayerHighscoresWrapper {
     pub timestamp: i64,
     pub highscore: Highscore,
+}
+
+impl Default for PlayerHighscoresWrapper {
+    fn default() -> Self {
+        Self {
+            timestamp: 0,
+            highscore: Default::default(),
+        }
+    }
+}
+
+/// Implementation for Serializer
+impl ExodusSerializable for PlayerHighscoresWrapper {
+    type ParseError = HighscoreParseError;
+
+    fn serialize<T: Write>(&self, file: &mut T) -> Result<(), HighscoreParseError> {
+        // Write PlayerHighscoresWrapper Version
+        file.write_all(&[CURRENT_PLAYERHIGHSCORE_VERSION])?;
+
+        // Store Timestamp
+        let timestamp_b = bincode::serialize(&self.timestamp)?;
+        file.write_all(&timestamp_b)?;
+
+        // Store Highscore
+        self.highscore.serialize(file)?;
+        Ok(())
+    }
+
+    fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+
+    fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
 }
 
 impl PartialOrd for PlayerHighscoresWrapper {

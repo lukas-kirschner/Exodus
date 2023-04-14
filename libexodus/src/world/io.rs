@@ -1,3 +1,4 @@
+use crate::exodus_serializable::ExodusSerializable;
 use crate::tiles::Tile;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
@@ -66,7 +67,8 @@ impl GameWorld {
 }
 
 /// Implementation for Serializer
-impl GameWorld {
+impl ExodusSerializable for GameWorld {
+    type ParseError = GameWorldParseError;
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
         file.write_all(&MAGICBYTES)?;
@@ -89,28 +91,6 @@ impl GameWorld {
 
         Ok(())
     }
-    pub(crate) fn serialize_world_content<T: Write>(
-        &self,
-        file: &mut T,
-    ) -> Result<(), GameWorldParseError> {
-        // Write Map Width and Height
-        let width_b = bincode::serialize(&self.width())?;
-        file.write_all(&width_b)?;
-        let height_b = bincode::serialize(&self.height())?;
-        file.write_all(&height_b)?;
-
-        // Write Map Tiles
-        for y in 0..self.height() {
-            for x in 0..self.width() {
-                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
-            }
-        }
-        Ok(())
-    }
-}
-
-/// Implementation for Parser
-impl GameWorld {
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Parse Magic Bytes
         let mut buf: [u8; MAGICBYTES.len()] = [0; MAGICBYTES.len()];
@@ -143,10 +123,7 @@ impl GameWorld {
             RecomputeHashResult::ERROR { error } => Err(error),
         }
     }
-}
 
-// Code to parse a map with the current version.
-impl GameWorld {
     /// Parse a map with the current version.
     /// The file read position must be already behind the version byte
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
@@ -201,6 +178,10 @@ impl GameWorld {
 
         Ok(())
     }
+}
+
+// Code to parse a map with the current version.
+impl GameWorld {
     /// Parse a string
     fn parse_current_version_string<T: Read>(
         &mut self,
@@ -217,6 +198,24 @@ impl GameWorld {
         let mut buf = [0u8; HASH_LENGTH];
         file.read_exact(&mut buf)?;
         Ok(buf)
+    }
+    pub(crate) fn serialize_world_content<T: Write>(
+        &self,
+        file: &mut T,
+    ) -> Result<(), GameWorldParseError> {
+        // Write Map Width and Height
+        let width_b = bincode::serialize(&self.width())?;
+        file.write_all(&width_b)?;
+        let height_b = bincode::serialize(&self.height())?;
+        file.write_all(&height_b)?;
+
+        // Write Map Tiles
+        for y in 0..self.height() {
+            for x in 0..self.width() {
+                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
+            }
+        }
+        Ok(())
     }
 }
 

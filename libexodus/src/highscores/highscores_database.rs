@@ -1,6 +1,16 @@
+use crate::exodus_serializable::ExodusSerializable;
 use crate::highscores::highscore::Highscore;
 use crate::highscores::highscore_records::HighscoreRecords;
+use crate::highscores::io_error::HighscoreParseError;
 use std::collections::HashMap;
+use std::io::{Read, Write};
+
+//00000000: 4578 6f64 7573 4869 6768 7363 6f72 6544  ExodusHighscoreD
+// 00000010: 420a                                     B.
+pub(crate) const MAGICBYTES: [u8; 18] = [
+    0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x48, 0x69, 0x67, 0x68, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x44,
+    0x42, 0x0a,
+];
 
 /// A highscores database, containing the highscores for an arbitrary number of maps
 pub struct HighscoresDatabase {
@@ -72,10 +82,29 @@ impl HighscoresDatabase {
     }
 }
 
+// Serialization Code
+impl ExodusSerializable for HighscoresDatabase {
+    type ParseError = HighscoreParseError;
+
+    fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+
+    fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+
+    fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::exodus_serializable::ExodusSerializable;
     use crate::highscores::highscore::Highscore;
     use crate::highscores::highscores_database::HighscoresDatabase;
+    use bytebuffer::ByteBuffer;
     use std::time::Duration;
 
     #[test]
@@ -119,6 +148,10 @@ mod tests {
 
     #[test]
     fn test_multiple_highscores() {
+        let _ = create_complex_database();
+    }
+
+    fn create_complex_database() -> HighscoresDatabase {
         let mut database = HighscoresDatabase::new();
         database.put(
             [0u8; 32],
@@ -216,6 +249,28 @@ mod tests {
         assert_eq!(1337, time);
         assert_eq!(10, best1.moves());
         assert_eq!(0, best1.coins());
+        database
+    }
+
+    #[test]
+    fn test_serialize_complex_database() {
+        let db = create_complex_database();
+        let mut buf = ByteBuffer::new();
+        let result = db.serialize(&mut buf);
+        assert!(
+            result.is_ok(),
+            "Database failed to serialize with error: {}",
+            result.unwrap_err().to_string()
+        );
+        buf.set_rpos(0);
+        let mut db2 = HighscoresDatabase::default();
+        let result = db2.parse(&mut buf);
+        assert!(
+            result.is_ok(),
+            "Highscore Database failed to parse with error: {}",
+            result.unwrap_err().to_string()
+        );
+        assert_eq!(db.len(), db2.len());
     }
 
     #[test]

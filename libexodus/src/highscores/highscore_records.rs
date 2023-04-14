@@ -1,6 +1,9 @@
+use crate::exodus_serializable::ExodusSerializable;
 use crate::highscores::highscore::Highscore;
+use crate::highscores::io_error::HighscoreParseError;
 use crate::highscores::player_highscores::PlayerHighscores;
 use std::collections::HashMap;
+use std::io::{Read, Write};
 
 /// A highscores database for one single map
 pub struct HighscoreRecords {
@@ -52,6 +55,23 @@ impl HighscoreRecords {
     /// Check if this highscore record is empty
     pub fn is_empty(&self) -> bool {
         self.player_records.is_empty()
+    }
+}
+
+/// Serialization Code
+impl ExodusSerializable for HighscoreRecords {
+    type ParseError = HighscoreParseError;
+
+    fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+
+    fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
+    }
+
+    fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
+        todo!()
     }
 }
 
