@@ -5,8 +5,6 @@ use std::cmp::Ordering;
 use std::collections::BTreeSet;
 use std::io::{Read, Write};
 
-const CURRENT_PLAYERHIGHSCORE_VERSION: u8 = 0x01;
-
 /// A highscores entry for one single player.
 /// A highscore record typically exists per-map and contains all highscores for that specific player.
 pub struct PlayerHighscores {
@@ -53,11 +51,12 @@ impl PlayerHighscores {
 
 /// Implementation for Serializer
 impl ExodusSerializable for PlayerHighscores {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = HighscoreParseError;
 
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), HighscoreParseError> {
         // Write PlayerHighscore Version
-        file.write_all(&[CURRENT_PLAYERHIGHSCORE_VERSION])?;
+        file.write_all(&[Self::CURRENT_VERSION])?;
 
         // Store Player Name
         let bin_name = bincode::serialize(&self.player)?;
@@ -78,7 +77,7 @@ impl ExodusSerializable for PlayerHighscores {
         let mut buf: [u8; 1] = [0; 1];
         file.read_exact(&mut buf)?;
         match buf[0] {
-            CURRENT_HIGHSCORE_VERSION => self.parse_current_version(file),
+            Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
                 return Err(HighscoreParseError::InvalidVersion {
@@ -127,11 +126,12 @@ impl Default for PlayerHighscoresWrapper {
 
 /// Implementation for Serializer
 impl ExodusSerializable for PlayerHighscoresWrapper {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = HighscoreParseError;
 
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), HighscoreParseError> {
         // Write PlayerHighscoresWrapper Version
-        file.write_all(&[CURRENT_PLAYERHIGHSCORE_VERSION])?;
+        file.write_all(&[Self::CURRENT_VERSION])?;
 
         // Store Timestamp
         let timestamp_b = bincode::serialize(&self.timestamp)?;

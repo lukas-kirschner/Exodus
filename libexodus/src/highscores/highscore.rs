@@ -2,8 +2,6 @@ use crate::exodus_serializable::ExodusSerializable;
 use crate::highscores::io_error::HighscoreParseError;
 use std::io::{Read, Write};
 
-const CURRENT_HIGHSCORE_VERSION: u8 = 0x01;
-
 /// A single high score record
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub struct Highscore {
@@ -37,10 +35,11 @@ impl Default for Highscore {
 
 /// Implementation for Serializer
 impl ExodusSerializable for Highscore {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = HighscoreParseError;
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), HighscoreParseError> {
         // Write Highscore Version
-        file.write_all(&[CURRENT_HIGHSCORE_VERSION])?;
+        file.write_all(&[Self::CURRENT_VERSION])?;
 
         // Write number of moves
         let moves_b = bincode::serialize(&self.num_moves)?;
@@ -57,7 +56,7 @@ impl ExodusSerializable for Highscore {
         let mut buf: [u8; 1] = [0; 1];
         file.read_exact(&mut buf)?;
         match buf[0] {
-            CURRENT_HIGHSCORE_VERSION => self.parse_current_version(file),
+            Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
                 return Err(HighscoreParseError::InvalidVersion {

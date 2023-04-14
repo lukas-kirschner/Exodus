@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::io::{Read, Write};
 
 //00000000: 4578 6f64 7573 4869 6768 7363 6f72 6544  ExodusHighscoreD
-// 00000010: 420a                                     B.
+//00000010: 420a                                     B.
 pub(crate) const MAGICBYTES: [u8; 18] = [
     0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x48, 0x69, 0x67, 0x68, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x44,
     0x42, 0x0a,
@@ -84,18 +84,70 @@ impl HighscoresDatabase {
 
 // Serialization Code
 impl ExodusSerializable for HighscoresDatabase {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = HighscoreParseError;
 
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Write magic bytes
+        file.write_all(&MAGICBYTES)?;
+
+        // Write Database Version
+        file.write_all(&[Self::CURRENT_VERSION])?;
+
+        // Write length of the database
+        let b_length = bincode::serialize(&self.records.len())?;
+        file.write_all(&b_length)?;
+
+        for entry in &self.records {
+            // Write Map Hash
+            file.write_all(entry.0)?;
+
+            // Write Highscore Record for map
+            entry.1.serialize(file)?;
+        }
+
+        Ok(())
     }
 
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Parse Magic Bytes
+        let mut buf: [u8; MAGICBYTES.len()] = [0; MAGICBYTES.len()];
+        file.read_exact(&mut buf)?;
+        if buf != MAGICBYTES {
+            return Err(Self::ParseError::InvalidMagicBytes {
+                expected: MAGICBYTES,
+                actual: buf,
+            });
+        }
+
+        // Parse Database Format
+        let mut buf: [u8; 1] = [0; 1];
+        file.read_exact(&mut buf)?;
+        match buf[0] {
+            Self::CURRENT_VERSION => self.parse_current_version(file),
+            // Add older versions here
+            _ => {
+                return Err(Self::ParseError::InvalidVersion {
+                    invalid_version: buf[0],
+                })
+            },
+        }?;
+
+        Ok(())
     }
 
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Parse length
+        let db_len = bincode::deserialize_from::<&mut T, usize>(file)?;
+
+        for _ in 0..db_len {
+            let mut hash: [u8; 32] = [0u8; 32];
+            file.read_exact(&mut hash)?;
+
+            let mut record = HighscoreRecords::default();
+            record.parse(file)?;
+        }
+        Ok(())
     }
 }
 
@@ -271,6 +323,10 @@ mod tests {
             result.unwrap_err().to_string()
         );
         assert_eq!(db.len(), db2.len());
+        assert_eq!(db.records.len(), db2.records.len());
+        for (r_hash, r_data) in &db.records {
+            assert!(db2.records.contains_key(r_hash));
+        }
     }
 
     #[test]

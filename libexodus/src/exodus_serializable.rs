@@ -1,6 +1,9 @@
 use std::io::{Read, Write};
 
 pub(crate) trait ExodusSerializable {
+    /// The current version of the file serialization format, as byte.
+    /// Other (older) versions are to be defined outside of the trait.
+    const CURRENT_VERSION: u8;
     /// The returned error type if serializing or deserializing was unsuccessful.
     type ParseError;
     /// Serialize this instance using the newest available version of the binary

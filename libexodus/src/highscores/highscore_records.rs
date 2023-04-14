@@ -11,6 +11,14 @@ pub struct HighscoreRecords {
     player_records: HashMap<String, PlayerHighscores>,
 }
 
+impl Default for HighscoreRecords {
+    fn default() -> Self {
+        HighscoreRecords {
+            map_hash: [0u8; 32],
+            player_records: Default::default(),
+        }
+    }
+}
 impl HighscoreRecords {
     pub fn new(map_hash: [u8; 32]) -> Self {
         HighscoreRecords {
@@ -60,6 +68,7 @@ impl HighscoreRecords {
 
 /// Serialization Code
 impl ExodusSerializable for HighscoreRecords {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = HighscoreParseError;
 
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {

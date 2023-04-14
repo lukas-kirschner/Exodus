@@ -8,7 +8,6 @@ use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
-pub(crate) const CURRENT_MAP_VERSION: u8 = 0x01;
 pub(crate) const MAGICBYTES: [u8; 9] = [0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x4d, 0x61, 0x70];
 pub(crate) const MAX_MAP_WIDTH: usize = 1024;
 pub(crate) const MAX_MAP_HEIGHT: usize = 1024;
@@ -68,13 +67,14 @@ impl GameWorld {
 
 /// Implementation for Serializer
 impl ExodusSerializable for GameWorld {
+    const CURRENT_VERSION: u8 = 0x01;
     type ParseError = GameWorldParseError;
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
         file.write_all(&MAGICBYTES)?;
 
         // Write Map Version
-        file.write_all(&[CURRENT_MAP_VERSION])?;
+        file.write_all(&[Self::CURRENT_VERSION])?;
 
         // Write Map Name
         let name_b = bincode::serialize(&self.name)?;
@@ -106,7 +106,7 @@ impl ExodusSerializable for GameWorld {
         let mut buf: [u8; 1] = [0; 1];
         file.read_exact(&mut buf)?;
         match buf[0] {
-            CURRENT_MAP_VERSION => self.parse_current_version(file),
+            Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
                 return Err(GameWorldParseError::InvalidVersion {
@@ -367,7 +367,7 @@ mod tests {
         let mut map = GameWorld::exampleworld();
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize(&map.name).unwrap());
         data.extend_from_slice(&bincode::serialize(&map.author).unwrap());
         map.set(0, 0, Tile::WALL)
@@ -472,7 +472,7 @@ mod tests {
     fn test_map_with_invalid_name_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&[0xffu8; 100]);
         let mut buf = ByteBuffer::from_bytes(&data);
         let mut map = GameWorld::new(1, 1);
@@ -492,7 +492,7 @@ mod tests {
     fn test_map_with_invalid_author_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&[0xffu8; 100]);
         let mut buf = ByteBuffer::from_bytes(&data);
@@ -513,7 +513,7 @@ mod tests {
     fn test_map_with_invalid_width() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
         data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
@@ -537,7 +537,7 @@ mod tests {
     fn test_map_with_invalid_width_zero() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
         data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
