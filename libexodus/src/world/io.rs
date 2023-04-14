@@ -141,13 +141,13 @@ impl ExodusSerializable for GameWorld {
         // Parse Map Width and Map Height
         let map_width: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
         let map_height: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
-        if map_width > MAX_MAP_WIDTH || map_width == 0 {
+        if map_width > MAX_MAP_WIDTH {
             return Err(GameWorldParseError::InvalidMapWidth {
                 max_width: MAX_MAP_WIDTH,
                 actual_width: map_width,
             });
         }
-        if map_height > MAX_MAP_HEIGHT || map_height == 0 {
+        if map_height > MAX_MAP_HEIGHT {
             return Err(GameWorldParseError::InvalidMapHeight {
                 max_height: MAX_MAP_HEIGHT,
                 actual_height: map_height,
@@ -359,6 +359,22 @@ mod tests {
             .set(1, 0, Tile::DOOR)
             .set(1, 1, Tile::PLAYERSPAWN)
             .set(0, 1, Tile::AIR);
+        test_write_and_read_map(&mut reference_map);
+    }
+
+    #[test]
+    fn test_write_and_read_debug_map() {
+        let mut reference_map = GameWorld::exampleworld();
+        test_write_and_read_map(&mut reference_map);
+    }
+    #[test]
+    fn test_write_and_read_default_map() {
+        let mut reference_map = GameWorld::default();
+        test_write_and_read_map(&mut reference_map);
+    }
+    #[test]
+    fn test_write_and_read_showcase_map() {
+        let mut reference_map = GameWorld::showcaseworld();
         test_write_and_read_map(&mut reference_map);
     }
 

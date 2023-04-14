@@ -181,7 +181,11 @@ impl GameWorld {
     /// assert_eq!(1337, world.height());
     /// ```
     pub fn height(&self) -> usize {
-        self.data[0].len()
+        if self.width() > 0 {
+            self.data[0].len()
+        } else {
+            0
+        }
     }
 
     pub fn player_spawn(&self) -> (usize, usize) {
