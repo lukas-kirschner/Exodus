@@ -12,6 +12,15 @@ pub struct PlayerHighscores {
     scores: BTreeSet<PlayerHighscoresWrapper>,
 }
 
+impl Default for PlayerHighscores {
+    fn default() -> Self {
+        PlayerHighscores {
+            player: "".to_string(),
+            scores: Default::default(),
+        }
+    }
+}
+
 impl PlayerHighscores {
     /// Create a new empty set of highscores for the given player
     pub fn new(player: String) -> Self {
@@ -143,11 +152,30 @@ impl ExodusSerializable for PlayerHighscoresWrapper {
     }
 
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Parse Wrapper Format
+        let mut buf: [u8; 1] = [0; 1];
+        file.read_exact(&mut buf)?;
+        match buf[0] {
+            Self::CURRENT_VERSION => self.parse_current_version(file),
+            // Add older versions here
+            _ => {
+                return Err(Self::ParseError::InvalidVersion {
+                    invalid_version: buf[0],
+                })
+            },
+        }?;
+        Ok(())
     }
 
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        let timestamp = bincode::deserialize_from::<&mut T, i64>(file)?;
+        self.timestamp = timestamp;
+
+        let mut highscore = Highscore::default();
+        highscore.parse(file)?;
+        self.highscore = highscore;
+
+        Ok(())
     }
 }
 

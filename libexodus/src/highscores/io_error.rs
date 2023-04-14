@@ -25,6 +25,12 @@ pub enum HighscoreParseError {
         io_error: std::io::Error,
     },
     DuplicateHighscoreEntry,
+    DuplicateDatabaseEntry,
+    DuplicatePlayerEntry,
+    HashMismatch {
+        expected: [u8; 32],
+        actual: [u8; 32],
+    },
 }
 
 impl Display for HighscoreParseError {
@@ -51,6 +57,18 @@ impl Display for HighscoreParseError {
             HighscoreParseError::DuplicateHighscoreEntry => {
                 write!(f, "Unexpected duplicate highscore entry found!")
             },
+            HighscoreParseError::DuplicateDatabaseEntry => {
+                write!(f, "Unexpected duplicate entry found in database file!")
+            },
+            HighscoreParseError::DuplicatePlayerEntry => write!(
+                f,
+                "Unexpected duplicate player entry found in highscore database file!"
+            ),
+            HighscoreParseError::HashMismatch { expected, actual } => write!(
+                f,
+                "Invalid Map Hash in Map File! Expected: {:02x?} Got: {:02x?}",
+                expected, actual
+            ),
         }
     }
 }
@@ -80,6 +98,9 @@ impl HighscoreParseError {
             HighscoreParseError::BincodeError { .. } => 4,
             HighscoreParseError::UnexpectedEndOfData { .. } => 7,
             HighscoreParseError::DuplicateHighscoreEntry => 8,
+            HighscoreParseError::DuplicateDatabaseEntry => 9,
+            HighscoreParseError::DuplicatePlayerEntry => 10,
+            HighscoreParseError::HashMismatch { .. } => 11,
         }
     }
 }

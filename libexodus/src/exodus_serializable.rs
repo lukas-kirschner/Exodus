@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 
-pub(crate) trait ExodusSerializable {
+pub(crate) trait ExodusSerializable: Default {
     /// The current version of the file serialization format, as byte.
     /// Other (older) versions are to be defined outside of the trait.
     const CURRENT_VERSION: u8;

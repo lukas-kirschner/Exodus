@@ -25,6 +25,20 @@ pub struct GameWorld {
     clean: bool,
 }
 
+impl Default for GameWorld {
+    fn default() -> Self {
+        GameWorld {
+            name: "".to_string(),
+            author: "".to_string(),
+            hash: [0u8; 32],
+            data: vec![],
+            playerspawn: (0, 0),
+            filename: None,
+            clean: true,
+        }
+    }
+}
+
 impl GameWorld {
     pub fn new(width: usize, height: usize) -> Self {
         assert! {width > 0};

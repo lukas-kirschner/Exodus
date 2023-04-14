@@ -109,7 +109,7 @@ impl ExodusSerializable for GameWorld {
             Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
-                return Err(GameWorldParseError::InvalidVersion {
+                return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
                 })
             },

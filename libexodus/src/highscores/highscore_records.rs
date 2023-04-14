@@ -64,6 +64,9 @@ impl HighscoreRecords {
     pub fn is_empty(&self) -> bool {
         self.player_records.is_empty()
     }
+    pub(crate) fn get_hash(&self) -> &[u8; 32] {
+        &self.map_hash
+    }
 }
 
 /// Serialization Code
@@ -72,15 +75,59 @@ impl ExodusSerializable for HighscoreRecords {
     type ParseError = HighscoreParseError;
 
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Serialize Version
+        file.write_all(&[Self::CURRENT_VERSION])?;
+
+        // Serialize Hash
+        file.write_all(&self.map_hash)?;
+
+        // Write length of records
+        let b_len = bincode::serialize(&self.player_records.len())?;
+        file.write_all(&b_len)?;
+
+        for record in &self.player_records {
+            // Write Player Name
+            let b_name = bincode::serialize(record.0)?;
+            file.write_all(&b_name)?;
+
+            // Write Data
+            record.1.serialize(file)?;
+        }
+        Ok(())
     }
 
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        // Parse Format
+        let mut buf: [u8; 1] = [0; 1];
+        file.read_exact(&mut buf)?;
+        match buf[0] {
+            Self::CURRENT_VERSION => self.parse_current_version(file),
+            // Add older versions here
+            _ => {
+                return Err(Self::ParseError::InvalidVersion {
+                    invalid_version: buf[0],
+                })
+            },
+        }?;
+        Ok(())
     }
 
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        todo!()
+        let mut hash: [u8; 32] = [0u8; 32];
+        file.read_exact(&mut hash)?;
+        self.map_hash = hash;
+
+        let len = bincode::deserialize_from::<&mut T, usize>(file)?;
+        for _ in 0..len {
+            let name = bincode::deserialize_from::<&mut T, String>(file)?;
+            let mut data = PlayerHighscores::default();
+            data.parse(file)?;
+
+            if let Some(_) = self.player_records.insert(name, data) {
+                return Err(HighscoreParseError::DuplicatePlayerEntry);
+            }
+        }
+        Ok(())
     }
 }
 

@@ -146,6 +146,17 @@ impl ExodusSerializable for HighscoresDatabase {
 
             let mut record = HighscoreRecords::default();
             record.parse(file)?;
+
+            if record.get_hash() != &hash {
+                return Err(HighscoreParseError::HashMismatch {
+                    expected: hash,
+                    actual: record.get_hash().clone(),
+                });
+            }
+
+            if let Some(_) = self.records.insert(hash, record) {
+                return Err(HighscoreParseError::DuplicateDatabaseEntry);
+            }
         }
         Ok(())
     }
