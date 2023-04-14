@@ -3,7 +3,7 @@ use crate::highscores::io_error::HighscoreParseError;
 use std::io::{Read, Write};
 
 /// A single high score record
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Default)]
 pub struct Highscore {
     num_moves: u32,
     num_coins: u32,
@@ -21,15 +21,6 @@ impl Highscore {
     }
     pub fn coins(&self) -> u32 {
         self.num_coins
-    }
-}
-
-impl Default for Highscore {
-    fn default() -> Self {
-        Self {
-            num_moves: 0,
-            num_coins: 0,
-        }
     }
 }
 

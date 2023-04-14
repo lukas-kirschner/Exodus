@@ -30,3 +30,23 @@ and test builds with
 ```bash
 cargo test --features bevy/dynamic --workspace -- --include-ignored
 ```
+
+## Code Conventions
+
+To keep a well-formatted repository, we reject all pull requests that do not correspond to our formatting and code conventions automatically.
+
+#### Formatting rules
+
+The formatting rules are defined in [rustfmt's config file](rustfmt.toml). To automatically reformat the code, run
+
+```bash
+cargo fmt --all
+```
+
+#### Code Conventions
+
+The code conventions are defined in the [Clippy Config File](clippy.toml). To check if there are any problems, run
+
+```bash
+cargo clippy -- -D warnings
+```

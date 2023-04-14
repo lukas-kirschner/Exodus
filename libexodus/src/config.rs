@@ -20,8 +20,9 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, EnumIter, EnumCountMacro)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, EnumIter, EnumCountMacro, Default)]
 pub enum Language {
+    #[default]
     ENGLISH,
     GERMAN,
 }
@@ -33,12 +34,6 @@ impl Display for Language {
             Language::GERMAN => write!(f, "German"),
         }?;
         Ok(())
-    }
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Language::ENGLISH
     }
 }
 

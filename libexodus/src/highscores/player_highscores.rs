@@ -118,19 +118,10 @@ impl ExodusSerializable for PlayerHighscores {
     }
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Default)]
 struct PlayerHighscoresWrapper {
     pub timestamp: i64,
     pub highscore: Highscore,
-}
-
-impl Default for PlayerHighscoresWrapper {
-    fn default() -> Self {
-        Self {
-            timestamp: 0,
-            highscore: Default::default(),
-        }
-    }
 }
 
 /// Implementation for Serializer

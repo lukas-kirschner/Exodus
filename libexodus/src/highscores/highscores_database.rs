@@ -150,11 +150,11 @@ impl ExodusSerializable for HighscoresDatabase {
             if record.get_hash() != &hash {
                 return Err(HighscoreParseError::HashMismatch {
                     expected: hash,
-                    actual: record.get_hash().clone(),
+                    actual: *record.get_hash(),
                 });
             }
 
-            if let Some(_) = self.records.insert(hash, record) {
+            if self.records.insert(hash, record).is_some() {
                 return Err(HighscoreParseError::DuplicateDatabaseEntry);
             }
         }

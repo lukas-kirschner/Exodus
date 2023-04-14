@@ -6,19 +6,12 @@ use std::collections::HashMap;
 use std::io::{Read, Write};
 
 /// A highscores database for one single map
+#[derive(Default)]
 pub struct HighscoreRecords {
     map_hash: [u8; 32],
     player_records: HashMap<String, PlayerHighscores>,
 }
 
-impl Default for HighscoreRecords {
-    fn default() -> Self {
-        HighscoreRecords {
-            map_hash: [0u8; 32],
-            player_records: Default::default(),
-        }
-    }
-}
 impl HighscoreRecords {
     pub fn new(map_hash: [u8; 32]) -> Self {
         HighscoreRecords {
@@ -123,7 +116,7 @@ impl ExodusSerializable for HighscoreRecords {
             let mut data = PlayerHighscores::default();
             data.parse(file)?;
 
-            if let Some(_) = self.player_records.insert(name, data) {
+            if self.player_records.insert(name, data).is_some() {
                 return Err(HighscoreParseError::DuplicatePlayerEntry);
             }
         }
