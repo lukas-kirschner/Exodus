@@ -1,3 +1,4 @@
+use crate::ui::egui_textures::atlas_to_egui_textures;
 use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
 use crate::AppState;
 use bevy::app::AppExit;
@@ -115,6 +116,10 @@ impl Plugin for MainMenu {
             )
             .add_system_set(SystemSet::on_update(AppState::MainMenu)
                 .with_system(mainmenu_ui)
+            )
+            .add_system_set(
+                SystemSet::on_enter(AppState::MainMenu)
+                    .with_system(atlas_to_egui_textures),
             )
         // .add_system_set(SystemSet::on_update(AppState::MainMenu)
         //     .with_system(button_press_system)

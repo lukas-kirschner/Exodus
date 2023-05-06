@@ -28,6 +28,8 @@ pub const EXITED_PLAYER_ZOOM_SPEED: f32 = -0.1;
 pub const EXITED_PLAYER_DECAY_SPEED: f32 = 2.0;
 /// The button size for the map editor
 pub const MAPEDITOR_BUTTON_SIZE: f32 = 38.;
+/// The button size for square buttons in the menu screen
+pub const MENU_SQUARE_BUTTON_SIZE: f32 = 38.;
 /// The speed a pickup item ascends
 pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
 /// The speed a pickup item resizes

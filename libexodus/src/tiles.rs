@@ -312,3 +312,16 @@ impl fmt::Display for Tile {
         )
     }
 }
+#[derive(EnumIter)]
+pub enum UITiles {
+    /// Texture for the Edit Map Button
+    EDITBUTTON,
+}
+
+impl UITiles {
+    pub fn atlas_index(&self) -> Option<AtlasIndex> {
+        Some(match *self {
+            UITiles::EDITBUTTON => 22,
+        })
+    }
+}

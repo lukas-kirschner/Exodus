@@ -1,10 +1,13 @@
+use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
+use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{BUTTON_HEIGHT, DELETE_TEXT, EDIT_TEXT, PLAY_TEXT};
 use crate::{AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::Align;
 use bevy_egui::{egui, EguiContext};
+use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
 
 #[derive(Resource)]
@@ -135,6 +138,7 @@ fn map_selection_screen_ui(
     mut commands: Commands,
     mut egui_ctx: ResMut<EguiContext>,
     mut state: ResMut<State<AppState>>,
+    egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
     add_navbar(&mut egui_ctx, &mut state);
@@ -175,8 +179,18 @@ fn map_selection_screen_ui(
                                                 ui.set_height(BUTTON_HEIGHT);
                                                 ui.set_width(BUTTON_HEIGHT);
                                                 ui.centered_and_justified(|ui| {
-                                                    let edit_btn =
-                                                        ui.button(EDIT_TEXT).on_hover_text(t!(
+                                                    let (id, size, uv) = egui_textures.textures.get(&UITiles::EDITBUTTON.atlas_index().unwrap()) // Edit Button Texture
+                                                        .unwrap_or_else(|| panic!("Textures for Edit Button were not loaded as Egui textures!"));
+                                                    let edit_btn = ui
+                                                        .add_sized(
+                                                            [
+                                                                MENU_SQUARE_BUTTON_SIZE,
+                                                                MENU_SQUARE_BUTTON_SIZE,
+                                                            ],
+                                                            egui::ImageButton::new(*id, *size)
+                                                                .uv(*uv),
+                                                        )
+                                                        .on_hover_text(t!(
                                                             "map_selection_screen.edit_map"
                                                         ));
                                                     if edit_btn.clicked() {
