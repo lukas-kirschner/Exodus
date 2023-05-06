@@ -9,12 +9,12 @@ use crate::mapeditor::player_spawn::{
 use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::ui::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
-use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, NAVBAR_BACK_TEXT};
+use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::Ui;
 use bevy_egui::{egui, EguiContext};
-use libexodus::tiles::Tile;
+use libexodus::tiles::{Tile, UITiles};
 use std::borrow::Borrow;
 
 pub struct MapEditorUiPlugin;
@@ -112,9 +112,12 @@ fn mapeditor_ui(
                             ui.set_height(MAPEDITOR_BUTTON_SIZE);
                             ui.set_width(MAPEDITOR_BUTTON_SIZE);
                             ui.centered_and_justified(|ui| {
-                                let xbutton = ui
-                                    .button(NAVBAR_BACK_TEXT)
-                                    .on_hover_text(t!("map_editor.dialog.exit_tooltip"));
+                                let xbutton = image_button(
+                                    ui,
+                                    &egui_textures,
+                                    &UITiles::BACKBUTTON,
+                                    "map_editor.dialog.exit_tooltip",
+                                );
                                 if xbutton.clicked() {
                                     if worldwrapper.world.is_dirty() {
                                         commands.insert_resource(MapEditorDialogResource {

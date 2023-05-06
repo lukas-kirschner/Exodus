@@ -1,10 +1,13 @@
 use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::ui::configscreen::ConfigScreen;
 use crate::ui::creditsscreen::CreditsScreen;
+use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::mainmenu::MainMenu;
 use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
 use crate::WindowUiOverlayInfo;
 use bevy::prelude::*;
+use bevy_egui::egui;
+use libexodus::tiles::UITiles;
 
 mod configscreen;
 mod creditsscreen;
@@ -17,8 +20,6 @@ pub mod uicontrols;
 pub const BUTTON_HEIGHT: f32 = MENU_SQUARE_BUTTON_SIZE;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
-/// The text used for the Navbar Back Button
-pub const NAVBAR_BACK_TEXT: &str = "\u{300a}";
 
 pub struct Ui;
 
@@ -46,4 +47,19 @@ pub fn check_ui_size_changed(
             new_size.top, new_size.bottom, new_size.left, new_size.right
         );
     }
+}
+/// Create an image button to display in the UI
+pub(crate) fn image_button(
+    ui: &mut bevy_egui::egui::Ui,
+    egui_textures: &EguiButtonTextures,
+    tile: &UITiles,
+    translationkey: &str,
+) -> bevy_egui::egui::Response {
+    let (id, size, uv) = egui_textures.textures.get(&tile.atlas_index().unwrap()) // Edit Button Texture
+        .unwrap_or_else(|| panic!("Textures for Edit Button were not loaded as Egui textures!"));
+    ui.add_sized(
+        [MENU_SQUARE_BUTTON_SIZE, MENU_SQUARE_BUTTON_SIZE],
+        egui::ImageButton::new(*id, *size).uv(*uv),
+    )
+    .on_hover_text(t!(translationkey))
 }

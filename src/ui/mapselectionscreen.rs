@@ -1,11 +1,10 @@
-use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::game::tilewrapper::MapWrapper;
 use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::BUTTON_HEIGHT;
+use crate::ui::{image_button, BUTTON_HEIGHT};
 use crate::{AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Ui};
+use bevy_egui::egui::Align;
 use bevy_egui::{egui, EguiContext};
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
@@ -133,22 +132,6 @@ fn map_selection_screen_execute_event_queue(
     }
 }
 
-/// Create an image button to display in the UI
-fn image_button(
-    ui: &mut Ui,
-    egui_textures: &EguiButtonTextures,
-    tile: &UITiles,
-    translationkey: &str,
-) -> bevy_egui::egui::Response {
-    let (id, size, uv) = egui_textures.textures.get(&tile.atlas_index().unwrap()) // Edit Button Texture
-        .unwrap_or_else(|| panic!("Textures for Edit Button were not loaded as Egui textures!"));
-    ui.add_sized(
-        [MENU_SQUARE_BUTTON_SIZE, MENU_SQUARE_BUTTON_SIZE],
-        egui::ImageButton::new(*id, *size).uv(*uv),
-    )
-    .on_hover_text(t!(translationkey))
-}
-
 /// Map Selection Screen main routine
 fn map_selection_screen_ui(
     mut commands: Commands,
@@ -157,7 +140,7 @@ fn map_selection_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state);
+    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         ui.centered_and_justified(|ui| {

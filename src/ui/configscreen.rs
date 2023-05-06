@@ -1,3 +1,4 @@
+use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
 use crate::{AppState, GameConfig, TilesetManager};
@@ -26,8 +27,9 @@ fn config_screen_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut state: ResMut<State<AppState>>,
     mut res_config: ResMut<GameConfig>,
+    egui_textures: Res<EguiButtonTextures>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state);
+    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
 
     egui::CentralPanel::default()
         .frame(Frame::none())
