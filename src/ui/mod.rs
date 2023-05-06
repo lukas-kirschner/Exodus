@@ -1,3 +1,4 @@
+use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::ui::configscreen::ConfigScreen;
 use crate::ui::creditsscreen::CreditsScreen;
 use crate::ui::mainmenu::MainMenu;
@@ -13,17 +14,11 @@ mod mapselectionscreen;
 pub mod uicontrols;
 
 /// The button height of main menu buttons
-pub const BUTTON_HEIGHT: f32 = 32.0;
+pub const BUTTON_HEIGHT: f32 = MENU_SQUARE_BUTTON_SIZE;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
 /// The text used for the Navbar Back Button
 pub const NAVBAR_BACK_TEXT: &str = "\u{300a}";
-/// The text used for the Play Button
-pub const PLAY_TEXT: &str = "\u{300b}";
-/// The text used for the Delete Button
-pub const DELETE_TEXT: &str = "\u{2020}";
-/// The text used for the Delete Button
-pub const EDIT_TEXT: &str = "E";
 
 pub struct Ui;
 

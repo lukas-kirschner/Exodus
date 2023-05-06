@@ -316,12 +316,18 @@ impl fmt::Display for Tile {
 pub enum UITiles {
     /// Texture for the Edit Map Button
     EDITBUTTON,
+    /// Texture for the Play Button
+    PLAYBUTTON,
+    /// Texture for the Delete Button
+    DELETEBUTTON,
 }
 
 impl UITiles {
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
         Some(match *self {
             UITiles::EDITBUTTON => 22,
+            UITiles::PLAYBUTTON => 21,
+            UITiles::DELETEBUTTON => 20,
         })
     }
 }
