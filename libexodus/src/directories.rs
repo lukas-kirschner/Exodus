@@ -180,4 +180,7 @@ impl GameDirectories {
     pub fn config_file(&self) -> PathBuf {
         self.config_dir.as_path().join("config.exc")
     }
+    pub fn highscores_file(&self) -> PathBuf {
+        self.config_dir.as_path().join("score.exh")
+    }
 }

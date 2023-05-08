@@ -3,7 +3,9 @@ use crate::highscores::highscore::Highscore;
 use crate::highscores::highscore_records::HighscoreRecords;
 use crate::highscores::io_error::HighscoreParseError;
 use std::collections::HashMap;
-use std::io::{Read, Write};
+use std::fs::OpenOptions;
+use std::io::{BufReader, Read, Write};
+use std::path::Path;
 
 //00000000: 4578 6f64 7573 4869 6768 7363 6f72 6544  ExodusHighscoreD
 //00000010: 420a                                     B.
@@ -79,6 +81,14 @@ impl HighscoresDatabase {
     /// Get the highscore record for the given map as mutable reference
     pub fn get_mut(&mut self, map: &[u8; 32]) -> Option<&mut HighscoreRecords> {
         self.records.get_mut(map)
+    }
+    /// Load a HighscoreDatabase from the given file
+    pub fn load_from_file(path: &Path) -> Result<Self, HighscoreParseError> {
+        let file = OpenOptions::new().read(true).open(path)?;
+        let mut buf = BufReader::new(file);
+        let mut ret = HighscoresDatabase::default();
+        ret.parse(&mut buf)?;
+        Ok(ret)
     }
 }
 

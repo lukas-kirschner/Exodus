@@ -2,6 +2,7 @@ use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::ui::configscreen::ConfigScreen;
 use crate::ui::creditsscreen::CreditsScreen;
 use crate::ui::egui_textures::EguiButtonTextures;
+use crate::ui::game_over_screen::GameOverScreen;
 use crate::ui::mainmenu::MainMenu;
 use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
 use crate::WindowUiOverlayInfo;
@@ -12,6 +13,7 @@ use libexodus::tiles::UITiles;
 mod configscreen;
 mod creditsscreen;
 pub mod egui_textures;
+pub mod game_over_screen;
 pub mod mainmenu;
 mod mapselectionscreen;
 pub mod uicontrols;
@@ -20,6 +22,10 @@ pub mod uicontrols;
 pub const BUTTON_HEIGHT: f32 = MENU_SQUARE_BUTTON_SIZE;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
+/// Big Margins to use as outer margins for boxes and sub-windows
+pub const UIBIGMARGIN: f32 = 50.0;
+/// The default width of a centered UI panel
+pub const UIPANELWIDTH: f32 = 600.0;
 
 pub struct Ui;
 
@@ -28,6 +34,7 @@ impl Plugin for Ui {
         app.add_plugin(MainMenu)
             .add_plugin(MapSelectionScreenPlugin)
             .add_plugin(CreditsScreen)
+            .add_plugin(GameOverScreen)
             .add_plugin(ConfigScreen);
     }
 }

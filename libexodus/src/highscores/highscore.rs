@@ -80,8 +80,6 @@ mod tests {
     use crate::highscores::highscore::Highscore;
     use crate::highscores::io_error::HighscoreParseError;
     use bytebuffer::ByteBuffer;
-    use std::io;
-    use std::io::ErrorKind;
 
     #[test]
     fn test_highscore_getters() {

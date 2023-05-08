@@ -1,4 +1,4 @@
-use crate::game::GamePlugin;
+use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
 use crate::tileset_manager::{
     file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager,
@@ -14,6 +14,7 @@ use bevy::window::{WindowMode, WindowResized};
 use bevy_egui::{EguiContext, EguiPlugin};
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
+use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tilesets::Tileset;
 use std::fs;
 use std::path::PathBuf;
@@ -40,6 +41,7 @@ pub enum AppState {
     MapEditor,
     MapEditorDialog,
     Loading,
+    GameOverScreen,
 }
 
 #[derive(Resource)]
@@ -144,6 +146,31 @@ fn game_init(
     commands.insert_resource(GameConfig {
         config,
         file: config_file,
+    });
+    // Load the Highscores Database
+    let highscores_file = directories.game_directories.highscores_file();
+    info!(
+        "Loading High Scores File {}",
+        highscores_file
+            .as_path()
+            .to_str()
+            .unwrap_or("<Invalid Path>")
+    );
+    let highscores_database = HighscoresDatabase::load_from_file(highscores_file.as_path())
+        .map_err(|e| {
+            if highscores_file.exists() {
+                panic!("Could not load high scores file! {}", e)
+            } else {
+                warn!(
+                    "The high scores file does not exist - Initializing a new empty one at {}",
+                    highscores_file.to_str().unwrap_or("<invalid>")
+                )
+            }
+        })
+        .unwrap_or_default();
+    commands.insert_resource(HighscoresDatabaseWrapper {
+        highscores: highscores_database,
+        file: highscores_file,
     });
     // Initialize Styling and fonts for egui
     egui_fonts(ctx.ctx_mut());

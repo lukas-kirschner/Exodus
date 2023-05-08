@@ -1,6 +1,6 @@
 use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::UIMARGIN;
+use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
@@ -37,9 +37,9 @@ fn config_screen_ui(
             ui.horizontal_centered(|ui| {
                 ui.vertical_centered(|ui| {
                     ui.scope(|ui| {
-                        ui.set_width(600.0);
+                        ui.set_width(UIPANELWIDTH);
                         ui.vertical_centered_justified(|ui| {
-                            ui.set_width(550.0);
+                            ui.set_width(UIPANELWIDTH - UIBIGMARGIN);
                             ui.scope(|ui| {
                                 ui.set_height(UIMARGIN);
                             });
@@ -63,7 +63,7 @@ fn config_screen_ui(
                             egui::ComboBox::from_id_source("tile_set_box")
                                 .selected_text(selected_tileset)
                                 .show_ui(ui, |ui| {
-                                    ui.set_width(400.);
+                                    ui.set_width(UIPANELWIDTH - UIBIGMARGIN - UIBIGMARGIN);
                                     for tileset in Tileset::iter() {
                                         ui.selectable_value(
                                             &mut res_config.config.tile_set,
@@ -72,6 +72,10 @@ fn config_screen_ui(
                                         );
                                     }
                                 });
+                            ui.separator();
+                            ui.label(format!("{}:", t!("config_screen.player_name_label")));
+                            ui.text_edit_singleline(&mut res_config.config.player_id)
+                                .on_hover_text(t!("config_screen.player_name_tooltip"));
                         });
                     });
                 });

@@ -1,7 +1,7 @@
 use crate::World;
 use bevy::prelude::*;
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Scoreboard {
     pub coins: i32,
     pub moves: usize,
@@ -15,13 +15,5 @@ impl FromWorld for Scoreboard {
             moves: 0,
             keys: 0,
         }
-    }
-}
-
-impl Scoreboard {
-    pub fn reset(&mut self) {
-        self.coins = 0;
-        self.moves = 0;
-        self.keys = 0;
     }
 }

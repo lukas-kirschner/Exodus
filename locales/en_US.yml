@@ -8,6 +8,8 @@ navbar:
 config_screen:
   language_label: Language
   tileset_label: Tile Set
+  player_name_label: Player Name
+  player_name_tooltip: Player Name that will be stored in the high score database. If left blank, no high scores will be saved.
 map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
@@ -71,3 +73,7 @@ debug:
     empty_sized: Empty map with border and size %{w}x%{h}
     example_world: Example World
     showcase: Showcase Map
+game_over_screen:
+  game_over_heading: Game Over
+  back_button_tooltip: Back to Map Selection Screen
+  replay_button_tooltip: Replay Map

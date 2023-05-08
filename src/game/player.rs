@@ -1,7 +1,7 @@
 use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
-use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::{reset_world, DoorWrapper, WorldTile};
+use crate::game::tilewrapper::{GameOverState, MapWrapper};
+use crate::game::world::DoorWrapper;
 use crate::{AppState, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
@@ -29,9 +29,22 @@ impl Plugin for PlayerPlugin {
                 .with_system(player_movement)
                 .label("player_movement"),
         )
-        .add_system_set(SystemSet::on_update(AppState::Playing).with_system(despawn_dead_player))
-        .add_system_set(SystemSet::on_update(AppState::Playing).with_system(despawn_exited_player))
-        .add_event::<GameWonEvent>();
+        .add_system_set(
+            SystemSet::on_update(AppState::Playing)
+                .with_system(despawn_dead_player)
+                .label("GameOverTrigger"),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::Playing)
+                .with_system(despawn_exited_player)
+                .label("GameOverTrigger"),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::Playing)
+                .with_system(game_over_event_listener)
+                .after("GameOverTrigger"),
+        )
+        .add_event::<GameOverEvent>();
     }
 }
 
@@ -63,7 +76,7 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 
 ///
 /// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
-pub fn despawn_dead_player(
+fn despawn_dead_player(
     mut commands: Commands,
     mut dead_players: Query<(
         &mut DeadPlayerComponent,
@@ -72,25 +85,17 @@ pub fn despawn_dead_player(
         Entity,
     )>,
     time: Res<Time>,
-    worldwrapper: ResMut<MapWrapper>,
-    mut scoreboard: ResMut<Scoreboard>,
-    current_map_texture_handle: Res<TilesetManager>,
-    tiles_query: Query<Entity, With<WorldTile>>,
+    mut event_writer: EventWriter<GameOverEvent>,
 ) {
     for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned. TODO Trigger event here
+            // The player has fully decayed and can be despawned.
+            // TODO Trigger event here
             commands.entity(entity).despawn_recursive();
-            // Spawn new player and reset scores
-            respawn_player(&mut commands, &current_map_texture_handle, &worldwrapper);
-            scoreboard.reset();
-            reset_world(
-                commands,
-                worldwrapper,
-                tiles_query,
-                current_map_texture_handle,
-            );
+            event_writer.send(GameOverEvent {
+                state: GameOverState::Lost,
+            });
             return;
         }
         sprite.color.set_a(new_a);
@@ -99,7 +104,10 @@ pub fn despawn_dead_player(
     }
 }
 
-struct GameWonEvent;
+/// Event that is triggered when a game is won or lost
+struct GameOverEvent {
+    state: GameOverState,
+}
 
 ///
 /// Handler that takes care of despawning the player after he exited the game through an exit
@@ -110,14 +118,19 @@ fn despawn_exited_player(
         With<ExitingPlayerComponent>,
     >,
     time: Res<Time>,
-    mut event_writer: EventWriter<GameWonEvent>,
+    mut event_writer: EventWriter<GameOverEvent>,
+    scoreboard: Res<Scoreboard>,
 ) {
     for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned. TODO Trigger event here
+            // The player has fully decayed and can be despawned.
             commands.entity(entity).despawn_recursive();
-            event_writer.send(GameWonEvent);
+            event_writer.send(GameOverEvent {
+                state: GameOverState::Won {
+                    score: (*scoreboard).clone(),
+                },
+            });
             return;
         }
         sprite.color.set_a(new_a);
@@ -534,5 +547,18 @@ pub fn keyboard_controls(
                 continue;
             },
         }
+    }
+}
+
+fn game_over_event_listener(
+    mut reader: EventReader<GameOverEvent>,
+    mut state: ResMut<State<AppState>>,
+    mut commands: Commands,
+) {
+    if let Some(event) = reader.iter().next() {
+        commands.insert_resource(event.state.clone());
+        state
+            .set(AppState::GameOverScreen)
+            .expect("Could not change to Game Over Screen!");
     }
 }
