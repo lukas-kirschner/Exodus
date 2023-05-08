@@ -322,6 +322,8 @@ pub enum UITiles {
     DELETEBUTTON,
     /// Texture for the Back Button
     BACKBUTTON,
+    /// Texture for the Save Button
+    SAVEBUTTON,
 }
 
 impl UITiles {
@@ -331,6 +333,7 @@ impl UITiles {
             UITiles::PLAYBUTTON => 21,
             UITiles::DELETEBUTTON => 20,
             UITiles::BACKBUTTON => 19,
+            UITiles::SAVEBUTTON => 31,
         })
     }
 }

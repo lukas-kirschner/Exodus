@@ -142,9 +142,12 @@ fn mapeditor_ui(
                             ui.set_height(MAPEDITOR_BUTTON_SIZE);
                             ui.set_width(MAPEDITOR_BUTTON_SIZE);
                             ui.centered_and_justified(|ui| {
-                                let sbutton = ui
-                                    .button("S")
-                                    .on_hover_text(t!("map_editor.dialog.save_tooltip"));
+                                let sbutton = image_button(
+                                    ui,
+                                    &egui_textures,
+                                    &UITiles::SAVEBUTTON,
+                                    "map_editor.dialog.save_tooltip",
+                                );
                                 if sbutton.clicked() {
                                     worldwrapper.world.recompute_hash();
                                     commands.insert_resource(MapEditorDialogResource {
