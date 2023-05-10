@@ -3,12 +3,11 @@ use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::{image_button, BUTTON_HEIGHT};
+use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::Align;
+use bevy_egui::egui::{Align, RichText, Ui};
 use bevy_egui::{egui, EguiContext};
-use libexodus::highscores::highscore::Highscore;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
@@ -193,71 +192,27 @@ fn map_selection_screen_ui(
                     ui.vertical_centered_justified(|ui| {
                         for (i, map) in maps.maps.iter().enumerate() {
                             ui.scope(|ui| {
-                                ui.set_height(BUTTON_HEIGHT);
+                                ui.set_height(BUTTON_HEIGHT * 2.);
                                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
-                                    ui.label(map.world.get_name());
-                                    ui.label(" ");
-                                    ui.label(map.world.get_author());
+                                    ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
+                                        ui.with_layout(
+                                            egui::Layout::left_to_right(Align::Min),
+                                            |ui| {
+                                                labels_row1(ui, &map.world);
+                                            },
+                                        );
+                                        ui.scope(|ui| ui.set_height(UIMARGIN));
+                                        ui.with_layout(
+                                            egui::Layout::left_to_right(Align::Min),
+                                            |ui| {
+                                                labels_row2(ui, &map.previous_best);
+                                            },
+                                        );
+                                    });
                                     ui.with_layout(
                                         egui::Layout::right_to_left(Align::Center),
                                         |ui| {
-                                            ui.scope(|ui| {
-                                                ui.set_height(BUTTON_HEIGHT);
-                                                ui.set_width(BUTTON_HEIGHT);
-                                                ui.centered_and_justified(|ui| {
-                                                    let play_btn = image_button(
-                                                        ui,
-                                                        &egui_textures,
-                                                        &UITiles::PLAYBUTTON,
-                                                        "map_selection_screen.play_map",
-                                                    );
-                                                    if play_btn.clicked() {
-                                                        commands.insert_resource(
-                                                            MapSelectionScreenAction::Play {
-                                                                map_index: i,
-                                                            },
-                                                        );
-                                                    }
-                                                })
-                                            });
-                                            ui.scope(|ui| {
-                                                ui.set_height(BUTTON_HEIGHT);
-                                                ui.set_width(BUTTON_HEIGHT);
-                                                ui.centered_and_justified(|ui| {
-                                                    let edit_btn = image_button(
-                                                        ui,
-                                                        &egui_textures,
-                                                        &UITiles::EDITBUTTON,
-                                                        "map_selection_screen.edit_map",
-                                                    );
-                                                    if edit_btn.clicked() {
-                                                        commands.insert_resource(
-                                                            MapSelectionScreenAction::Edit {
-                                                                map_index: i,
-                                                            },
-                                                        );
-                                                    }
-                                                })
-                                            });
-                                            ui.scope(|ui| {
-                                                ui.set_height(BUTTON_HEIGHT);
-                                                ui.set_width(BUTTON_HEIGHT);
-                                                ui.centered_and_justified(|ui| {
-                                                    let delete_btn = image_button(
-                                                        ui,
-                                                        &egui_textures,
-                                                        &UITiles::DELETEBUTTON,
-                                                        "map_selection_screen.delete_map",
-                                                    );
-                                                    if delete_btn.clicked() {
-                                                        commands.insert_resource(
-                                                            MapSelectionScreenAction::Delete {
-                                                                map_index: i,
-                                                            },
-                                                        );
-                                                    }
-                                                })
-                                            });
+                                            buttons(ui, &egui_textures, &mut commands, i);
                                         },
                                     );
                                 });
@@ -268,6 +223,86 @@ fn map_selection_screen_ui(
             });
         });
     });
+}
+
+fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Commands, i: usize) {
+    ui.scope(|ui| {
+        ui.set_height(BUTTON_HEIGHT);
+        ui.set_width(BUTTON_HEIGHT);
+        ui.centered_and_justified(|ui| {
+            let play_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::PLAYBUTTON,
+                "map_selection_screen.play_map",
+            );
+            if play_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Play { map_index: i });
+            }
+        })
+    });
+    ui.scope(|ui| {
+        ui.set_height(BUTTON_HEIGHT);
+        ui.set_width(BUTTON_HEIGHT);
+        ui.centered_and_justified(|ui| {
+            let edit_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::EDITBUTTON,
+                "map_selection_screen.edit_map",
+            );
+            if edit_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Edit { map_index: i });
+            }
+        })
+    });
+    ui.scope(|ui| {
+        ui.set_height(BUTTON_HEIGHT);
+        ui.set_width(BUTTON_HEIGHT);
+        ui.centered_and_justified(|ui| {
+            let delete_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::DELETEBUTTON,
+                "map_selection_screen.delete_map",
+            );
+            if delete_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Delete { map_index: i });
+            }
+        })
+    });
+}
+
+fn labels_row1(ui: &mut Ui, world: &GameWorld) {
+    ui.label(world.get_name());
+    ui.label(" ");
+    ui.label(world.get_author());
+}
+fn labels_row2(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
+    match scoreboard {
+        None => {
+            ui.label(RichText::new(t!("map_selection_screen.no_highscore")).size(14.));
+        },
+        Some(score) => {
+            ui.label(RichText::new(t!("map_selection_screen.highscore_heading")).size(14.));
+            ui.label(RichText::new(" ").size(14.));
+            ui.label(
+                RichText::new(t!(
+                    "map_selection_screen.moves_fmt",
+                    moves = &score.moves.to_string()
+                ))
+                .size(14.),
+            );
+            ui.label(RichText::new(" ").size(14.));
+            ui.label(
+                RichText::new(t!(
+                    "map_selection_screen.coins_fmt",
+                    coins = &score.coins.to_string()
+                ))
+                .size(14.),
+            );
+        },
+    }
 }
 
 pub struct MapSelectionScreenPlugin;

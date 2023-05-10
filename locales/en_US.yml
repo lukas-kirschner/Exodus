@@ -14,6 +14,10 @@ map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
   delete_map: Delete map
+  highscore_heading: "Previous best:"
+  no_highscore: No highscore
+  moves_fmt: "Moves: %{moves}"
+  coins_fmt: "Coins: %{coins}"
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen

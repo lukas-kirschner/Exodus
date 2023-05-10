@@ -22,7 +22,7 @@ pub struct MapWrapper {
 }
 
 impl FromWorld for MapWrapper {
-    fn from_world(world: &mut World) -> Self {
+    fn from_world(_: &mut World) -> Self {
         MapWrapper {
             world: map_with_border(24, 10),
             previous_best: None,

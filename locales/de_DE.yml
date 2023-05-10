@@ -15,6 +15,10 @@ map_selection_screen:
   play_map: Karte spielen
   edit_map: Karte bearbeiten
   delete_map: Karte löschen
+  highscore_heading: "Bester Highscore:"
+  no_highscore: Noch kein Highscore
+  moves_fmt: "Moves: %{moves}"
+  coins_fmt: "Coins: %{coins}"
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren

@@ -25,8 +25,8 @@ impl Scoreboard {
     }
 }
 
-impl Into<Scoreboard> for &Highscore {
-    fn into(self) -> Scoreboard {
-        Scoreboard::new(self.coins() as i32, self.moves() as usize, 0usize)
+impl From<&Highscore> for Scoreboard {
+    fn from(value: &Highscore) -> Self {
+        Scoreboard::new(value.coins() as i32, value.moves() as usize, 0usize)
     }
 }

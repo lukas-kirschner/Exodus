@@ -7,7 +7,6 @@ use bevy::prelude::*;
 use bevy_egui::egui::Frame;
 use bevy_egui::{egui, EguiContext};
 use libexodus::highscores::highscore::Highscore;
-use libexodus::highscores::io_error::HighscoreParseError;
 use libexodus::tiles::UITiles;
 
 pub struct GameOverScreen;
@@ -71,11 +70,11 @@ fn game_over_screen_ui(
                                         t!("game_over_screen.highscore_info.lost")
                                     },
                                     GameOverState::Won { .. } => match &*save_state {
-                                        SaveHighscoreState::SAVE => t!(
+                                        SaveHighscoreState::Save => t!(
                                             "game_over_screen.highscore_info.won",
                                             player = &config.config.player_id
                                         ),
-                                        SaveHighscoreState::NOSAVE => {
+                                        SaveHighscoreState::NoSave => {
                                             t!("game_over_screen.highscore_info.won_discard")
                                         },
                                     },
@@ -83,11 +82,11 @@ fn game_over_screen_ui(
                                 ui.horizontal(|ui| {
                                     ui.add_enabled_ui(
                                         match &*save_state {
-                                            SaveHighscoreState::SAVE => match &*game_status {
+                                            SaveHighscoreState::Save => match &*game_status {
                                                 GameOverState::Lost => false,
                                                 GameOverState::Won { .. } => true,
                                             },
-                                            SaveHighscoreState::NOSAVE => false,
+                                            SaveHighscoreState::NoSave => false,
                                         },
                                         |ui| {
                                             let discard_button = image_button(
@@ -97,7 +96,7 @@ fn game_over_screen_ui(
                                                 "game_over_screen.discard_tooltip",
                                             );
                                             if discard_button.clicked() {
-                                                *save_state = SaveHighscoreState::NOSAVE;
+                                                *save_state = SaveHighscoreState::NoSave;
                                             }
                                         },
                                     );
@@ -151,9 +150,9 @@ fn save_highscores(
             // TODO Save number of retries into the High Score Database in a future release?
         },
         GameOverState::Won { score } => match &*save_state {
-            SaveHighscoreState::SAVE => {
+            SaveHighscoreState::Save => {
                 highscore_database.highscores.put_with_current_time(
-                    map.world.hash().clone(),
+                    *map.world.hash(),
                     config.config.player_id.clone(),
                     Highscore::new(score.moves as u32, score.coins as u32),
                 );
@@ -185,7 +184,7 @@ fn save_highscores(
                     },
                 }
             },
-            SaveHighscoreState::NOSAVE => {},
+            SaveHighscoreState::NoSave => {},
         },
     };
     // Make sure to remove high scores after saving
@@ -199,12 +198,12 @@ fn init_game_over_screen_ui(
     game_status: Res<GameOverState>,
 ) {
     commands.insert_resource(match *game_status {
-        GameOverState::Lost => SaveHighscoreState::NOSAVE,
+        GameOverState::Lost => SaveHighscoreState::NoSave,
         GameOverState::Won { .. } => {
             if config.config.player_id.trim().is_empty() {
-                SaveHighscoreState::NOSAVE
+                SaveHighscoreState::NoSave
             } else {
-                SaveHighscoreState::SAVE
+                SaveHighscoreState::Save
             }
         },
     });
@@ -212,8 +211,8 @@ fn init_game_over_screen_ui(
 
 #[derive(Resource)]
 enum SaveHighscoreState {
-    SAVE,
-    NOSAVE,
+    Save,
+    NoSave,
 }
 
 impl Plugin for GameOverScreen {
