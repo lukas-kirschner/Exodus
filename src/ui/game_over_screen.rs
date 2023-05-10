@@ -50,7 +50,7 @@ fn game_over_screen_ui(
                             ui.scope(|ui| match &*game_status {
                                 //TODO nicer UI
                                 GameOverState::Lost => {
-                                    ui.label("You lost");
+                                    ui.label(t!("game_over_screen.lost_heading"));
                                 },
                                 GameOverState::Won { score } => {
                                     ui.label(format!(

@@ -83,6 +83,7 @@ game_over_screen:
   back_button_tooltip: Back to Map Selection Screen
   replay_button_tooltip: Replay Map
   discard_tooltip: Discard High Score
+  lost_heading: You Lost
   highscore_info:
     won: Congratulations! Your high score will be saved as player %{player}.
     won_discard: Your High Score will not be saved.
