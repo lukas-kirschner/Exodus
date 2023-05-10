@@ -1,11 +1,15 @@
+use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::HighscoresDatabaseWrapper;
 use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT};
-use crate::{AppState, GameDirectoriesWrapper};
+use crate::{AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::Align;
 use bevy_egui::{egui, EguiContext};
+use libexodus::highscores::highscore::Highscore;
+use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
 
@@ -22,8 +26,23 @@ impl FromWorld for Maps {
     }
 }
 
+fn get_highscore(
+    highscores: &HighscoresDatabase,
+    map: &GameWorld,
+    player_name: &String,
+) -> Option<Scoreboard> {
+    highscores
+        .get_best(map.hash(), player_name)
+        .map(|highscore| highscore.1.into())
+}
+
 /// Load all maps from the Map Directory. This might take a while, depending on how many maps there are in the maps folder
-fn load_maps(mut maps: ResMut<Maps>, directories: Res<GameDirectoriesWrapper>) {
+fn load_maps(
+    mut maps: ResMut<Maps>,
+    directories: Res<GameDirectoriesWrapper>,
+    highscores: Res<HighscoresDatabaseWrapper>,
+    config: Res<GameConfig>,
+) {
     // Delete all maps
     maps.maps = Vec::new();
 
@@ -50,7 +69,12 @@ fn load_maps(mut maps: ResMut<Maps>, directories: Res<GameDirectoriesWrapper>) {
                     map
                 })
             {
-                maps.maps.push(MapWrapper { world: map })
+                let highscore =
+                    get_highscore(&highscores.highscores, &map, &config.config.player_id);
+                maps.maps.push(MapWrapper {
+                    world: map,
+                    previous_best: highscore,
+                })
             }
         });
 
@@ -59,16 +83,33 @@ fn load_maps(mut maps: ResMut<Maps>, directories: Res<GameDirectoriesWrapper>) {
         let mut example_map = GameWorld::exampleworld();
         example_map.set_name(t!("debug.map_presets.example_world").as_str());
         example_map.recompute_hash();
-        maps.maps.push(MapWrapper { world: example_map });
+        let example_map_highscore = get_highscore(
+            &highscores.highscores,
+            &example_map,
+            &config.config.player_id,
+        );
+        maps.maps.push(MapWrapper {
+            world: example_map,
+            previous_best: example_map_highscore,
+        });
         let mut showcasemap = GameWorld::showcaseworld();
         showcasemap.set_name(t!("debug.map_presets.showcase").as_str());
         showcasemap.recompute_hash();
-        maps.maps.push(MapWrapper { world: showcasemap });
+        let showcasemap_highscore = get_highscore(
+            &highscores.highscores,
+            &showcasemap,
+            &config.config.player_id,
+        );
+        maps.maps.push(MapWrapper {
+            world: showcasemap,
+            previous_best: showcasemap_highscore,
+        });
         let mut psion_sized_map = presets::map_with_border(35, 15);
         psion_sized_map.set_name(t!("debug.map_presets.empty5mx").as_str());
         psion_sized_map.recompute_hash();
         maps.maps.push(MapWrapper {
             world: psion_sized_map,
+            previous_best: None,
         });
         // Fill the list to test scrolling
         for i in 1..=20 {
@@ -82,7 +123,10 @@ fn load_maps(mut maps: ResMut<Maps>, directories: Res<GameDirectoriesWrapper>) {
                 .as_str(),
             );
             map.recompute_hash();
-            maps.maps.push(MapWrapper { world: map })
+            maps.maps.push(MapWrapper {
+                world: map,
+                previous_best: None,
+            })
         }
     }
 }

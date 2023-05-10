@@ -18,12 +18,14 @@ pub enum GameOverState {
 #[derive(Resource)]
 pub struct MapWrapper {
     pub world: GameWorld,
+    pub previous_best: Option<Scoreboard>,
 }
 
 impl FromWorld for MapWrapper {
-    fn from_world(_: &mut World) -> Self {
+    fn from_world(world: &mut World) -> Self {
         MapWrapper {
             world: map_with_border(24, 10),
+            previous_best: None,
         }
     }
 }

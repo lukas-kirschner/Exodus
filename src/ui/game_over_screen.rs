@@ -17,9 +17,7 @@ fn game_over_screen_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut state: ResMut<State<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
-    // map: Res<MapWrapper>,
     game_status: Res<GameOverState>,
-    // mut highscore_database: ResMut<HighscoresDatabaseWrapper>,
     config: Res<GameConfig>,
     mut save_state: ResMut<SaveHighscoreState>,
 ) {
