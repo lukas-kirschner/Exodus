@@ -75,5 +75,11 @@ debug:
     showcase: Showcase Map
 game_over_screen:
   game_over_heading: Game Over
+  victory_heading: Map Finished
   back_button_tooltip: Back to Map Selection Screen
   replay_button_tooltip: Replay Map
+  discard_tooltip: Discard High Score
+  highscore_info:
+    won: Congratulations! Your high score will be saved as player %{player}.
+    won_discard: Your High Score will not be saved.
+    lost: Click the Replay Button to try again.

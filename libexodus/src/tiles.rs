@@ -326,6 +326,8 @@ pub enum UITiles {
     SAVEBUTTON,
     /// Texture for the Replay Button
     REPLAYBUTTON,
+    /// Texture for the Discard Highscore Button
+    DISCARDBUTTON,
 }
 
 impl UITiles {
@@ -337,6 +339,7 @@ impl UITiles {
             UITiles::BACKBUTTON => 19,
             UITiles::SAVEBUTTON => 31,
             UITiles::REPLAYBUTTON => 47,
+            UITiles::DISCARDBUTTON => 15,
         })
     }
 }

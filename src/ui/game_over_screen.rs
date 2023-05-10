@@ -1,7 +1,7 @@
 use crate::game::tilewrapper::GameOverState;
 use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
-use crate::AppState;
+use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
 use bevy_egui::{egui, EguiContext};
@@ -17,7 +17,8 @@ fn game_over_screen_ui(
     // map: Res<MapWrapper>,
     game_status: Res<GameOverState>,
     // mut highscore_database: ResMut<HighscoresDatabaseWrapper>,
-    // config: Res<GameConfig>,
+    config: Res<GameConfig>,
+    mut save_state: ResMut<SaveHighscoreState>,
 ) {
     egui::CentralPanel::default()
         .frame(Frame::none())
@@ -32,8 +33,17 @@ fn game_over_screen_ui(
                                 ui.set_height(UIBIGMARGIN);
                             });
                             ui.scope(|ui| {
-                                ui.label(format!("{}!", t!("game_over_screen.game_over_heading")));
+                                ui.heading(format!(
+                                    "{}!",
+                                    match &*game_status {
+                                        GameOverState::Lost =>
+                                            t!("game_over_screen.game_over_heading"),
+                                        GameOverState::Won { .. } =>
+                                            t!("game_over_screen.victory_heading"),
+                                    }
+                                ));
                             });
+                            ui.separator();
                             ui.scope(|ui| {
                                 ui.set_height(UIMARGIN);
                             });
@@ -47,10 +57,51 @@ fn game_over_screen_ui(
                                         "Coins: {} Moves: {}",
                                         score.coins, score.moves
                                     ));
+                                    //TODO Table with previous best/Map Name/Coins,Moves/Player Name
                                 },
                             });
-                            //TODO Table with previous best/Map Name/Coins,Moves/Player Name
-                            //TODO Button to discard results?
+                            ui.separator();
+                            ui.scope(|ui| {
+                                ui.set_height(UIMARGIN);
+                            });
+                            ui.scope(|ui| {
+                                ui.label(match &*game_status {
+                                    GameOverState::Lost => {
+                                        t!("game_over_screen.highscore_info.lost")
+                                    },
+                                    GameOverState::Won { .. } => match &*save_state {
+                                        SaveHighscoreState::SAVE => t!(
+                                            "game_over_screen.highscore_info.won",
+                                            player = &config.config.player_id
+                                        ),
+                                        SaveHighscoreState::NOSAVE => {
+                                            t!("game_over_screen.highscore_info.won_discard")
+                                        },
+                                    },
+                                });
+                                ui.horizontal(|ui| {
+                                    ui.add_enabled_ui(
+                                        match &*save_state {
+                                            SaveHighscoreState::SAVE => match &*game_status {
+                                                GameOverState::Lost => false,
+                                                GameOverState::Won { .. } => true,
+                                            },
+                                            SaveHighscoreState::NOSAVE => false,
+                                        },
+                                        |ui| {
+                                            let discard_button = image_button(
+                                                ui,
+                                                &egui_textures,
+                                                &UITiles::DISCARDBUTTON,
+                                                "game_over_screen.discard_tooltip",
+                                            );
+                                            if discard_button.clicked() {
+                                                *save_state = SaveHighscoreState::NOSAVE;
+                                            }
+                                        },
+                                    );
+                                });
+                            });
                         });
                     });
                 });
@@ -90,10 +141,37 @@ fn game_over_screen_ui(
 
 fn save_highscores() {}
 
+/// Init Function for the Game Over Screen
+fn init_game_over_screen_ui(
+    mut commands: Commands,
+    config: Res<GameConfig>,
+    game_status: Res<GameOverState>,
+) {
+    commands.insert_resource(match *game_status {
+        GameOverState::Lost => SaveHighscoreState::NOSAVE,
+        GameOverState::Won { .. } => {
+            if config.config.player_id.trim().is_empty() {
+                SaveHighscoreState::NOSAVE
+            } else {
+                SaveHighscoreState::SAVE
+            }
+        },
+    });
+}
+
+#[derive(Resource)]
+enum SaveHighscoreState {
+    SAVE,
+    NOSAVE,
+}
+
 impl Plugin for GameOverScreen {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_update(AppState::GameOverScreen).with_system(game_over_screen_ui),
+        );
+        app.add_system_set(
+            SystemSet::on_enter(AppState::GameOverScreen).with_system(init_game_over_screen_ui),
         );
     }
 

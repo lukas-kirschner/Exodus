@@ -76,5 +76,11 @@ debug:
     showcase: Beispiel-Screenshot-Karte
 game_over_screen:
   game_over_heading: Game Over
+  victory_heading: Karte abgeschlossen
   back_button_tooltip: Zurück zur Kartenauswahl
   replay_button_tooltip: Karte erneut spielen
+  discard_tooltip: Spielstand verwerfen
+  highscore_info_prefix:
+    won: "Herzlichen Glückwunsch! Der Spielstand wird gespeichert als Spieler: %{player}"
+    won_discard: Der Spielstand wird nicht gespeichert.
+    lost: Die Karte kann mit dem "Erneut Spielen"-Button neu gestartet werden.
