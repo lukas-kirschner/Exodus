@@ -3,8 +3,8 @@ use crate::highscores::highscore::Highscore;
 use crate::highscores::highscore_records::HighscoreRecords;
 use crate::highscores::io_error::HighscoreParseError;
 use std::collections::HashMap;
-use std::fs::OpenOptions;
-use std::io::{BufReader, Read, Write};
+use std::fs::{File, OpenOptions};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 //00000000: 4578 6f64 7573 4869 6768 7363 6f72 6544  ExodusHighscoreD
@@ -89,6 +89,13 @@ impl HighscoresDatabase {
         let mut ret = HighscoresDatabase::default();
         ret.parse(&mut buf)?;
         Ok(ret)
+    }
+    /// Save a HighscoreDatabase to the given file
+    pub fn save_to_file(&self, path: &Path) -> Result<(), HighscoreParseError> {
+        let file: File = OpenOptions::new().create(true).write(true).open(path)?;
+        let mut buf = BufWriter::new(file);
+        self.serialize(&mut buf)?;
+        Ok(())
     }
 }
 

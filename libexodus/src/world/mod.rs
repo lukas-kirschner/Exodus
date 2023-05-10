@@ -53,13 +53,17 @@ impl GameWorld {
             clean: true,
         }
     }
-    /// Get the unique ID of this map as hex-string
-    pub fn hash(&self) -> String {
+    /// Get the unique ID of this map as hex-string representation
+    pub fn hash_str(&self) -> String {
         let mut ret = String::new();
         for b in &self.hash {
             ret.push_str(format!("{:02X}", *b).as_str());
         }
         ret
+    }
+    /// Get the unique ID of this map as byte slice
+    pub fn hash(&self) -> &[u8; 32] {
+        &self.hash
     }
     /// Get the name of this world
     pub fn get_name(&self) -> &str {

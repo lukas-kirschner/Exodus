@@ -155,7 +155,7 @@ fn mapeditor_ui(
                                             worldwrapper.world.get_filename(),
                                             worldwrapper.world.get_name(),
                                             worldwrapper.world.get_author(),
-                                            &worldwrapper.world.hash().as_str()[..16],
+                                            &worldwrapper.world.hash_str().as_str()[..16],
                                         )),
                                     });
                                     state
