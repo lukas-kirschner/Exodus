@@ -6,7 +6,7 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, RichText, Ui};
+use bevy_egui::egui::{Align, Frame, Layout, RichText, Ui};
 use bevy_egui::{egui, EguiContext};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
@@ -188,38 +188,44 @@ fn map_selection_screen_ui(
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         ui.centered_and_justified(|ui| {
             ui.scope(|ui| {
-                egui::ScrollArea::new([false, true]).show(ui, |ui| {
-                    ui.vertical_centered_justified(|ui| {
-                        for (i, map) in maps.maps.iter().enumerate() {
-                            ui.scope(|ui| {
-                                ui.set_height(BUTTON_HEIGHT * 2.);
-                                ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
-                                    ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
+                egui::ScrollArea::new([false, true])
+                    .auto_shrink([false; 2])
+                    .max_width(ui.available_width())
+                    .show(ui, |ui| {
+                        ui.vertical(|ui| {
+                            for (i, map) in maps.maps.iter().enumerate() {
+                                ui.scope(|ui| {
+                                    ui.set_height(BUTTON_HEIGHT * 2.);
+                                    // Possibly a bug in egui? Remove this line asap
+                                    ui.set_width(ui.available_size().x - (i as f32) / 8.0);
+                                    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                                         ui.with_layout(
-                                            egui::Layout::left_to_right(Align::Min),
+                                            egui::Layout::right_to_left(Align::Center),
                                             |ui| {
-                                                labels_row1(ui, &map.world);
+                                                buttons(ui, &egui_textures, &mut commands, i);
                                             },
                                         );
-                                        ui.scope(|ui| ui.set_height(UIMARGIN));
-                                        ui.with_layout(
-                                            egui::Layout::left_to_right(Align::Min),
-                                            |ui| {
-                                                labels_row2(ui, &map.previous_best);
-                                            },
-                                        );
+                                        ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
+                                            ui.set_max_size(ui.available_size());
+                                            ui.with_layout(
+                                                egui::Layout::left_to_right(Align::Min),
+                                                |ui| {
+                                                    labels_row1(ui, &map.world);
+                                                },
+                                            );
+                                            ui.scope(|ui| ui.set_height(UIMARGIN));
+                                            ui.with_layout(
+                                                egui::Layout::left_to_right(Align::Min),
+                                                |ui| {
+                                                    labels_row2(ui, &map.previous_best);
+                                                },
+                                            );
+                                        });
                                     });
-                                    ui.with_layout(
-                                        egui::Layout::right_to_left(Align::Center),
-                                        |ui| {
-                                            buttons(ui, &egui_textures, &mut commands, i);
-                                        },
-                                    );
                                 });
-                            });
-                        }
+                            }
+                        });
                     });
-                });
             });
         });
     });
