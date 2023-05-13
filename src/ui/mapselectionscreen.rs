@@ -6,7 +6,7 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Frame, Layout, RichText, Ui};
+use bevy_egui::egui::{Align, Layout, RichText, Ui};
 use bevy_egui::{egui, EguiContext};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
@@ -186,51 +186,43 @@ fn map_selection_screen_ui(
     add_navbar(&mut egui_ctx, &mut state, &egui_textures);
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
-        ui.centered_and_justified(|ui| {
-            ui.scope(|ui| {
-                egui::ScrollArea::new([false, true])
-                    .auto_shrink([false; 2])
-                    .max_width(ui.available_width())
-                    .show(ui, |ui| {
-                        ui.vertical(|ui| {
-                            for (i, map) in maps.maps.iter().enumerate() {
-                                ui.scope(|ui| {
-                                    ui.set_height(BUTTON_HEIGHT * 2.);
-                                    ui.set_width(ui.available_width());
-                                    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                        ui.with_layout(
-                                            egui::Layout::right_to_left(Align::Center),
-                                            |ui| {
-                                                buttons(ui, &egui_textures, &mut commands, i);
-                                            },
-                                        );
-                                        ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
-                                            ui.set_max_size(ui.available_size());
-                                            ui.with_layout(
-                                                egui::Layout::left_to_right(Align::Min),
-                                                |ui| {
-                                                    labels_row1(ui, &map.world);
-                                                },
-                                            );
-                                            ui.scope(|ui| ui.set_height(UIMARGIN));
-                                            ui.with_layout(
-                                                egui::Layout::left_to_right(Align::Min),
-                                                |ui| {
-                                                    labels_row2(ui, &map.previous_best);
-                                                },
-                                            );
-                                        });
+        egui::ScrollArea::new([false, true])
+            .auto_shrink([false; 2])
+            .max_width(ui.available_width())
+            .show(ui, |ui| {
+                ui.vertical(|ui| {
+                    for (i, map) in maps.maps.iter().enumerate() {
+                        ui.scope(|ui| {
+                            ui.set_height(BUTTON_HEIGHT * 2.);
+                            ui.set_width(ui.available_width());
+                            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                                ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
+                                    buttons(ui, &egui_textures, &mut commands, i);
+                                });
+                                ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
+                                    ui.set_max_size(ui.available_size());
+                                    ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
+                                        labels_row1(ui, &map.world);
+                                    });
+                                    ui.scope(|ui| ui.set_height(UIMARGIN));
+                                    ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
+                                        labels_row2(ui, &map.previous_best);
                                     });
                                 });
-                            }
+                            });
                         });
-                    });
+                    }
+                });
             });
-        });
     });
 }
 
-fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Commands, i: usize) {
+fn buttons(
+    ui: &mut Ui,
+    egui_textures: &EguiButtonTextures,
+    commands: &mut Commands,
+    map_index: usize,
+) {
     let play_btn = image_button(
         ui,
         egui_textures,
@@ -238,7 +230,7 @@ fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Comma
         "map_selection_screen.play_map",
     );
     if play_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Play { map_index: i });
+        commands.insert_resource(MapSelectionScreenAction::Play { map_index });
     }
     let edit_btn = image_button(
         ui,
@@ -247,7 +239,7 @@ fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Comma
         "map_selection_screen.edit_map",
     );
     if edit_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Edit { map_index: i });
+        commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
     }
     let delete_btn = image_button(
         ui,
@@ -256,7 +248,7 @@ fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Comma
         "map_selection_screen.delete_map",
     );
     if delete_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Delete { map_index: i });
+        commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
     }
 }
 
