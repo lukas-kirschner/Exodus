@@ -3,7 +3,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::UiSizeChangedEvent;
 use crate::{TilesetManager, LAYER_ID};
 use bevy::prelude::*;
-use bevy::render::camera::{RenderTarget, ScalingMode};
+use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
