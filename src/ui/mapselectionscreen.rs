@@ -196,8 +196,7 @@ fn map_selection_screen_ui(
                             for (i, map) in maps.maps.iter().enumerate() {
                                 ui.scope(|ui| {
                                     ui.set_height(BUTTON_HEIGHT * 2.);
-                                    // Possibly a bug in egui? Remove this line asap
-                                    ui.set_width(ui.available_size().x - (i as f32) / 8.0);
+                                    ui.set_width(ui.available_width());
                                     ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                                         ui.with_layout(
                                             egui::Layout::right_to_left(Align::Center),
@@ -232,51 +231,33 @@ fn map_selection_screen_ui(
 }
 
 fn buttons(ui: &mut Ui, egui_textures: &EguiButtonTextures, commands: &mut Commands, i: usize) {
-    ui.scope(|ui| {
-        ui.set_height(BUTTON_HEIGHT);
-        ui.set_width(BUTTON_HEIGHT);
-        ui.centered_and_justified(|ui| {
-            let play_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::PLAYBUTTON,
-                "map_selection_screen.play_map",
-            );
-            if play_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Play { map_index: i });
-            }
-        })
-    });
-    ui.scope(|ui| {
-        ui.set_height(BUTTON_HEIGHT);
-        ui.set_width(BUTTON_HEIGHT);
-        ui.centered_and_justified(|ui| {
-            let edit_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::EDITBUTTON,
-                "map_selection_screen.edit_map",
-            );
-            if edit_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Edit { map_index: i });
-            }
-        })
-    });
-    ui.scope(|ui| {
-        ui.set_height(BUTTON_HEIGHT);
-        ui.set_width(BUTTON_HEIGHT);
-        ui.centered_and_justified(|ui| {
-            let delete_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::DELETEBUTTON,
-                "map_selection_screen.delete_map",
-            );
-            if delete_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Delete { map_index: i });
-            }
-        })
-    });
+    let play_btn = image_button(
+        ui,
+        egui_textures,
+        &UITiles::PLAYBUTTON,
+        "map_selection_screen.play_map",
+    );
+    if play_btn.clicked() {
+        commands.insert_resource(MapSelectionScreenAction::Play { map_index: i });
+    }
+    let edit_btn = image_button(
+        ui,
+        egui_textures,
+        &UITiles::EDITBUTTON,
+        "map_selection_screen.edit_map",
+    );
+    if edit_btn.clicked() {
+        commands.insert_resource(MapSelectionScreenAction::Edit { map_index: i });
+    }
+    let delete_btn = image_button(
+        ui,
+        egui_textures,
+        &UITiles::DELETEBUTTON,
+        "map_selection_screen.delete_map",
+    );
+    if delete_btn.clicked() {
+        commands.insert_resource(MapSelectionScreenAction::Delete { map_index: i });
+    }
 }
 
 fn labels_row1(ui: &mut Ui, world: &GameWorld) {
