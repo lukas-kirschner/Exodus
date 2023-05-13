@@ -1,3 +1,4 @@
+use crate::game::constants::FONT_SIZE_HIGHSCORE;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
@@ -257,14 +258,20 @@ fn labels_row1(ui: &mut Ui, world: &GameWorld) {
     ui.label(" ");
     ui.label(world.get_author());
 }
+
 fn labels_row2(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
     match scoreboard {
         None => {
-            ui.label(RichText::new(t!("map_selection_screen.no_highscore")).size(14.));
+            ui.label(
+                RichText::new(t!("map_selection_screen.no_highscore")).size(FONT_SIZE_HIGHSCORE),
+            );
         },
         Some(score) => {
-            ui.label(RichText::new(t!("map_selection_screen.highscore_heading")).size(14.));
-            ui.label(RichText::new(" ").size(14.));
+            ui.label(
+                RichText::new(t!("map_selection_screen.highscore_heading"))
+                    .size(FONT_SIZE_HIGHSCORE),
+            );
+            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
             ui.label(
                 RichText::new(t!(
                     "map_selection_screen.moves_fmt",
@@ -272,13 +279,13 @@ fn labels_row2(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
                 ))
                 .size(14.),
             );
-            ui.label(RichText::new(" ").size(14.));
+            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
             ui.label(
                 RichText::new(t!(
                     "map_selection_screen.coins_fmt",
                     coins = &score.coins.to_string()
                 ))
-                .size(14.),
+                .size(FONT_SIZE_HIGHSCORE),
             );
         },
     }
