@@ -1,7 +1,8 @@
 use crate::World;
 use bevy::prelude::*;
+use libexodus::highscores::highscore::Highscore;
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Scoreboard {
     pub coins: i32,
     pub moves: usize,
@@ -19,9 +20,13 @@ impl FromWorld for Scoreboard {
 }
 
 impl Scoreboard {
-    pub fn reset(&mut self) {
-        self.coins = 0;
-        self.moves = 0;
-        self.keys = 0;
+    pub fn new(coins: i32, moves: usize, keys: usize) -> Self {
+        Scoreboard { coins, moves, keys }
+    }
+}
+
+impl From<&Highscore> for Scoreboard {
+    fn from(value: &Highscore) -> Self {
+        Scoreboard::new(value.coins() as i32, value.moves() as usize, 0usize)
     }
 }

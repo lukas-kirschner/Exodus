@@ -312,3 +312,34 @@ impl fmt::Display for Tile {
         )
     }
 }
+#[derive(EnumIter)]
+pub enum UITiles {
+    /// Texture for the Edit Map Button
+    EDITBUTTON,
+    /// Texture for the Play Button
+    PLAYBUTTON,
+    /// Texture for the Delete Button
+    DELETEBUTTON,
+    /// Texture for the Back Button
+    BACKBUTTON,
+    /// Texture for the Save Button
+    SAVEBUTTON,
+    /// Texture for the Replay Button
+    REPLAYBUTTON,
+    /// Texture for the Discard Highscore Button
+    DISCARDBUTTON,
+}
+
+impl UITiles {
+    pub fn atlas_index(&self) -> Option<AtlasIndex> {
+        Some(match *self {
+            UITiles::EDITBUTTON => 22,
+            UITiles::PLAYBUTTON => 21,
+            UITiles::DELETEBUTTON => 20,
+            UITiles::BACKBUTTON => 19,
+            UITiles::SAVEBUTTON => 31,
+            UITiles::REPLAYBUTTON => 47,
+            UITiles::DISCARDBUTTON => 15,
+        })
+    }
+}

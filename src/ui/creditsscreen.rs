@@ -1,3 +1,4 @@
+use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
 use crate::{get_buildnr, AppState};
@@ -39,8 +40,12 @@ fn credits() -> String {
 }
 
 /// Main Menu main routine
-fn credits_screen_ui(mut egui_ctx: ResMut<EguiContext>, mut state: ResMut<State<AppState>>) {
-    add_navbar(&mut egui_ctx, &mut state);
+fn credits_screen_ui(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut state: ResMut<State<AppState>>,
+    egui_textures: Res<EguiButtonTextures>,
+) {
+    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
 
     egui::CentralPanel::default()
         .frame(Frame::none())

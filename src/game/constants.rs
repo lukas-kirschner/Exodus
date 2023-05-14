@@ -14,6 +14,8 @@ pub const PLAYER_SPEED: f32 = 4.0;
 pub const COLLECTIBLE_PICKUP_DISTANCE: f32 = 0.1;
 /// The UI Font Size for main UI elements
 pub const _UI_FONT_SIZE: f32 = 30.;
+/// The Font Size for small subtitles like the Highscore Record on the Map Selection Screen
+pub const FONT_SIZE_HIGHSCORE: f32 = 14.;
 /// The speed a dead player ascends to heaven at
 pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
 /// The speed a dead player zooms while ascending
@@ -28,6 +30,8 @@ pub const EXITED_PLAYER_ZOOM_SPEED: f32 = -0.1;
 pub const EXITED_PLAYER_DECAY_SPEED: f32 = 2.0;
 /// The button size for the map editor
 pub const MAPEDITOR_BUTTON_SIZE: f32 = 38.;
+/// The button size for square buttons in the menu screen
+pub const MENU_SQUARE_BUTTON_SIZE: f32 = MAPEDITOR_BUTTON_SIZE;
 /// The speed a pickup item ascends
 pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
 /// The speed a pickup item resizes

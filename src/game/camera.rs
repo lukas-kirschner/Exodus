@@ -3,7 +3,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::UiSizeChangedEvent;
 use crate::{TilesetManager, LAYER_ID};
 use bevy::prelude::*;
-use bevy::render::camera::{RenderTarget, ScalingMode};
+use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
@@ -23,15 +23,16 @@ pub fn handle_ui_resize(
     window: Res<Windows>,
     map: Res<MapWrapper>,
     ui_info: Res<WindowUiOverlayInfo>,
-    mut camera_query: Query<&mut Transform, With<LayerCamera>>,
+    mut camera_query: Query<(&mut Transform, &mut OrthographicProjection), With<LayerCamera>>,
     tileset: Res<TilesetManager>,
 ) {
     for _ in event.iter() {
-        let mut camera_transform = camera_query.single_mut();
+        let (mut camera_transform, mut camera_projection) = camera_query.single_mut();
         rescale_camera(
             window.get_primary().unwrap(),
             &map,
             &mut camera_transform,
+            &mut camera_projection,
             &ui_info,
             tileset.current_tileset().texture_size(),
         );
@@ -42,6 +43,7 @@ pub fn rescale_camera(
     window: &Window,
     map: &MapWrapper,
     mut camera_transform: &mut Transform,
+    mut camera_projection: &mut OrthographicProjection,
     ui_margins: &WindowUiOverlayInfo,
     texture_size: usize,
 ) {
@@ -57,7 +59,7 @@ pub fn rescale_camera(
     } else {
         window_space_height_pixels / (map_height_px as f32)
     };
-    camera_transform.scale = Vec3::splat(1. / (camera_scale * texture_size as f32));
+    camera_projection.scale = 1. / (camera_scale * texture_size as f32);
 
     // Translate the camera, such that the center of the game board is shifted up or down, according to the UI margins
     // Shift the world to the middle of the screen
@@ -76,13 +78,7 @@ pub fn rescale_camera(
     camera_transform.translation = Vec3::new(shift_x, shift_y, 0.);
 }
 
-pub fn setup_camera(
-    mut commands: Commands,
-    window: Res<Windows>,
-    map: Res<MapWrapper>,
-    tileset: Res<TilesetManager>,
-    mut images: ResMut<Assets<Image>>,
-) {
+pub fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     let size = Extent3d {
         width: 1920,
         height: 1080,
@@ -105,43 +101,13 @@ pub fn setup_camera(
     };
     image.resize(size);
     let image_handle = images.add(image);
-    let mut layer_camera = Camera2dBundle {
-        projection: OrthographicProjection {
-            far: 1000.0,
-            scaling_mode: ScalingMode::WindowSize,
-            ..default()
-        },
-        camera: Camera {
-            priority: -1,
-            target: RenderTarget::Image(image_handle.clone()),
-            ..default()
-        },
-        transform: Transform::default(),
-        ..default()
-    };
-    let main_camera = Camera2dBundle {
-        projection: OrthographicProjection {
-            far: 1000.0,
-            scaling_mode: ScalingMode::WindowSize,
-            ..default()
-        },
-        transform: Transform::default(),
-        ..default()
-    };
+    let mut layer_camera = Camera2dBundle::new_with_far(1000.);
+    layer_camera.camera.target = RenderTarget::Image(image_handle.clone());
+    layer_camera.camera.priority = -1;
+
+    let main_camera = Camera2dBundle::new_with_far(1000.);
     let layer = RenderLayers::layer(LAYER_ID);
-    let new_size = WindowUiOverlayInfo {
-        top: 1.0,
-        bottom: 1.0,
-        ..default()
-    };
-    commands.insert_resource::<WindowUiOverlayInfo>(new_size);
-    rescale_camera(
-        window.get_primary().unwrap(),
-        &map,
-        &mut layer_camera.transform,
-        &new_size,
-        tileset.current_tileset().texture_size(),
-    );
+    commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
     commands.spawn((main_camera, MainCamera));
     commands.spawn((layer_camera, LayerCamera, layer));
     commands.spawn((

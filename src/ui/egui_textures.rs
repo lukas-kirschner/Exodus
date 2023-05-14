@@ -4,7 +4,7 @@ use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::{FontId, TextureId};
 use bevy_egui::{egui, EguiContext};
 use libexodus::player::Player;
-use libexodus::tiles::{AtlasIndex, Tile};
+use libexodus::tiles::{AtlasIndex, Tile, UITiles};
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 
@@ -61,6 +61,14 @@ pub fn atlas_to_egui_textures(
     let mut textures = HashMap::new();
     for tile in Tile::iter() {
         if let Some(atlas_index) = tile.atlas_index() {
+            textures.insert(
+                atlas_index,
+                convert(texture_atlas, texture_handle, &mut egui_ctx, &atlas_index),
+            );
+        }
+    }
+    for extratexture in UITiles::iter() {
+        if let Some(atlas_index) = extratexture.atlas_index() {
             textures.insert(
                 atlas_index,
                 convert(texture_atlas, texture_handle, &mut egui_ctx, &atlas_index),

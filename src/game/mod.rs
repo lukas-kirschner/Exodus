@@ -1,6 +1,8 @@
 use crate::game::pickup_item::PickupItemPlugin;
 use crate::AppState;
 use bevy::prelude::*;
+use libexodus::highscores::highscores_database::HighscoresDatabase;
+use std::path::PathBuf;
 
 pub mod camera;
 pub mod constants;
@@ -35,6 +37,12 @@ impl Plugin for GamePlugin {
                     .label("reset_score"),
             );
     }
+}
+
+#[derive(Resource)]
+pub struct HighscoresDatabaseWrapper {
+    pub highscores: HighscoresDatabase,
+    pub file: PathBuf,
 }
 
 fn back_to_main_menu_controls(

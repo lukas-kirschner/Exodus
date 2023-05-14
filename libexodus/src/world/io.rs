@@ -1,3 +1,4 @@
+use crate::exodus_serializable::ExodusSerializable;
 use crate::tiles::Tile;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
@@ -7,7 +8,6 @@ use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
-pub(crate) const CURRENT_MAP_VERSION: u8 = 0x01;
 pub(crate) const MAGICBYTES: [u8; 9] = [0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x4d, 0x61, 0x70];
 pub(crate) const MAX_MAP_WIDTH: usize = 1024;
 pub(crate) const MAX_MAP_HEIGHT: usize = 1024;
@@ -66,13 +66,15 @@ impl GameWorld {
 }
 
 /// Implementation for Serializer
-impl GameWorld {
+impl ExodusSerializable for GameWorld {
+    const CURRENT_VERSION: u8 = 0x01;
+    type ParseError = GameWorldParseError;
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
         file.write_all(&MAGICBYTES)?;
 
         // Write Map Version
-        file.write_all(&[CURRENT_MAP_VERSION])?;
+        file.write_all(&[Self::CURRENT_VERSION])?;
 
         // Write Map Name
         let name_b = bincode::serialize(&self.name)?;
@@ -89,28 +91,6 @@ impl GameWorld {
 
         Ok(())
     }
-    pub(crate) fn serialize_world_content<T: Write>(
-        &self,
-        file: &mut T,
-    ) -> Result<(), GameWorldParseError> {
-        // Write Map Width and Height
-        let width_b = bincode::serialize(&self.width())?;
-        file.write_all(&width_b)?;
-        let height_b = bincode::serialize(&self.height())?;
-        file.write_all(&height_b)?;
-
-        // Write Map Tiles
-        for y in 0..self.height() {
-            for x in 0..self.width() {
-                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
-            }
-        }
-        Ok(())
-    }
-}
-
-/// Implementation for Parser
-impl GameWorld {
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Parse Magic Bytes
         let mut buf: [u8; MAGICBYTES.len()] = [0; MAGICBYTES.len()];
@@ -126,10 +106,10 @@ impl GameWorld {
         let mut buf: [u8; 1] = [0; 1];
         file.read_exact(&mut buf)?;
         match buf[0] {
-            CURRENT_MAP_VERSION => self.parse_current_version(file),
+            Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
-                return Err(GameWorldParseError::InvalidVersion {
+                return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
                 })
             },
@@ -143,10 +123,7 @@ impl GameWorld {
             RecomputeHashResult::ERROR { error } => Err(error),
         }
     }
-}
 
-// Code to parse a map with the current version.
-impl GameWorld {
     /// Parse a map with the current version.
     /// The file read position must be already behind the version byte
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
@@ -164,13 +141,13 @@ impl GameWorld {
         // Parse Map Width and Map Height
         let map_width: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
         let map_height: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
-        if map_width > MAX_MAP_WIDTH || map_width == 0 {
+        if map_width > MAX_MAP_WIDTH {
             return Err(GameWorldParseError::InvalidMapWidth {
                 max_width: MAX_MAP_WIDTH,
                 actual_width: map_width,
             });
         }
-        if map_height > MAX_MAP_HEIGHT || map_height == 0 {
+        if map_height > MAX_MAP_HEIGHT {
             return Err(GameWorldParseError::InvalidMapHeight {
                 max_height: MAX_MAP_HEIGHT,
                 actual_height: map_height,
@@ -201,6 +178,10 @@ impl GameWorld {
 
         Ok(())
     }
+}
+
+// Code to parse a map with the current version.
+impl GameWorld {
     /// Parse a string
     fn parse_current_version_string<T: Read>(
         &mut self,
@@ -217,6 +198,24 @@ impl GameWorld {
         let mut buf = [0u8; HASH_LENGTH];
         file.read_exact(&mut buf)?;
         Ok(buf)
+    }
+    pub(crate) fn serialize_world_content<T: Write>(
+        &self,
+        file: &mut T,
+    ) -> Result<(), GameWorldParseError> {
+        // Write Map Width and Height
+        let width_b = bincode::serialize(&self.width())?;
+        file.write_all(&width_b)?;
+        let height_b = bincode::serialize(&self.height())?;
+        file.write_all(&height_b)?;
+
+        // Write Map Tiles
+        for y in 0..self.height() {
+            for x in 0..self.width() {
+                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -364,11 +363,27 @@ mod tests {
     }
 
     #[test]
+    fn test_write_and_read_debug_map() {
+        let mut reference_map = GameWorld::exampleworld();
+        test_write_and_read_map(&mut reference_map);
+    }
+    #[test]
+    fn test_write_and_read_default_map() {
+        let mut reference_map = GameWorld::default();
+        test_write_and_read_map(&mut reference_map);
+    }
+    #[test]
+    fn test_write_and_read_showcase_map() {
+        let mut reference_map = GameWorld::showcaseworld();
+        test_write_and_read_map(&mut reference_map);
+    }
+
+    #[test]
     fn test_map_with_invalid_hash() {
         let mut map = GameWorld::exampleworld();
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize(&map.name).unwrap());
         data.extend_from_slice(&bincode::serialize(&map.author).unwrap());
         map.set(0, 0, Tile::WALL)
@@ -473,7 +488,7 @@ mod tests {
     fn test_map_with_invalid_name_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&[0xffu8; 100]);
         let mut buf = ByteBuffer::from_bytes(&data);
         let mut map = GameWorld::new(1, 1);
@@ -493,7 +508,7 @@ mod tests {
     fn test_map_with_invalid_author_string() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&[0xffu8; 100]);
         let mut buf = ByteBuffer::from_bytes(&data);
@@ -514,7 +529,7 @@ mod tests {
     fn test_map_with_invalid_width() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
         data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
@@ -538,7 +553,7 @@ mod tests {
     fn test_map_with_invalid_width_zero() {
         let mut data: Vec<u8> = vec![];
         data.extend_from_slice(&MAGICBYTES);
-        data.push(CURRENT_MAP_VERSION);
+        data.push(GameWorld::CURRENT_VERSION);
         data.extend_from_slice(&bincode::serialize("Test Name").unwrap());
         data.extend_from_slice(&bincode::serialize("Test Author").unwrap());
         data.extend_from_slice(&[0xffu8; HASH_LENGTH]);
