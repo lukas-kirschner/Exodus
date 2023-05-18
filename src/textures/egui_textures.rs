@@ -11,14 +11,12 @@ use strum::IntoEnumIterator;
 #[derive(Resource)]
 pub struct EguiButtonTextures {
     pub textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
-    pub player_textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
 }
 
 impl FromWorld for EguiButtonTextures {
     fn from_world(_: &mut World) -> Self {
         EguiButtonTextures {
             textures: HashMap::new(),
-            player_textures: HashMap::new(),
         }
     }
 }
@@ -59,6 +57,7 @@ pub fn atlas_to_egui_textures(
         .expect("The texture atlas of the tile set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
+    // Convert game world tiles
     for tile in Tile::iter() {
         if let Some(atlas_index) = tile.atlas_index() {
             textures.insert(
@@ -67,6 +66,7 @@ pub fn atlas_to_egui_textures(
             );
         }
     }
+    // Convert Button Textures
     for extratexture in UITiles::iter() {
         if let Some(atlas_index) = extratexture.atlas_index() {
             textures.insert(
@@ -75,14 +75,10 @@ pub fn atlas_to_egui_textures(
             );
         }
     }
-    let mut textures_p = HashMap::new();
-    // The Player Spawn needs a special atlas index:
-    let player = Player::new(); // TODO The Query is not working in this stage, unfortunately
-    let texture_atlas: &TextureAtlas = texture_atlases
-        .get(&texture_atlas_handle.current_handle())
-        .expect("The texture atlas of the player set has not yet been loaded!");
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
-    textures_p.insert(
+
+    // Convert Player Texture for the Player Spawn Button
+    let player = Player::new();
+    textures.insert(
         player.atlas_index(),
         convert(
             texture_atlas,
@@ -91,10 +87,8 @@ pub fn atlas_to_egui_textures(
             &player.atlas_index(),
         ),
     );
-    commands.insert_resource(EguiButtonTextures {
-        textures,
-        player_textures: textures_p,
-    });
+
+    commands.insert_resource(EguiButtonTextures { textures });
 }
 
 pub fn egui_fonts(ctx: &egui::Context) {
