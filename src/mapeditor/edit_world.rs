@@ -122,7 +122,7 @@ fn mouse_down_handler(
     >,
     atlas: Res<TilesetManager>,
     layer_query: Query<&RenderLayers, With<LayerCamera>>,
-    _config: Res<GameConfig>,
+    config: Res<GameConfig>,
 ) {
     let (layer_camera, layer_camera_transform) = q_layer_camera
         .get_single()
@@ -137,6 +137,7 @@ fn mouse_down_handler(
             main_camera_transform,
             layer_camera,
             layer_camera_transform,
+            config.config.tile_set.texture_size() as f32,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
@@ -161,6 +162,7 @@ fn mouse_down_handler(
             main_camera_transform,
             layer_camera,
             layer_camera_transform,
+            config.config.tile_set.texture_size() as f32,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
@@ -188,7 +190,7 @@ fn mouse_down_handler_playerspawn(
     buttons: Res<Input<MouseButton>>,
     current_tile: Res<SelectedTile>,
     mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
-    _config: Res<GameConfig>,
+    config: Res<GameConfig>,
 ) {
     if current_tile.tile == Tile::PLAYERSPAWN {
         let (layer_camera, layer_camera_transform) = q_layer_camera.single();
@@ -200,10 +202,11 @@ fn mouse_down_handler_playerspawn(
                 main_camera_transform,
                 layer_camera,
                 layer_camera_transform,
+                config.config.tile_set.texture_size() as f32,
             ) {
                 let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
-                translation.x = world_x as f32;
-                translation.y = world_y as f32;
+                translation.x = world_x as f32 * config.config.tile_set.texture_size() as f32;
+                translation.y = world_y as f32 * config.config.tile_set.texture_size() as f32;
             }
         }
     }

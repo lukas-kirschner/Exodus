@@ -47,7 +47,8 @@ pub fn compute_cursor_position_in_world(
     main_camera: &Camera,
     main_camera_transform: &GlobalTransform,
     _layer_camera: &Camera,
-    _layer_camera_transform: &GlobalTransform,
+    layer_camera_transform: &GlobalTransform,
+    texture_size: f32,
 ) -> Option<(i32, i32)> {
     // get the window that the camera is displaying to (or the primary window)
     let wnd = if let RenderTarget::Window(id) = main_camera.target {
@@ -60,10 +61,13 @@ pub fn compute_cursor_position_in_world(
     if let Some(screen_pos) = wnd.cursor_position() {
         // if let Some(screen_pos) = layer_camera.viewport_to_world(layer_camera_transform, screen_pos)
         // {
-        if let Some(screen_pos) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
-            let ret = ((screen_pos.origin.x), (screen_pos.origin.y));
-            debug!("Pos {},{}", ret.0, ret.1);
-            return Some((ret.0 as i32, ret.1 as i32));
+        if let Some(world_coord) = main_camera.viewport_to_world(main_camera_transform, screen_pos)
+        {
+            let mut ret = ((world_coord.origin.x), (world_coord.origin.y));
+            ret.0 += layer_camera_transform.translation().x / texture_size;
+            ret.1 += layer_camera_transform.translation().y / texture_size;
+            // debug!("Pos {},{}", ret.0, ret.1);
+            return Some(((ret.0 + 0.5) as i32, (ret.1 + 0.5) as i32));
         }
         // }
     }

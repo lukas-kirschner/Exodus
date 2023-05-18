@@ -92,7 +92,7 @@ fn update_preview_tile(
     wnds: Res<Windows>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    _map: Res<MapWrapper>,
+    map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(
         &mut PreviewTile,
@@ -122,19 +122,23 @@ fn update_preview_tile(
         main_camera_transform,
         layer_camera,
         layer_camera_transform,
+        config.config.tile_set.texture_size() as f32,
     ) {
         // The cursor is inside the window
-        if (transform.translation.x / config.config.tile_set.texture_size() as f32) as i32
-            != world_x_coord
-            || (transform.translation.y / config.config.tile_set.texture_size() as f32) as i32
-                != world_y_coord
+        if world_x_coord >= 0
+            && world_y_coord >= 0
+            && world_x_coord < map.world.width() as i32
+            && world_y_coord < map.world.height() as i32
         {
             transform.translation.x =
                 world_x_coord as f32 * config.config.tile_set.texture_size() as f32;
             transform.translation.y =
                 world_y_coord as f32 * config.config.tile_set.texture_size() as f32;
+        } else {
+            // The cursor is not in the window. We need to move the preview out of sight
+            transform.translation.x = -10000.0;
+            transform.translation.y = -10000.0;
         }
-        // eprintln!("World coords: {}/{}", world_x, world_y);
     } else {
         // The cursor is not in the window. We need to move the preview out of sight
         transform.translation.x = -10000.0;
