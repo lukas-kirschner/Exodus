@@ -1,6 +1,6 @@
 use crate::game::constants::PLAYER_Z;
 use crate::game::tilewrapper::MapWrapper;
-use crate::{TilesetManager, LAYER_ID};
+use crate::{GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::player::Player;
@@ -14,6 +14,7 @@ pub fn init_player_spawn(
     mut commands: Commands,
     tileset: Res<TilesetManager>,
     world_wrapper: ResMut<MapWrapper>,
+    config: Res<GameConfig>,
 ) {
     // Code Duplication from player.rs - but we need to change things later
     let player: PlayerSpawnComponent = PlayerSpawnComponent {
@@ -27,11 +28,10 @@ pub fn init_player_spawn(
             texture_atlas: tileset.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    map_player_position_x as f32,
-                    map_player_position_y as f32,
+                    (map_player_position_x * config.config.tile_set.texture_size()) as f32,
+                    (map_player_position_y * config.config.tile_set.texture_size()) as f32,
                     PLAYER_Z,
                 ),
-                scale: Vec3::splat(1.0 / tileset.current_tileset().texture_size() as f32),
                 ..default()
             },
             ..Default::default()

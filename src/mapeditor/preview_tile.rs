@@ -4,7 +4,7 @@ use crate::game::constants::{
 };
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
-use crate::{App, AppState, TilesetManager, LAYER_ID};
+use crate::{App, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::player::Player;
@@ -53,9 +53,6 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
             texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
                 translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
-                scale: Vec3::splat(
-                    1.0 / current_texture_atlas.current_tileset().texture_size() as f32,
-                ),
                 ..default()
             },
             ..default()
@@ -95,7 +92,7 @@ fn update_preview_tile(
     wnds: Res<Windows>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    map: Res<MapWrapper>,
+    _map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(
         &mut PreviewTile,
@@ -104,6 +101,7 @@ fn update_preview_tile(
         &mut Transform,
     )>,
     current_texture_atlas: Res<TilesetManager>,
+    config: Res<GameConfig>,
 ) {
     let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) =
         preview_tile_q.single_mut();
@@ -118,13 +116,23 @@ fn update_preview_tile(
     }
     let (layer_camera, layer_camera_transform) = q_layer_camera.single();
     let (main_camera, main_camera_transform) = q_main_camera.single();
-    if let Some((world_x, world_y)) =
-        compute_cursor_position_in_world(&wnds, main_camera, main_camera_transform)
-    {
+    if let Some((world_x_coord, world_y_coord)) = compute_cursor_position_in_world(
+        &wnds,
+        main_camera,
+        main_camera_transform,
+        layer_camera,
+        layer_camera_transform,
+    ) {
         // The cursor is inside the window
-        if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {
-            transform.translation.x = world_x as f32;
-            transform.translation.y = world_y as f32;
+        if (transform.translation.x / config.config.tile_set.texture_size() as f32) as i32
+            != world_x_coord
+            || (transform.translation.y / config.config.tile_set.texture_size() as f32) as i32
+                != world_y_coord
+        {
+            transform.translation.x =
+                world_x_coord as f32 * config.config.tile_set.texture_size() as f32;
+            transform.translation.y =
+                world_y_coord as f32 * config.config.tile_set.texture_size() as f32;
         }
         // eprintln!("World coords: {}/{}", world_x, world_y);
     } else {

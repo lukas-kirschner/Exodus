@@ -218,8 +218,8 @@ pub fn player_movement(
             // Check if the player collides with anything, and remove the movement if that is the case.
             // For Player movements, only the directions from the movements are used -- The target is discarded and calculated from the direction.
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                (transform.translation.x / (config.config.tile_set.texture_size() as f32)),
-                (transform.translation.y / (config.config.tile_set.texture_size() as f32)),
+                transform.translation.x / (config.config.tile_set.texture_size() as f32),
+                transform.translation.y / (config.config.tile_set.texture_size() as f32),
             );
             // Check if the player collides with map boundaries
             if target_x_coord < 0
@@ -261,8 +261,8 @@ pub fn player_movement(
 
         if let Some(movement) = player.peek_movement_queue() {
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                (transform.translation.x / (config.config.tile_set.texture_size() as f32)),
-                (transform.translation.y / (config.config.tile_set.texture_size() as f32)),
+                transform.translation.x / (config.config.tile_set.texture_size() as f32),
+                transform.translation.y / (config.config.tile_set.texture_size() as f32),
             );
             let (target_x_px, target_y_px) = (
                 (target_x_coord * config.config.tile_set.texture_size() as i32) as f32,
@@ -382,33 +382,24 @@ pub fn player_movement(
                 (transform.translation.x / config.config.tile_set.texture_size() as f32) as i32;
             let current_y_coord =
                 (transform.translation.y / config.config.tile_set.texture_size() as f32) as i32;
-            if let Some(block) = worldwrapper
-                .world
-                .get(current_x_coord as i32, current_y_coord as i32 - 1)
-            {
+            if let Some(block) = worldwrapper.world.get(current_x_coord, current_y_coord - 1) {
                 if !block.can_collide_from(&FromDirection::FROMNORTH) {
                     player.push_movement_queue(Movement {
                         velocity: (
                             0.,
                             -(PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32)),
                         ),
-                        target: (current_x_coord as i32, current_y_coord as i32 - 1),
+                        target: (current_x_coord, current_y_coord - 1),
                         is_manual: false,
                     });
                 }
             }
-            if let Some(block) = worldwrapper
-                .world
-                .get(current_x_coord as i32, current_y_coord as i32)
-            {
+            if let Some(block) = worldwrapper.world.get(current_x_coord, current_y_coord) {
                 if let TileKind::LADDER = block.kind() {
                     player.clear_movement_queue(); // We don't want any gravity pulling the player off a ladder
                 }
             }
-            if let Some(block) = worldwrapper
-                .world
-                .get(current_x_coord as i32, current_y_coord as i32 - 1)
-            {
+            if let Some(block) = worldwrapper.world.get(current_x_coord, current_y_coord - 1) {
                 if let TileKind::LADDER = block.kind() {
                     player.clear_movement_queue(); // Players shall be able to stand on ladders
                 }

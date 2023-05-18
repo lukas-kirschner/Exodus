@@ -20,7 +20,7 @@ pub fn pickup_item_animation(
     config: Res<GameConfig>,
     time: Res<Time>,
 ) {
-    let texture_size = (config.config.tile_set.texture_size() as f32);
+    let texture_size = config.config.tile_set.texture_size() as f32;
     for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (PICKUP_ITEM_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
