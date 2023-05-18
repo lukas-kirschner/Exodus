@@ -2,7 +2,7 @@ use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::constants::WORLD_Z;
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
-use crate::tileset_manager::TilesetManager;
+use crate::textures::tileset_manager::TilesetManager;
 use crate::{AppState, LAYER_ID};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;

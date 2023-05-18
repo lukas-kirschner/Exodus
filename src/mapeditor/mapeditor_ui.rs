@@ -7,7 +7,7 @@ use crate::mapeditor::player_spawn::{
     destroy_player_spawn, init_player_spawn, PlayerSpawnComponent,
 };
 use crate::mapeditor::{MapeditorSystems, SelectedTile};
-use crate::ui::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
+use crate::textures::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppState, GameDirectoriesWrapper};

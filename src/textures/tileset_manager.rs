@@ -72,5 +72,8 @@ pub(crate) fn find_handle_with_path(
             return handle.typed_weak();
         }
     }
-    panic!("The file {} was not loaded!", path.to_str().unwrap());
+    panic!(
+        "The file {} was requested as texture pack, but not loaded!",
+        path.to_str().unwrap()
+    );
 }

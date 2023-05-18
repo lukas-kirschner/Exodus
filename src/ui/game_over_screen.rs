@@ -1,6 +1,6 @@
 use crate::game::tilewrapper::{GameOverState, MapWrapper};
 use crate::game::HighscoresDatabaseWrapper;
-use crate::ui::egui_textures::EguiButtonTextures;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;

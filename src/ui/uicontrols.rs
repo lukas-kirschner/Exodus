@@ -1,4 +1,4 @@
-use crate::ui::egui_textures::EguiButtonTextures;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::{image_button, BUTTON_HEIGHT};
 use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program

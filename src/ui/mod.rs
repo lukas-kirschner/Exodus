@@ -1,7 +1,7 @@
 use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::configscreen::ConfigScreen;
 use crate::ui::creditsscreen::CreditsScreen;
-use crate::ui::egui_textures::EguiButtonTextures;
 use crate::ui::game_over_screen::GameOverScreen;
 use crate::ui::mainmenu::MainMenu;
 use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
@@ -12,7 +12,6 @@ use libexodus::tiles::UITiles;
 
 mod configscreen;
 mod creditsscreen;
-pub mod egui_textures;
 pub mod game_over_screen;
 pub mod mainmenu;
 mod mapselectionscreen;

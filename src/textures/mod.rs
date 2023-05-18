@@ -1,4 +1,4 @@
-use crate::tileset_manager::{
+use crate::textures::tileset_manager::{
     file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager,
 };
 use crate::AppState;
@@ -7,6 +7,9 @@ use bevy::prelude::*;
 use libexodus::tilesets::Tileset;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
+
+pub mod egui_textures;
+pub mod tileset_manager;
 
 /// The Textures Plugin that takes care of loading textures
 pub struct Textures;

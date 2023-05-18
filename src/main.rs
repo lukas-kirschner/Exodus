@@ -1,8 +1,8 @@
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
+use crate::textures::egui_textures::egui_fonts;
+use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
 use crate::textures::Textures;
-use crate::tileset_manager::{RpgSpriteHandles, TilesetManager};
-use crate::ui::egui_textures::egui_fonts;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
 use bevy::log::LogPlugin;
@@ -24,7 +24,6 @@ mod dialogs;
 mod game;
 mod mapeditor;
 mod textures;
-mod tileset_manager;
 mod ui;
 mod util;
 
