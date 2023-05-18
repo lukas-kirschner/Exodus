@@ -27,6 +27,7 @@ i18n!("locales");
 mod dialogs;
 mod game;
 mod mapeditor;
+mod textures;
 mod tileset_manager;
 mod ui;
 mod util;
@@ -253,10 +254,10 @@ fn resize_notificator(
 ) {
     for e in resize_event.iter() {
         if e.id == window.get_primary().unwrap().id() {
-            debug!(
-                "The main window was resized to a new size of {} x {}",
-                e.width, e.height
-            );
+            // debug!(
+            //     "The main window was resized to a new size of {} x {}",
+            //     e.width, e.height
+            // );
             ev_camera_writer.send(UiSizeChangedEvent);
         }
     }
