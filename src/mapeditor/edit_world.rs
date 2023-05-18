@@ -3,7 +3,7 @@ use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
 use crate::mapeditor::player_spawn::PlayerSpawnComponent;
 use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
-use crate::{AppState, TilesetManager};
+use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::tiles::Tile;
@@ -122,6 +122,7 @@ fn mouse_down_handler(
     >,
     atlas: Res<TilesetManager>,
     layer_query: Query<&RenderLayers, With<LayerCamera>>,
+    config: Res<GameConfig>,
 ) {
     let (layer_camera, layer_camera_transform) = q_layer_camera
         .get_single()
@@ -132,11 +133,11 @@ fn mouse_down_handler(
     if buttons.just_pressed(MouseButton::Left) {
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
             &wnds,
-            layer_camera,
-            layer_camera_transform,
             main_camera,
             main_camera_transform,
-            &map,
+            layer_camera,
+            layer_camera_transform,
+            config.config.tile_set.texture_size() as f32,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
@@ -157,11 +158,11 @@ fn mouse_down_handler(
         // On Right Click, replace the current tile with air
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
             &wnds,
-            layer_camera,
-            layer_camera_transform,
             main_camera,
             main_camera_transform,
-            &map,
+            layer_camera,
+            layer_camera_transform,
+            config.config.tile_set.texture_size() as f32,
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
@@ -185,10 +186,11 @@ fn mouse_down_handler_playerspawn(
     wnds: Res<Windows>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    map: ResMut<MapWrapper>,
+    _map: ResMut<MapWrapper>,
     buttons: Res<Input<MouseButton>>,
     current_tile: Res<SelectedTile>,
     mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
+    config: Res<GameConfig>,
 ) {
     if current_tile.tile == Tile::PLAYERSPAWN {
         let (layer_camera, layer_camera_transform) = q_layer_camera.single();
@@ -196,15 +198,15 @@ fn mouse_down_handler_playerspawn(
         if buttons.just_pressed(MouseButton::Left) {
             if let Some((world_x, world_y)) = compute_cursor_position_in_world(
                 &wnds,
-                layer_camera,
-                layer_camera_transform,
                 main_camera,
                 main_camera_transform,
-                &map,
+                layer_camera,
+                layer_camera_transform,
+                config.config.tile_set.texture_size() as f32,
             ) {
                 let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
-                translation.x = world_x as f32;
-                translation.y = world_y as f32;
+                translation.x = world_x as f32 * config.config.tile_set.texture_size() as f32;
+                translation.y = world_y as f32 * config.config.tile_set.texture_size() as f32;
             }
         }
     }
