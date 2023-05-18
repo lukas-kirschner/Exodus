@@ -118,14 +118,9 @@ fn update_preview_tile(
     }
     let (layer_camera, layer_camera_transform) = q_layer_camera.single();
     let (main_camera, main_camera_transform) = q_main_camera.single();
-    if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-        &wnds,
-        layer_camera,
-        layer_camera_transform,
-        main_camera,
-        main_camera_transform,
-        &map,
-    ) {
+    if let Some((world_x, world_y)) =
+        compute_cursor_position_in_world(&wnds, main_camera, main_camera_transform)
+    {
         // The cursor is inside the window
         if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {
             transform.translation.x = world_x as f32;

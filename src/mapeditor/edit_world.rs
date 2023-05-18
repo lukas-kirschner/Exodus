@@ -130,14 +130,9 @@ fn mouse_down_handler(
         .get_single()
         .expect("There were multiple main cameras spawned");
     if buttons.just_pressed(MouseButton::Left) {
-        if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-            &wnds,
-            layer_camera,
-            layer_camera_transform,
-            main_camera,
-            main_camera_transform,
-            &map,
-        ) {
+        if let Some((world_x, world_y)) =
+            compute_cursor_position_in_world(&wnds, main_camera, main_camera_transform)
+        {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != current_tile.tile {
                     replace_world_tile_at(
@@ -155,14 +150,9 @@ fn mouse_down_handler(
         }
     } else if buttons.just_pressed(MouseButton::Right) {
         // On Right Click, replace the current tile with air
-        if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-            &wnds,
-            layer_camera,
-            layer_camera_transform,
-            main_camera,
-            main_camera_transform,
-            &map,
-        ) {
+        if let Some((world_x, world_y)) =
+            compute_cursor_position_in_world(&wnds, main_camera, main_camera_transform)
+        {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
                     replace_world_tile_at(
@@ -194,14 +184,9 @@ fn mouse_down_handler_playerspawn(
         let (layer_camera, layer_camera_transform) = q_layer_camera.single();
         let (main_camera, main_camera_transform) = q_main_camera.single();
         if buttons.just_pressed(MouseButton::Left) {
-            if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-                &wnds,
-                layer_camera,
-                layer_camera_transform,
-                main_camera,
-                main_camera_transform,
-                &map,
-            ) {
+            if let Some((world_x, world_y)) =
+                compute_cursor_position_in_world(&wnds, main_camera, main_camera_transform)
+            {
                 let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
                 translation.x = world_x as f32;
                 translation.y = world_y as f32;

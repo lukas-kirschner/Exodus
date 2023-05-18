@@ -393,12 +393,12 @@ pub fn player_movement(
 fn respawn_player(
     commands: &mut Commands,
     atlas_handle_player: &TilesetManager,
-    worldwrapper: &MapWrapper,
+    world: &GameWorld,
 ) {
     let player: PlayerComponent = PlayerComponent {
         player: Player::new(),
     };
-    let (map_player_position_x, map_player_position_y) = worldwrapper.world.player_spawn();
+    let (map_player_position_x, map_player_position_y) = world.player_spawn();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
@@ -406,12 +406,11 @@ fn respawn_player(
             texture_atlas: atlas_handle_player.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    map_player_position_x as f32,
-                    map_player_position_y as f32,
+                    (map_player_position_x * atlas_handle_player.current_tileset().texture_size())
+                        as f32,
+                    (map_player_position_y * atlas_handle_player.current_tileset().texture_size())
+                        as f32,
                     PLAYER_Z,
-                ),
-                scale: Vec3::splat(
-                    1.0 / atlas_handle_player.current_tileset().texture_size() as f32,
                 ),
                 ..default()
             },
@@ -425,9 +424,9 @@ fn respawn_player(
 pub fn setup_player(
     mut commands: Commands,
     current_texture_atlas: Res<TilesetManager>,
-    worldwrapper: ResMut<MapWrapper>,
+    world: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, &current_texture_atlas, &worldwrapper);
+    respawn_player(&mut commands, &current_texture_atlas, &world.world);
 }
 
 pub fn keyboard_controls(

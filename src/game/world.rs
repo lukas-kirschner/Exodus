@@ -66,8 +66,10 @@ pub fn spawn_tile(
             sprite: TextureAtlasSprite::new(atlas_index),
             texture_atlas: map_texture_atlas.current_handle(),
             transform: Transform {
-                translation: tile_position.extend(WORLD_Z),
-                scale: Vec3::splat(1.0 / map_texture_atlas.current_tileset().texture_size() as f32),
+                // Multiply the position by the texture size
+                translation: (*tile_position
+                    * (map_texture_atlas.current_tileset().texture_size() as f32))
+                    .extend(WORLD_Z),
                 ..default()
             },
             ..Default::default()
