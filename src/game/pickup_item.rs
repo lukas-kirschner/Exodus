@@ -5,7 +5,7 @@ use crate::game::constants::{
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
-use crate::AppState;
+use crate::{AppState, GameConfig};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
@@ -17,8 +17,10 @@ pub struct PickupItem;
 pub fn pickup_item_animation(
     mut commands: Commands,
     mut dead_players: Query<(&mut TextureAtlasSprite, &mut Transform, Entity), With<PickupItem>>,
+    config: Res<GameConfig>,
     time: Res<Time>,
 ) {
+    let texture_size = (config.config.tile_set.texture_size() as f32);
     for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (PICKUP_ITEM_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -27,8 +29,9 @@ pub fn pickup_item_animation(
             return;
         }
         sprite.color.set_a(new_a);
-        transform.translation.y += PICKUP_ITEM_ASCEND_SPEED * time.delta_seconds();
-        transform.scale += Vec3::splat(PICKUP_ITEM_ZOOM_SPEED * time.delta_seconds());
+        transform.translation.y += PICKUP_ITEM_ASCEND_SPEED * texture_size * time.delta_seconds();
+        transform.scale +=
+            Vec3::splat(PICKUP_ITEM_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }
 

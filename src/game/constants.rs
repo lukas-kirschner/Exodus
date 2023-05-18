@@ -9,7 +9,7 @@ pub const MAPEDITOR_PREVIEWTILE_ALPHA: f32 = 0.40;
 /// The Map Editor Preview Tiles' Air Texture Atlas Index
 pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 43;
 /// The speed of the player movement
-pub const PLAYER_SPEED: f32 = 4.0;
+pub const PLAYER_SPEED_: f32 = 4.0;
 /// The pickup distance for coins
 pub const COLLECTIBLE_PICKUP_DISTANCE: f32 = 0.1;
 /// The UI Font Size for main UI elements
