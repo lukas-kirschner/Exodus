@@ -1,3 +1,4 @@
+use crate::textures::fonts::egui_fonts;
 use crate::textures::tileset_manager::{
     file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager,
 };
@@ -9,6 +10,7 @@ use std::path::PathBuf;
 use strum::IntoEnumIterator;
 
 pub mod egui_textures;
+pub mod fonts;
 pub mod tileset_manager;
 
 /// The Textures Plugin that takes care of loading textures
@@ -17,6 +19,7 @@ pub struct Textures;
 impl Plugin for Textures {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(AppState::Loading).with_system(load_textures))
+            .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(egui_fonts))
             .add_system_set(
                 SystemSet::on_update(AppState::Loading).with_system(check_and_init_textures),
             );

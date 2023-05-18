@@ -1,6 +1,5 @@
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
-use crate::textures::egui_textures::egui_fonts;
 use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
 use crate::textures::Textures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
@@ -9,7 +8,7 @@ use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::render::view::Layer;
 use bevy::window::{WindowMode, WindowResized};
-use bevy_egui::{EguiContext, EguiPlugin};
+use bevy_egui::EguiPlugin;
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
@@ -69,7 +68,6 @@ pub const LAYER_ID: Layer = 1;
 fn game_init(
     mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
-    mut ctx: ResMut<EguiContext>,
     mut res_tileset: ResMut<TilesetManager>,
 ) {
     if !directories.game_directories.maps_dir.as_path().exists() {
@@ -169,7 +167,6 @@ fn game_init(
         file: highscores_file,
     });
     // Initialize Styling and fonts for egui
-    egui_fonts(ctx.ctx_mut());
 }
 
 struct LoadingPlugin;
