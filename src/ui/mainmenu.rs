@@ -1,4 +1,4 @@
-use crate::ui::egui_textures::atlas_to_egui_textures;
+use crate::textures::egui_textures::atlas_to_egui_textures;
 use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
 use crate::AppState;
 use bevy::app::AppExit;

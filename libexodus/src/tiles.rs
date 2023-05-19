@@ -174,7 +174,7 @@ impl Tile {
         match self {
             Tile::AIR => None,
             Tile::WALL => Some(58),
-            Tile::WALLNATURE => Some(130),
+            Tile::WALLNATURE => Some(103),
             Tile::WALLCOBBLE => Some(123),
             Tile::WALLSMOOTH => Some(57),
             Tile::WALLCHISELED => Some(52),

@@ -1,6 +1,6 @@
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
-use crate::ui::egui_textures::EguiButtonTextures;
+use crate::textures::egui_textures::EguiButtonTextures;
 use bevy::log::debug;
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;

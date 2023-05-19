@@ -7,7 +7,7 @@ use crate::mapeditor::player_spawn::{
     destroy_player_spawn, init_player_spawn, PlayerSpawnComponent,
 };
 use crate::mapeditor::{MapeditorSystems, SelectedTile};
-use crate::ui::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
+use crate::textures::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppState, GameDirectoriesWrapper};
@@ -69,7 +69,7 @@ fn tile_kind_selector_button_for(
                     .unwrap_or_else(|| panic!("Textures for {:?} were not loaded as Egui textures!", tile));
                 ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
             } else if *tile == Tile::PLAYERSPAWN {
-                    let (id, size, uv) = egui_textures.player_textures.get(&player.player.atlas_index())
+                    let (id, size, uv) = egui_textures.textures.get(&player.player.atlas_index())
                         .expect("The Player Texture was not found in the Egui textures!");
                     ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
             } else {

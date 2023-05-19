@@ -2,7 +2,7 @@ use crate::game::constants::FONT_SIZE_HIGHSCORE;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
-use crate::ui::egui_textures::EguiButtonTextures;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppState, GameConfig, GameDirectoriesWrapper};

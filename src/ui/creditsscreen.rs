@@ -1,4 +1,4 @@
-use crate::ui::egui_textures::EguiButtonTextures;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
 use crate::{get_buildnr, AppState};
