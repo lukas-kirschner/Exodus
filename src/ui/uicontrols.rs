@@ -4,7 +4,7 @@ use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
 use bevy_egui::egui::Align;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiContexts};
 use libexodus::tiles::UITiles;
 
 #[derive(Resource, PartialEq, Copy, Clone, Debug)]
@@ -36,7 +36,7 @@ pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<
 }
 
 pub fn add_navbar(
-    egui_ctx: &mut ResMut<EguiContext>,
+    egui_ctx: &mut EguiContexts,
     state: &mut ResMut<State<AppState>>,
     egui_textures: &EguiButtonTextures,
 ) {

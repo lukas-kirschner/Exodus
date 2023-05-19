@@ -22,13 +22,13 @@ bug fixes on your fork and open a pull request for your fork here.
 To speed up compile times, run your debug builds with
 
 ```bash
-cargo run --features bevy/dynamic
+cargo run --features bevy/dynamic_linking
 ```
 
 and test builds with
 
 ```bash
-cargo test --features bevy/dynamic --workspace -- --include-ignored
+cargo test --features bevy/dynamic_linking --workspace -- --include-ignored
 ```
 
 ## Code Conventions

@@ -4,7 +4,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiContexts};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
@@ -24,7 +24,7 @@ impl Plugin for ConfigScreen {
 }
 
 fn config_screen_ui(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     mut state: ResMut<State<AppState>>,
     mut res_config: ResMut<GameConfig>,
     egui_textures: Res<EguiButtonTextures>,

@@ -4,7 +4,7 @@ use crate::ui::UIMARGIN;
 use crate::{get_buildnr, AppState};
 use bevy::prelude::*;
 use bevy_egui::egui::{Frame, RichText};
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiContexts};
 use indoc::formatdoc;
 
 pub struct CreditsScreen;
@@ -41,7 +41,7 @@ fn credits() -> String {
 
 /// Main Menu main routine
 fn credits_screen_ui(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     mut state: ResMut<State<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
 ) {

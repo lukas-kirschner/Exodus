@@ -6,6 +6,7 @@ use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, Selec
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
 use libexodus::tiles::Tile;
 
 pub struct EditWorldPlugin;
@@ -110,7 +111,7 @@ fn replace_world_tile_at(
 
 fn mouse_down_handler(
     mut commands: Commands,
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut map: ResMut<MapWrapper>,
@@ -183,7 +184,7 @@ fn mouse_down_handler(
 }
 
 fn mouse_down_handler_playerspawn(
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     _map: ResMut<MapWrapper>,

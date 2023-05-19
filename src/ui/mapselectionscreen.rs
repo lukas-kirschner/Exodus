@@ -8,7 +8,7 @@ use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, RichText, Ui};
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiContexts};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
@@ -179,7 +179,7 @@ fn map_selection_screen_execute_event_queue(
 /// Map Selection Screen main routine
 fn map_selection_screen_ui(
     mut commands: Commands,
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     mut state: ResMut<State<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,

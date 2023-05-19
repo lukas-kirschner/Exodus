@@ -7,6 +7,7 @@ use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 use crate::{App, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
 
@@ -89,7 +90,7 @@ fn set_preview_tile_texture(
 
 /// System to show a transparent preview tile on the map
 fn update_preview_tile(
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,

@@ -3,7 +3,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
 use crate::AppState;
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 
@@ -21,7 +21,7 @@ impl Plugin for GameUIPlugin {
 pub struct ScoreboardUICounter;
 
 fn game_ui_system(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     scoreboard: Res<Scoreboard>,
     current_size: ResMut<WindowUiOverlayInfo>,
     mut event_writer: EventWriter<UiSizeChangedEvent>,

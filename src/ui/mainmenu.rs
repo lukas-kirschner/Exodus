@@ -4,10 +4,10 @@ use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 /// Set up the UI for the Main Menu
-fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
+fn configure_visuals(mut egui_ctx: EguiContexts) {
     egui_ctx.ctx_mut().set_visuals(egui::Visuals {
         window_rounding: 0.0.into(),
         ..Default::default()
@@ -78,7 +78,7 @@ fn mainmenu_buttons(
 
 /// Main Menu main routine
 fn mainmenu_ui(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     state: ResMut<State<AppState>>,
     exit: EventWriter<AppExit>,
 ) {

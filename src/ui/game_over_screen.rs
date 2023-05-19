@@ -5,7 +5,7 @@ use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiContexts};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 
@@ -13,7 +13,7 @@ pub struct GameOverScreen;
 
 /// Game Over Screen Drawing Routine
 fn game_over_screen_ui(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     mut state: ResMut<State<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
     game_status: Res<GameOverState>,

@@ -13,7 +13,7 @@ use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::Ui;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::{Tile, UITiles};
 use std::borrow::Borrow;
 
@@ -88,7 +88,7 @@ fn tile_kind_selector_button_for(
 
 fn mapeditor_ui(
     mut commands: Commands,
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     mut selected_tile: ResMut<SelectedTile>,
     egui_textures: Res<EguiButtonTextures>,
     player: Query<&PlayerSpawnComponent>,
@@ -387,7 +387,7 @@ fn mapeditor_ui(
 }
 
 fn mapeditor_dialog(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     egui_textures: Res<EguiButtonTextures>,
     mut dialog: ResMut<MapEditorDialogResource>,
     mut state: ResMut<State<AppState>>,
