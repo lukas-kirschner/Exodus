@@ -5,7 +5,7 @@ use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext, EguiContexts, EguiSet};
+use bevy_egui::{egui, EguiContexts, EguiSet};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 

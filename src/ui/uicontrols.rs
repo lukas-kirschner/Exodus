@@ -4,7 +4,7 @@ use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
 use bevy_egui::egui::Align;
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::UITiles;
 
 #[derive(Resource, PartialEq, Copy, Clone, Debug)]

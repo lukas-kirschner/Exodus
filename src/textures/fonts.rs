@@ -1,4 +1,3 @@
-use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::FontId;
 use bevy_egui::{egui, EguiContexts};

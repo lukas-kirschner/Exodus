@@ -4,7 +4,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;

@@ -196,9 +196,8 @@ fn resize_notificator(
     mut resize_event: EventReader<WindowResized>,
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
     window: Query<&Window, With<PrimaryWindow>>,
-    mut commands: Commands,
 ) {
-    let Ok(primary) = window.get_single() else {
+    let Ok(_) = window.get_single() else {
         return;
     };
     for _ in resize_event.iter() {

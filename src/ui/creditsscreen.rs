@@ -4,7 +4,7 @@ use crate::ui::UIMARGIN;
 use crate::{get_buildnr, AppState};
 use bevy::prelude::*;
 use bevy_egui::egui::{Frame, RichText};
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use indoc::formatdoc;
 
 pub struct CreditsScreen;

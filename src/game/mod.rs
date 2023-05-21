@@ -2,7 +2,6 @@ use crate::game::pickup_item::PickupItemPlugin;
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
-use libexodus::tiles::Tile;
 use std::path::PathBuf;
 
 pub mod camera;
@@ -45,7 +44,7 @@ pub struct HighscoresDatabaseWrapper {
 
 fn back_to_main_menu_controls(
     mut keys: ResMut<Input<KeyCode>>,
-    mut current_app_state: ResMut<State<AppState>>,
+    current_app_state: ResMut<State<AppState>>,
     mut app_state: ResMut<NextState<AppState>>,
 ) {
     if current_app_state.0 == AppState::Playing && keys.just_pressed(KeyCode::Escape) {

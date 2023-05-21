@@ -1,7 +1,7 @@
 use crate::TilesetManager;
 use bevy::prelude::*;
 use bevy_egui::egui::TextureId;
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile, UITiles};
 use std::collections::HashMap;

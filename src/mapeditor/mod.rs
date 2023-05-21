@@ -3,7 +3,6 @@ use crate::mapeditor::edit_world::EditWorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
 use crate::mapeditor::preview_tile::MapEditorPreviewTilePlugin;
 use bevy::prelude::*;
-use bevy::render::camera::RenderTarget;
 use bevy::window::PrimaryWindow;
 use libexodus::tiles::Tile;
 
