@@ -10,7 +10,7 @@ use crate::mapeditor::{MapeditorSystems, SelectedTile};
 use crate::textures::egui_textures::{atlas_to_egui_textures, EguiButtonTextures};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
-use crate::{AppState, GameDirectoriesWrapper};
+use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::Ui;
 use bevy_egui::{egui, EguiContexts};
@@ -22,30 +22,25 @@ pub struct MapEditorUiPlugin;
 impl Plugin for MapEditorUiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SelectedTile>()
-            .add_system_set(
-                SystemSet::on_enter(AppState::MapEditor)
-                    .with_system(init_player_spawn)
-                    .after("world")
-                    .label("player_spawn_placeholder_init"),
+            .add_system(
+                init_player_spawn
+                    .in_schedule(OnEnter(AppState::MapEditor))
+                    .after(AppLabels::World)
+                    .in_set(MapeditorSystems::PlayerSpawnPlaceholderInit),
             )
-            .add_system_set(
-                SystemSet::on_exit(AppState::MapEditor).with_system(destroy_player_spawn),
+            .add_system(destroy_player_spawn.in_schedule(OnExit(AppState::MapEditor)))
+            .add_system(
+                atlas_to_egui_textures
+                    .in_schedule(OnEnter(AppState::MapEditor))
+                    .after(MapeditorSystems::PlayerSpawnPlaceholderInit),
             )
-            .add_system_set(
-                SystemSet::on_enter(AppState::MapEditor)
-                    .with_system(atlas_to_egui_textures)
-                    .after("player_spawn_placeholder_init"),
+            .add_system(
+                mapeditor_ui
+                    .in_set(OnUpdate(AppState::MapEditor))
+                    .after(MapeditorSystems::GameBoardMouseHandlers)
+                    .in_set(MapeditorSystems::UiDrawing),
             )
-            .add_system_set(
-                SystemSet::on_update(AppState::MapEditor).with_system(
-                    mapeditor_ui
-                        .label(MapeditorSystems::UiDrawing)
-                        .after(MapeditorSystems::GameBoardMouseHandlers),
-                ),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::MapEditorDialog).with_system(mapeditor_dialog),
-            );
+            .add_system(mapeditor_dialog.in_set(OnUpdate(AppState::MapEditorDialog)));
     }
 }
 
@@ -92,7 +87,7 @@ fn mapeditor_ui(
     mut selected_tile: ResMut<SelectedTile>,
     egui_textures: Res<EguiButtonTextures>,
     player: Query<&PlayerSpawnComponent>,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     mut worldwrapper: ResMut<MapWrapper>,
     current_window_size: ResMut<WindowUiOverlayInfo>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
@@ -126,13 +121,9 @@ fn mapeditor_ui(
                                                     .as_str(),
                                             )),
                                         });
-                                        state
-                                            .set(AppState::MapEditorDialog)
-                                            .expect("Could not change state to overwrite dialog!");
+                                        state.set(AppState::MapEditorDialog);
                                     } else {
-                                        state.set(AppState::MapSelectionScreen).expect(
-                                            "Could not change state back to map selection screen!",
-                                        );
+                                        state.set(AppState::MapSelectionScreen);
                                     }
                                 }
                             });
@@ -158,9 +149,7 @@ fn mapeditor_ui(
                                             &worldwrapper.world.hash_str().as_str()[..16],
                                         )),
                                     });
-                                    state
-                                        .set(AppState::MapEditorDialog)
-                                        .expect("Could not change state to save dialog!");
+                                    state.set(AppState::MapEditorDialog);
                                 }
                             });
                         });
@@ -390,7 +379,7 @@ fn mapeditor_dialog(
     mut egui_ctx: EguiContexts,
     egui_textures: Res<EguiButtonTextures>,
     mut dialog: ResMut<MapEditorDialogResource>,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     mut worldwrapper: ResMut<MapWrapper>,
     directories: Res<GameDirectoriesWrapper>,
 ) {
@@ -434,17 +423,11 @@ fn mapeditor_dialog(
                     },
                 }
             }
-            state
-                .set(AppState::MapEditor)
-                .expect("Could not close dialog");
+            state.set(AppState::MapEditor);
         } else if dialog.ui_dialog.as_unsaved_changes_dialog().is_some() {
-            state
-                .set(AppState::MapSelectionScreen)
-                .expect("Could not exit Map Editor");
+            state.set(AppState::MapSelectionScreen);
         }
     } else if dialog.ui_dialog.is_cancelled() {
-        state
-            .set(AppState::MapEditor)
-            .expect("Could not cancel dialog");
+        state.set(AppState::MapEditor);
     }
 }

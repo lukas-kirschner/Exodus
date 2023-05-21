@@ -3,7 +3,7 @@ use crate::game::constants::WORLD_Z;
 use crate::game::pickup_item::insert_wrappers;
 use crate::game::tilewrapper::MapWrapper;
 use crate::textures::tileset_manager::TilesetManager;
-use crate::{AppState, LAYER_ID};
+use crate::{AppLabels, AppState, LAYER_ID};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
@@ -14,29 +14,16 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::Playing).with_system(reset_world.label("world")),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppState::Playing)
-                .with_system(setup_camera.after("world").label("camera")),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::Playing).with_system(handle_ui_resize.after("gameui")),
-        )
-        .add_system_set(SystemSet::on_exit(AppState::Playing).with_system(destroy_camera))
+        app
+        .add_system(reset_world.in_schedule(OnEnter(AppState::Playing)).in_set(AppLabels::World))
+            .add_system(setup_camera.in_schedule(OnEnter(AppState::Playing)).after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_system(handle_ui_resize.in_set(OnUpdate(AppState::Playing)).after(AppLabels::GameUI))
+            .add_system(destroy_camera.in_schedule(OnExit(AppState::Playing)))
         // Map Editor needs a world as well:
-        .add_system_set(
-            SystemSet::on_enter(AppState::MapEditor).with_system(reset_world.label("world")),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppState::MapEditor)
-                .with_system(setup_camera.after("world").label("camera")),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::MapEditor).with_system(handle_ui_resize.after("gameui")),
-        )
-        .add_system_set(SystemSet::on_exit(AppState::MapEditor).with_system(destroy_camera));
+            .add_system(reset_world.in_schedule(OnEnter(AppState::MapEditor)).in_set(AppLabels::World))
+            .add_system(setup_camera.in_schedule(OnEnter(AppState::MapEditor)).after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_system(handle_ui_resize.in_set(OnUpdate(AppState::MapEditor)).after(AppLabels::GameUI))
+            .add_system(destroy_camera.in_schedule(OnExit(AppState::MapEditor)));
     }
 }
 

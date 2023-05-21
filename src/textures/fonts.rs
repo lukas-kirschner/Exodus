@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_egui::egui::FontFamily::Proportional;
 use bevy_egui::egui::FontId;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
-pub fn egui_fonts(mut ctx: ResMut<EguiContext>) {
+pub fn egui_fonts(mut ctx: EguiContexts) {
     let mut fonts = egui::FontDefinitions::default();
     fonts.font_data.insert(
         "exodus".to_owned(),

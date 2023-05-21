@@ -26,18 +26,20 @@ impl Default for WindowUiOverlayInfo {
     }
 }
 
-pub fn menu_esc_control(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if *app_state.current() != AppState::MainMenu && keys.just_pressed(KeyCode::Escape) {
-        app_state
-            .set(AppState::MainMenu)
-            .expect("Could not return to Main Menu");
+pub fn menu_esc_control(
+    mut keys: ResMut<Input<KeyCode>>,
+    mut app_state: ResMut<NextState<AppState>>,
+    current_app_state: ResMut<State<AppState>>,
+) {
+    if current_app_state.0 != AppState::MainMenu && keys.just_pressed(KeyCode::Escape) {
+        app_state.set(AppState::MainMenu);
         keys.reset(KeyCode::Escape);
     }
 }
 
 pub fn add_navbar(
     egui_ctx: &mut EguiContexts,
-    state: &mut ResMut<State<AppState>>,
+    state: &mut NextState<AppState>,
     egui_textures: &EguiButtonTextures,
 ) {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
@@ -53,9 +55,7 @@ pub fn add_navbar(
                         "navbar.back_button_tooltip",
                     );
                     if back_button.clicked() {
-                        state
-                            .set(AppState::MainMenu)
-                            .expect("Could not switch back to Main Menu");
+                        state.set(AppState::MainMenu);
                     }
                 });
             });

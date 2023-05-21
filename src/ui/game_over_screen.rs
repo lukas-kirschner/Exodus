@@ -5,7 +5,7 @@ use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContext, EguiContexts, EguiSet};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 
@@ -14,7 +14,7 @@ pub struct GameOverScreen;
 /// Game Over Screen Drawing Routine
 fn game_over_screen_ui(
     mut egui_ctx: EguiContexts,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
     game_status: Res<GameOverState>,
     config: Res<GameConfig>,
@@ -118,9 +118,7 @@ fn game_over_screen_ui(
                     "game_over_screen.back_button_tooltip",
                 );
                 if back_button.clicked() {
-                    state
-                        .set(AppState::MapSelectionScreen)
-                        .expect("Could not switch back to Map Selection Screen");
+                    state.set(AppState::MapSelectionScreen);
                 }
                 let replay_button = image_button(
                     ui,
@@ -129,9 +127,7 @@ fn game_over_screen_ui(
                     "game_over_screen.replay_button_tooltip",
                 );
                 if replay_button.clicked() {
-                    state
-                        .set(AppState::Playing)
-                        .expect("Could not switch back to Playing State");
+                    state.set(AppState::Playing);
                 }
             });
         });
@@ -217,15 +213,13 @@ enum SaveHighscoreState {
 
 impl Plugin for GameOverScreen {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::GameOverScreen).with_system(game_over_screen_ui),
-        );
-        app.add_system_set(
-            SystemSet::on_enter(AppState::GameOverScreen).with_system(init_game_over_screen_ui),
-        );
-        app.add_system_set(
-            SystemSet::on_exit(AppState::GameOverScreen).with_system(save_highscores),
-        );
+        app.add_system(
+            game_over_screen_ui
+                .in_set(OnUpdate(AppState::GameOverScreen))
+                .after(EguiSet::InitContexts),
+        )
+        .add_system(init_game_over_screen_ui.in_schedule(OnEnter(AppState::GameOverScreen)))
+        .add_system(save_highscores.in_schedule(OnExit(AppState::GameOverScreen)));
     }
 
     fn name(&self) -> &str {

@@ -17,7 +17,7 @@ fn configure_visuals(mut egui_ctx: EguiContexts) {
 /// Draw the Main Menu Buttons
 fn mainmenu_buttons(
     ui: &mut egui::Ui,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     mut exit: EventWriter<AppExit>,
 ) {
     ui.scope(|ui| {
@@ -33,9 +33,7 @@ fn mainmenu_buttons(
                         ui.centered_and_justified(|ui| {
                             let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
                             if maps_btn.clicked() {
-                                state
-                                    .set(AppState::MapSelectionScreen)
-                                    .expect("Could not switch state to Map Selection Screen");
+                                state.set(AppState::MapSelectionScreen);
                             }
                         });
                     });
@@ -44,9 +42,7 @@ fn mainmenu_buttons(
                         ui.centered_and_justified(|ui| {
                             let credits_btn = ui.button(t!("main_menu.credits_screen"));
                             if credits_btn.clicked() {
-                                state
-                                    .set(AppState::CreditsScreen)
-                                    .expect("Could not switch state to Credits Screen");
+                                state.set(AppState::CreditsScreen);
                             }
                         });
                     });
@@ -55,9 +51,7 @@ fn mainmenu_buttons(
                         ui.centered_and_justified(|ui| {
                             let config_btn = ui.button(t!("main_menu.config_screen"));
                             if config_btn.clicked() {
-                                state
-                                    .set(AppState::ConfigScreen)
-                                    .expect("Could not switch state to Config Screen");
+                                state.set(AppState::ConfigScreen);
                             }
                         });
                     });
@@ -79,7 +73,7 @@ fn mainmenu_buttons(
 /// Main Menu main routine
 fn mainmenu_ui(
     mut egui_ctx: EguiContexts,
-    state: ResMut<State<AppState>>,
+    state: ResMut<NextState<AppState>>,
     exit: EventWriter<AppExit>,
 ) {
     egui::CentralPanel::default()
@@ -110,23 +104,8 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(AppState::MainMenu)
-                                .with_system(configure_visuals),
-            )
-            .add_system_set(SystemSet::on_update(AppState::MainMenu)
-                .with_system(mainmenu_ui)
-            )
-            .add_system_set(
-                SystemSet::on_enter(AppState::MainMenu)
-                    .with_system(atlas_to_egui_textures),
-            )
-        // .add_system_set(SystemSet::on_update(AppState::MainMenu)
-        //     .with_system(button_press_system)
-        // )
-        // .add_system_set(SystemSet::on_exit(AppState::MainMenu)
-        //     .with_system(cleanup)
-        // )
-        ;
+        app.add_system(configure_visuals.in_schedule(OnEnter(AppState::MainMenu)))
+            .add_system(mainmenu_ui.in_set(OnUpdate(AppState::MainMenu)))
+            .add_system(atlas_to_egui_textures.in_schedule(OnEnter(AppState::MainMenu)));
     }
 }

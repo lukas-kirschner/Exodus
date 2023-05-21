@@ -26,7 +26,19 @@ mod textures;
 mod ui;
 mod util;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+pub enum AppLabels {
+    PlayerMovement,
+    World,
+    ResetScore,
+    Player,
+    GameOverTrigger,
+    GameUI,
+    Camera,
+    LoadMaps,
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
     MainMenu,
     MapSelectionScreen,
@@ -35,6 +47,7 @@ pub enum AppState {
     Playing,
     MapEditor,
     MapEditorDialog,
+    #[default]
     Loading,
     GameOverScreen,
 }
@@ -183,18 +196,16 @@ fn resize_notificator(
     mut resize_event: EventReader<WindowResized>,
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
     window: Query<&Window, With<PrimaryWindow>>,
+    mut commands: Commands,
 ) {
     let Ok(primary) = window.get_single() else {
         return;
     };
-    for e in resize_event.iter() {
-        if e.id == window.id() {
-            // debug!(
-            //     "The main window was resized to a new size of {} x {}",
-            //     e.width, e.height
-            // );
-            ev_camera_writer.send(UiSizeChangedEvent);
-        }
+    for _ in resize_event.iter() {
+        // event_window = commands.entity(e.window);
+        // if event_window == primary {
+        ev_camera_writer.send(UiSizeChangedEvent);
+        // }
     }
 }
 
@@ -226,7 +237,7 @@ fn main() {
         .add_event::<UiSizeChangedEvent>()
         .init_resource::<WindowUiOverlayInfo>()
         .add_startup_system(game_init)
-        .add_state(AppState::Loading)
+        .add_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins

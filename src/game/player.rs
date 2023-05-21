@@ -2,7 +2,7 @@ use crate::game::constants::*;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::{GameOverState, MapWrapper};
 use crate::game::world::DoorWrapper;
-use crate::{AppState, GameConfig, TilesetManager, LAYER_ID};
+use crate::{AppLabels, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::directions::Directions::*;
@@ -16,33 +16,33 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::Playing)
-                .with_system(setup_player)
-                .after("world")
-                .after("reset_score")
-                .label("player"),
+        app.add_system(
+            setup_player
+                .in_schedule(OnEnter(AppState::Playing))
+                .after(AppLabels::World)
+                .after(AppLabels::ResetScore)
+                .in_set(AppLabels::Player),
         )
-        .add_system_set(SystemSet::on_update(AppState::Playing).with_system(keyboard_controls))
-        .add_system_set(
-            SystemSet::on_update(AppState::Playing)
-                .with_system(player_movement)
-                .label("player_movement"),
+        .add_system(keyboard_controls.in_set(OnUpdate(AppState::Playing)))
+        .add_system(
+            player_movement
+                .in_set(OnUpdate(AppState::Playing))
+                .in_set(AppLabels::PlayerMovement),
         )
-        .add_system_set(
-            SystemSet::on_update(AppState::Playing)
-                .with_system(despawn_dead_player)
-                .label("GameOverTrigger"),
+        .add_system(
+            despawn_dead_player
+                .in_set(OnUpdate(AppState::Playing))
+                .in_set(AppLabels::GameOverTrigger),
         )
-        .add_system_set(
-            SystemSet::on_update(AppState::Playing)
-                .with_system(despawn_exited_player)
-                .label("GameOverTrigger"),
+        .add_system(
+            despawn_exited_player
+                .in_set(OnUpdate(AppState::Playing))
+                .in_set(AppLabels::GameOverTrigger),
         )
-        .add_system_set(
-            SystemSet::on_update(AppState::Playing)
-                .with_system(game_over_event_listener)
-                .after("GameOverTrigger"),
+        .add_system(
+            game_over_event_listener
+                .in_set(OnUpdate(AppState::Playing))
+                .in_set(AppLabels::GameOverTrigger),
         )
         .add_event::<GameOverEvent>();
     }
@@ -574,13 +574,11 @@ pub fn keyboard_controls(
 
 fn game_over_event_listener(
     mut reader: EventReader<GameOverEvent>,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     mut commands: Commands,
 ) {
     if let Some(event) = reader.iter().next() {
         commands.insert_resource(event.state.clone());
-        state
-            .set(AppState::GameOverScreen)
-            .expect("Could not change to Game Over Screen!");
+        state.set(AppState::GameOverScreen);
     }
 }

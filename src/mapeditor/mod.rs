@@ -18,6 +18,7 @@ enum MapeditorSystems {
     GameBoardMouseHandlers,
     /// The egui drawing routines
     UiDrawing,
+    PlayerSpawnPlaceholderInit,
 }
 
 #[derive(Resource)]

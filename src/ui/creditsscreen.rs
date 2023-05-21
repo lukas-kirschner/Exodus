@@ -42,7 +42,7 @@ fn credits() -> String {
 /// Main Menu main routine
 fn credits_screen_ui(
     mut egui_ctx: EguiContexts,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
 ) {
     add_navbar(&mut egui_ctx, &mut state, &egui_textures);
@@ -73,11 +73,7 @@ fn credits_screen_ui(
 
 impl Plugin for CreditsScreen {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::CreditsScreen).with_system(credits_screen_ui),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::CreditsScreen).with_system(menu_esc_control),
-        );
+        app.add_system(credits_screen_ui.in_set(OnUpdate(AppState::CreditsScreen)))
+            .add_system(menu_esc_control.in_set(OnUpdate(AppState::CreditsScreen)));
     }
 }
