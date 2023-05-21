@@ -1,7 +1,7 @@
 use crate::TilesetManager;
 use bevy::prelude::*;
 use bevy_egui::egui::TextureId;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::player::Player;
 use libexodus::tiles::{AtlasIndex, Tile, UITiles};
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ impl FromWorld for EguiButtonTextures {
 fn convert(
     texture_atlas: &TextureAtlas,
     texture_handle: &Handle<Image>,
-    egui_ctx: &mut ResMut<EguiContext>,
+    egui_ctx: &mut EguiContexts,
     atlas_index: &AtlasIndex,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
     // TODO Up/downscale to egui texture size (32px)
@@ -49,7 +49,7 @@ pub fn atlas_to_egui_textures(
     texture_atlas_handle: Res<TilesetManager>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
 ) {
     let texture_atlas: &TextureAtlas = texture_atlases
         .get(&texture_atlas_handle.current_handle())

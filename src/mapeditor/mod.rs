@@ -3,7 +3,7 @@ use crate::mapeditor::edit_world::EditWorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
 use crate::mapeditor::preview_tile::MapEditorPreviewTilePlugin;
 use bevy::prelude::*;
-use bevy::render::camera::RenderTarget;
+use bevy::window::PrimaryWindow;
 use libexodus::tiles::Tile;
 
 mod edit_world;
@@ -11,12 +11,13 @@ mod mapeditor_ui;
 mod player_spawn;
 mod preview_tile;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemLabel)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 enum MapeditorSystems {
     /// The Game Board mouse handlers
     GameBoardMouseHandlers,
     /// The egui drawing routines
     UiDrawing,
+    PlayerSpawnPlaceholderInit,
 }
 
 #[derive(Resource)]
@@ -43,7 +44,7 @@ impl Plugin for MapEditorPlugin {
 }
 
 pub fn compute_cursor_position_in_world(
-    windows: &Windows,
+    windows: &Query<&Window, With<PrimaryWindow>>,
     main_camera: &Camera,
     main_camera_transform: &GlobalTransform,
     _layer_camera: &Camera,
@@ -51,10 +52,8 @@ pub fn compute_cursor_position_in_world(
     texture_size: f32,
 ) -> Option<(i32, i32)> {
     // get the window that the camera is displaying to (or the primary window)
-    let wnd = if let RenderTarget::Window(id) = main_camera.target {
-        windows.get(id).unwrap()
-    } else {
-        windows.get_primary().unwrap()
+    let Ok(wnd) = windows.get_single() else {
+        return None;
     };
 
     // check if the cursor is inside the window and get its position, then transform it back through both cameras

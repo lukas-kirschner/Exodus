@@ -7,6 +7,7 @@ use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
 use crate::{App, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
 
@@ -19,16 +20,14 @@ pub struct MapEditorPreviewTilePlugin;
 
 impl Plugin for MapEditorPreviewTilePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::MapEditor).with_system(setup_preview_tile),
-        )
-        .add_system_set(SystemSet::on_exit(AppState::MapEditor).with_system(destroy_preview_tile))
-        .add_system_set(SystemSet::on_update(AppState::MapEditor).with_system(update_preview_tile));
+        app.add_system(setup_preview_tile.in_schedule(OnEnter(AppState::MapEditor)))
+            .add_system(destroy_preview_tile.in_schedule(OnExit(AppState::MapEditor)))
+            .add_system(update_preview_tile.in_set(OnUpdate(AppState::MapEditor)));
     }
 }
 
-fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<(&PreviewTile, Entity)>) {
-    let (_, ent) = preview_tile_q.single();
+fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<Entity, With<PreviewTile>>) {
+    let ent = preview_tile_q.single();
     commands.entity(ent).despawn();
 }
 
@@ -89,7 +88,7 @@ fn set_preview_tile_texture(
 
 /// System to show a transparent preview tile on the map
 fn update_preview_tile(
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,

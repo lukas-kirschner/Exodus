@@ -18,11 +18,9 @@ pub struct Textures;
 
 impl Plugin for Textures {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::Loading).with_system(load_textures))
-            .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(egui_fonts))
-            .add_system_set(
-                SystemSet::on_update(AppState::Loading).with_system(check_and_init_textures),
-            );
+        app.add_system(load_textures.in_schedule(OnEnter(AppState::Loading)))
+            .add_system(egui_fonts.in_schedule(OnEnter(AppState::Loading)))
+            .add_system(check_and_init_textures.in_set(OnUpdate(AppState::Loading)));
     }
 
     fn name(&self) -> &str {
@@ -41,14 +39,14 @@ fn load_textures(mut rpg_sprite_handles: ResMut<RpgSpriteHandles>, asset_server:
 }
 
 fn check_and_init_textures(
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
     sprite_handles: ResMut<RpgSpriteHandles>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut tileset_manager: ResMut<TilesetManager>,
 ) {
     if let LoadState::Loaded =
-        asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id))
+        asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id()))
     {
         // Load Tilesets
         for tileset in Tileset::iter() {
@@ -82,6 +80,6 @@ fn check_and_init_textures(
             );
         }
         // Finish loading and start the main menu
-        state.set(AppState::MainMenu).unwrap();
+        state.set(AppState::MainMenu);
     }
 }

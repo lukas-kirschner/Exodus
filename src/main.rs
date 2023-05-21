@@ -7,7 +7,7 @@ use crate::ui::{Ui, UiSizeChangedEvent};
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::render::view::Layer;
-use bevy::window::{WindowMode, WindowResized};
+use bevy::window::{PrimaryWindow, WindowMode, WindowResized};
 use bevy_egui::EguiPlugin;
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
@@ -26,7 +26,19 @@ mod textures;
 mod ui;
 mod util;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+pub enum AppLabels {
+    PlayerMovement,
+    World,
+    ResetScore,
+    Player,
+    GameOverTrigger,
+    GameUI,
+    Camera,
+    LoadMaps,
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
     MainMenu,
     MapSelectionScreen,
@@ -35,6 +47,7 @@ pub enum AppState {
     Playing,
     MapEditor,
     MapEditorDialog,
+    #[default]
     Loading,
     GameOverScreen,
 }
@@ -182,16 +195,16 @@ impl Plugin for LoadingPlugin {
 fn resize_notificator(
     mut resize_event: EventReader<WindowResized>,
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
-    window: Res<Windows>,
+    window: Query<&Window, With<PrimaryWindow>>,
 ) {
-    for e in resize_event.iter() {
-        if e.id == window.get_primary().unwrap().id() {
-            // debug!(
-            //     "The main window was resized to a new size of {} x {}",
-            //     e.width, e.height
-            // );
-            ev_camera_writer.send(UiSizeChangedEvent);
-        }
+    let Ok(_) = window.get_single() else {
+        return;
+    };
+    for _ in resize_event.iter() {
+        // event_window = commands.entity(e.window);
+        // if event_window == primary {
+        ev_camera_writer.send(UiSizeChangedEvent);
+        // }
     }
 }
 
@@ -223,22 +236,20 @@ fn main() {
         .add_event::<UiSizeChangedEvent>()
         .init_resource::<WindowUiOverlayInfo>()
         .add_startup_system(game_init)
-        .add_state(AppState::Loading)
-        .insert_resource(Msaa { samples: 1 })
+        .add_state::<AppState>()
+        .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: window_title,
                         resizable: true,
-                        width: 1001.,
-                        height: 501.,
-                        cursor_visible: true,
+                        resolution: (1001., 501.).into(),
                         decorations: true,
                         mode: WindowMode::Windowed,
                         ..Default::default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(LogPlugin {

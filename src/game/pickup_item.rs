@@ -5,7 +5,7 @@ use crate::game::constants::{
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
-use crate::{AppState, GameConfig};
+use crate::{AppLabels, AppState, GameConfig};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
@@ -41,32 +41,12 @@ impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollectibleCollectedEvent>()
             // Collision Handlers
-            .add_system_set(
-                SystemSet::on_update(AppState::Playing)
-                    .with_system(setup_collectible_event::<CoinWrapper>)
-                    .after("player_movement"),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::Playing)
-                    .with_system(setup_collectible_event::<KeyWrapper>)
-                    .after("player_movement"),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::Playing)
-                    .with_system(setup_collectible_event::<CollectibleWrapper>)
-                    .after("player_movement"),
-            )
+            .add_system(setup_collectible_event::<CoinWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(setup_collectible_event::<KeyWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(setup_collectible_event::<CollectibleWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
             // Event Handlers
-            .add_system_set(
-                SystemSet::on_update(AppState::Playing)
-                    .with_system(collectible_collected_event)
-                    .after("player_movement"),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::Playing)
-                    .with_system(pickup_item_animation)
-                    .after("player_movement"),
-            );
+            .add_system(collectible_collected_event.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(pickup_item_animation.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement));
     }
 }
 

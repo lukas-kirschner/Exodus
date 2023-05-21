@@ -1,9 +1,9 @@
 use crate::game::scoreboard::Scoreboard;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
-use crate::AppState;
+use crate::{AppLabels, AppState};
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 
@@ -11,8 +11,10 @@ pub struct GameUIPlugin;
 
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Scoreboard>().add_system_set(
-            SystemSet::on_update(AppState::Playing).with_system(game_ui_system.label("gameui")),
+        app.init_resource::<Scoreboard>().add_system(
+            game_ui_system
+                .in_set(OnUpdate(AppState::Playing))
+                .in_set(AppLabels::GameUI),
         );
     }
 }
@@ -21,7 +23,7 @@ impl Plugin for GameUIPlugin {
 pub struct ScoreboardUICounter;
 
 fn game_ui_system(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     scoreboard: Res<Scoreboard>,
     current_size: ResMut<WindowUiOverlayInfo>,
     mut event_writer: EventWriter<UiSizeChangedEvent>,

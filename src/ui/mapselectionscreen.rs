@@ -5,10 +5,10 @@ use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
-use crate::{AppState, GameConfig, GameDirectoriesWrapper};
+use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, RichText, Ui};
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
@@ -149,13 +149,13 @@ fn map_selection_screen_execute_event_queue(
     mut commands: Commands,
     action: Res<MapSelectionScreenAction>,
     mut maps: ResMut<Maps>,
-    mut state: ResMut<State<AppState>>,
+    mut state: ResMut<NextState<AppState>>,
 ) {
     match *action {
         MapSelectionScreenAction::Play { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
-            state.set(AppState::Playing).expect("Could not start game");
+            state.set(AppState::Playing);
             commands.insert_resource(MapSelectionScreenAction::None)
         },
         MapSelectionScreenAction::Delete { map_index } => {
@@ -167,9 +167,7 @@ fn map_selection_screen_execute_event_queue(
         MapSelectionScreenAction::Edit { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
-            state
-                .set(AppState::MapEditor)
-                .expect("Could not start map editor");
+            state.set(AppState::MapEditor);
             commands.insert_resource(MapSelectionScreenAction::None)
         },
         MapSelectionScreenAction::None => {},
@@ -179,8 +177,8 @@ fn map_selection_screen_execute_event_queue(
 /// Map Selection Screen main routine
 fn map_selection_screen_ui(
     mut commands: Commands,
-    mut egui_ctx: ResMut<EguiContext>,
-    mut state: ResMut<State<AppState>>,
+    mut egui_ctx: EguiContexts,
+    mut state: ResMut<NextState<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
@@ -297,21 +295,16 @@ impl Plugin for MapSelectionScreenPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Maps>()
             .init_resource::<MapSelectionScreenAction>()
-            .add_system_set(
-                SystemSet::on_enter(AppState::MapSelectionScreen)
-                    .with_system(load_maps)
-                    .label("load_maps"),
+            .add_system(
+                load_maps
+                    .in_schedule(OnEnter(AppState::MapSelectionScreen))
+                    .in_set(AppLabels::LoadMaps),
             )
-            .add_system_set(
-                SystemSet::on_update(AppState::MapSelectionScreen)
-                    .with_system(map_selection_screen_ui),
+            .add_system(map_selection_screen_ui.in_set(OnUpdate(AppState::MapSelectionScreen)))
+            .add_system(
+                map_selection_screen_execute_event_queue
+                    .in_set(OnUpdate(AppState::MapSelectionScreen)),
             )
-            .add_system_set(
-                SystemSet::on_update(AppState::MapSelectionScreen)
-                    .with_system(map_selection_screen_execute_event_queue),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::MapSelectionScreen).with_system(menu_esc_control),
-            );
+            .add_system(menu_esc_control.in_set(OnUpdate(AppState::MapSelectionScreen)));
     }
 }

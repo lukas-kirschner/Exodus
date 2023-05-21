@@ -4,7 +4,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
@@ -13,19 +13,15 @@ pub struct ConfigScreen;
 
 impl Plugin for ConfigScreen {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::ConfigScreen).with_system(config_screen_ui),
-        )
-        .add_system_set(SystemSet::on_update(AppState::ConfigScreen).with_system(menu_esc_control))
-        .add_system_set(
-            SystemSet::on_exit(AppState::ConfigScreen).with_system(save_and_apply_config),
-        );
+        app.add_system(config_screen_ui.in_set(OnUpdate(AppState::ConfigScreen)))
+            .add_system(menu_esc_control.in_set(OnUpdate(AppState::ConfigScreen)))
+            .add_system(save_and_apply_config.in_schedule(OnExit(AppState::ConfigScreen)));
     }
 }
 
 fn config_screen_ui(
-    mut egui_ctx: ResMut<EguiContext>,
-    mut state: ResMut<State<AppState>>,
+    mut egui_ctx: EguiContexts,
+    mut state: ResMut<NextState<AppState>>,
     mut res_config: ResMut<GameConfig>,
     egui_textures: Res<EguiButtonTextures>,
 ) {

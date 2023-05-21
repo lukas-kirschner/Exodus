@@ -8,6 +8,7 @@ use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
 
 #[derive(Component)]
 pub struct MainCamera;
@@ -20,7 +21,7 @@ pub struct LayerImage;
 
 pub fn handle_ui_resize(
     mut event: EventReader<UiSizeChangedEvent>,
-    window: Res<Windows>,
+    window: Query<&Window, With<PrimaryWindow>>,
     map: Res<MapWrapper>,
     ui_info: Res<WindowUiOverlayInfo>,
     mut main_camera_query: Query<
@@ -30,12 +31,15 @@ pub fn handle_ui_resize(
     mut layer_camera_query: Query<&mut Transform, (With<LayerCamera>, Without<MainCamera>)>,
     tileset: Res<TilesetManager>,
 ) {
+    let Ok(primary) = window.get_single() else {
+        return;
+    };
     for _ in event.iter() {
         let (mut main_camera_transform, mut main_camera_projection) =
             main_camera_query.single_mut();
         let mut layer_camera_transform = layer_camera_query.single_mut();
         rescale_main_camera(
-            window.get_primary().unwrap(),
+            primary,
             &map,
             &mut layer_camera_transform,
             &mut main_camera_transform,
@@ -112,7 +116,7 @@ pub fn setup_camera(
             usage: TextureUsages::TEXTURE_BINDING
                 | TextureUsages::COPY_DST
                 | TextureUsages::RENDER_ATTACHMENT,
-            // view_formats: &[],
+            view_formats: &[],
         },
         ..default()
     };
@@ -120,7 +124,7 @@ pub fn setup_camera(
     let image_handle = images.add(image);
     let mut layer_camera = Camera2dBundle::new_with_far(1000.);
     layer_camera.camera.target = RenderTarget::Image(image_handle.clone());
-    layer_camera.camera.priority = -1;
+    layer_camera.camera.order = -1;
 
     let main_camera = Camera2dBundle::new_with_far(1000.);
     let layer = RenderLayers::layer(LAYER_ID);

@@ -6,19 +6,23 @@ use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, Selec
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
 use libexodus::tiles::Tile;
 
 pub struct EditWorldPlugin;
 
 impl Plugin for EditWorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::MapEditor)
-                .with_system(mouse_down_handler.label(MapeditorSystems::GameBoardMouseHandlers)),
+        app.add_system(
+            mouse_down_handler
+                .in_set(OnUpdate(AppState::MapEditor))
+                .in_set(MapeditorSystems::GameBoardMouseHandlers),
         )
-        .add_system_set(SystemSet::on_update(AppState::MapEditor).with_system(
-            mouse_down_handler_playerspawn.label(MapeditorSystems::GameBoardMouseHandlers),
-        ));
+        .add_system(
+            mouse_down_handler_playerspawn
+                .in_set(OnUpdate(AppState::MapEditor))
+                .in_set(MapeditorSystems::GameBoardMouseHandlers),
+        );
     }
 }
 
@@ -32,7 +36,7 @@ fn delete_tile_at(
         if transform.translation.x as i32 == pos.x as i32
             && transform.translation.y as i32 == pos.y as i32
         {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
             return;
         }
     }
@@ -110,7 +114,7 @@ fn replace_world_tile_at(
 
 fn mouse_down_handler(
     mut commands: Commands,
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut map: ResMut<MapWrapper>,
@@ -183,7 +187,7 @@ fn mouse_down_handler(
 }
 
 fn mouse_down_handler_playerspawn(
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     _map: ResMut<MapWrapper>,
