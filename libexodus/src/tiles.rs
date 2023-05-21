@@ -194,7 +194,7 @@ impl Tile {
             Tile::WALLSPIKESRLTB => Some(254),
             Tile::WALLSPIKESLTB => Some(237),
             Tile::WALLSPIKESRTB => Some(239),
-            Tile::DOOR => Some(103),
+            Tile::DOOR => Some(88),
             Tile::KEY => Some(201),
             Tile::OPENDOOR => Some(87),
             Tile::ARROWRIGHT => Some(35),
