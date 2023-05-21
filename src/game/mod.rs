@@ -2,6 +2,7 @@ use crate::game::pickup_item::PickupItemPlugin;
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
+use libexodus::tiles::Tile;
 use std::path::PathBuf;
 
 pub mod camera;
@@ -28,7 +29,6 @@ impl Plugin for GamePlugin {
             .add_plugin(PlayerPlugin)
             .add_plugin(PickupItemPlugin)
             .add_system(back_to_main_menu_controls.in_set(OnUpdate(AppState::Playing)))
-            .add_system(cleanup.in_schedule(OnExit(AppState::Playing)))
             .add_system(
                 reset_score
                     .in_schedule(OnEnter(AppState::Playing))
@@ -51,12 +51,5 @@ fn back_to_main_menu_controls(
     if current_app_state.0 == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
         app_state.set(AppState::MainMenu);
         keys.reset(KeyCode::Escape);
-    }
-}
-
-/// Cleanup every entity that is present in the stage. Used for State Changes
-fn cleanup(mut commands: Commands, query: Query<Entity>) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
     }
 }

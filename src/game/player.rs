@@ -39,6 +39,7 @@ impl Plugin for PlayerPlugin {
                 .in_set(OnUpdate(AppState::Playing))
                 .in_set(AppLabels::GameOverTrigger),
         )
+        .add_system(despawn_players.in_schedule(OnExit(AppState::Playing)))
         .add_system(
             game_over_event_listener
                 .in_set(OnUpdate(AppState::Playing))
@@ -78,18 +79,16 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
 /// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
 fn despawn_dead_player(
     mut commands: Commands,
-    mut dead_players: Query<(
-        &mut DeadPlayerComponent,
-        &mut TextureAtlasSprite,
-        &mut Transform,
-        Entity,
-    )>,
+    mut dead_players: Query<
+        (&mut TextureAtlasSprite, &mut Transform, Entity),
+        With<DeadPlayerComponent>,
+    >,
     config: Res<GameConfig>,
     time: Res<Time>,
     mut event_writer: EventWriter<GameOverEvent>,
 ) {
     let texture_size = config.config.tile_set.texture_size() as f32;
-    for (mut _dead_player, mut sprite, mut transform, entity) in dead_players.iter_mut() {
+    for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned.
@@ -437,6 +436,12 @@ fn respawn_player(
         player,
         layer,
     ));
+}
+
+fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
+    for entity in players.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 pub fn setup_player(

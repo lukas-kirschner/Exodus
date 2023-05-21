@@ -26,8 +26,8 @@ impl Plugin for MapEditorPreviewTilePlugin {
     }
 }
 
-fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<(&PreviewTile, Entity)>) {
-    let (_, ent) = preview_tile_q.single();
+fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<Entity, With<PreviewTile>>) {
+    let ent = preview_tile_q.single();
     commands.entity(ent).despawn();
 }
 

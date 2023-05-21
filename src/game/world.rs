@@ -19,11 +19,13 @@ impl Plugin for WorldPlugin {
             .add_system(setup_camera.in_schedule(OnEnter(AppState::Playing)).after(AppLabels::World).in_set(AppLabels::Camera))
             .add_system(handle_ui_resize.in_set(OnUpdate(AppState::Playing)).after(AppLabels::GameUI))
             .add_system(destroy_camera.in_schedule(OnExit(AppState::Playing)))
+            .add_system(destroy_world.in_schedule(OnExit(AppState::Playing)))
         // Map Editor needs a world as well:
             .add_system(reset_world.in_schedule(OnEnter(AppState::MapEditor)).in_set(AppLabels::World))
             .add_system(setup_camera.in_schedule(OnEnter(AppState::MapEditor)).after(AppLabels::World).in_set(AppLabels::Camera))
             .add_system(handle_ui_resize.in_set(OnUpdate(AppState::MapEditor)).after(AppLabels::GameUI))
-            .add_system(destroy_camera.in_schedule(OnExit(AppState::MapEditor)));
+            .add_system(destroy_camera.in_schedule(OnExit(AppState::MapEditor)))
+            .add_system(destroy_world.in_schedule(OnExit(AppState::MapEditor)));
     }
 }
 
@@ -36,6 +38,13 @@ pub struct DoorWrapper;
 pub fn insert_door_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
     if tile.kind() == TileKind::DOOR {
         bundle.insert(DoorWrapper);
+    }
+}
+
+/// Despawn the world
+pub fn destroy_world(mut commands: Commands, q_worldtiles: Query<Entity, With<WorldTile>>) {
+    for entity in q_worldtiles.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
 
@@ -61,7 +70,7 @@ pub fn spawn_tile(
             },
             ..Default::default()
         },
-        WorldTile, // WorldTiles are attached to each world tile, while TileWrappers are only attached to non-interactive world tiles.
+        WorldTile, // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
         *layer,
     ));
     insert_wrappers(tile, &mut bundle);

@@ -36,7 +36,7 @@ fn delete_tile_at(
         if transform.translation.x as i32 == pos.x as i32
             && transform.translation.y as i32 == pos.y as i32
         {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
             return;
         }
     }
