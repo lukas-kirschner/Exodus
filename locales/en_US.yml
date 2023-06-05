@@ -8,10 +8,16 @@ navbar:
 config_screen:
   language_label: Language
   tileset_label: Tile Set
+  player_name_label: Player Name
+  player_name_tooltip: Player Name that will be stored in the high score database. If left blank, no high scores will be saved.
 map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
   delete_map: Delete map
+  highscore_heading: "Previous best:"
+  no_highscore: No highscore
+  moves_fmt: "Moves: %{moves}"
+  coins_fmt: "Coins: %{coins}"
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen
@@ -70,3 +76,15 @@ debug:
     empty5mx: Empty Psion 5mx-sized map
     empty_sized: Empty map with border and size %{w}x%{h}
     example_world: Example World
+    showcase: Showcase Map
+game_over_screen:
+  game_over_heading: Game Over
+  victory_heading: Map Finished
+  back_button_tooltip: Back to Map Selection Screen
+  replay_button_tooltip: Replay Map
+  discard_tooltip: Discard High Score
+  lost_heading: You Lost
+  highscore_info:
+    won: Congratulations! Your high score will be saved as player %{player}.
+    won_discard: Your High Score will not be saved.
+    lost: Click the Replay Button to try again.

@@ -1,18 +1,20 @@
-use bevy::prelude::*;
-use crate::AppState;
 use crate::game::pickup_item::PickupItemPlugin;
+use crate::{AppLabels, AppState};
+use bevy::prelude::*;
+use libexodus::highscores::highscores_database::HighscoresDatabase;
+use std::path::PathBuf;
 
+pub mod camera;
 pub mod constants;
+mod pickup_item;
 mod player;
-pub mod tilewrapper;
 pub mod scoreboard;
+pub mod tilewrapper;
 mod ui;
 pub(crate) mod world;
-pub mod camera;
-mod pickup_item;
 
 use crate::game::player::PlayerPlugin;
-use crate::game::tilewrapper::{MapWrapper, reset_score};
+use crate::game::tilewrapper::{reset_score, MapWrapper};
 use crate::game::ui::GameUIPlugin;
 use crate::game::world::WorldPlugin;
 
@@ -20,39 +22,33 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<MapWrapper>()
+        app.init_resource::<MapWrapper>()
             .add_plugin(WorldPlugin)
             .add_plugin(GameUIPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(PickupItemPlugin)
-
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(back_to_main_menu_controls)
-            )
-
-            .add_system_set(SystemSet::on_exit(AppState::Playing)
-                .with_system(cleanup)
-            )
-            .add_system_set(SystemSet::on_enter(AppState::Playing)
-                .with_system(reset_score).label("reset_score")
-            )
-        ;
+            .add_system(back_to_main_menu_controls.in_set(OnUpdate(AppState::Playing)))
+            .add_system(
+                reset_score
+                    .in_schedule(OnEnter(AppState::Playing))
+                    .in_set(AppLabels::ResetScore),
+            );
     }
 }
 
-fn back_to_main_menu_controls(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if *app_state.current() == AppState::Playing {
-        if keys.just_pressed(KeyCode::Escape) {
-            app_state.set(AppState::MainMenu).expect("Could not go back to Main Menu");
-            keys.reset(KeyCode::Escape);
-        }
-    }
+#[derive(Resource)]
+pub struct HighscoresDatabaseWrapper {
+    pub highscores: HighscoresDatabase,
+    pub file: PathBuf,
 }
 
-/// Cleanup every entity that is present in the stage. Used for State Changes
-fn cleanup(mut commands: Commands, query: Query<Entity>) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+fn back_to_main_menu_controls(
+    mut keys: ResMut<Input<KeyCode>>,
+    current_app_state: ResMut<State<AppState>>,
+    mut app_state: ResMut<NextState<AppState>>,
+) {
+    if current_app_state.0 == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
+        app_state.set(AppState::MainMenu);
+        keys.reset(KeyCode::Escape);
     }
 }

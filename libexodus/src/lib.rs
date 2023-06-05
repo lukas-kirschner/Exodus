@@ -1,17 +1,10 @@
-pub mod world;
-pub mod tiles;
-pub mod player;
-pub mod movement;
+pub mod config;
 pub mod directions;
 pub mod directories;
-pub mod config;
+pub(crate) mod exodus_serializable;
+pub mod highscores;
+pub mod movement;
+pub mod player;
+pub mod tiles;
 pub mod tilesets;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+pub mod world;

@@ -1,12 +1,11 @@
-use std::path::{Path, PathBuf};
 use crate::tiles::{Tile, TileKind};
-
+use std::path::{Path, PathBuf};
 
 pub mod exampleworlds;
-pub mod presets;
+pub mod hash;
 pub mod io;
 pub mod io_error;
-pub mod hash;
+pub mod presets;
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -26,6 +25,20 @@ pub struct GameWorld {
     clean: bool,
 }
 
+impl Default for GameWorld {
+    fn default() -> Self {
+        GameWorld {
+            name: "".to_string(),
+            author: "".to_string(),
+            hash: [0u8; 32],
+            data: vec![],
+            playerspawn: (0, 0),
+            filename: None,
+            clean: true,
+        }
+    }
+}
+
 impl GameWorld {
     pub fn new(width: usize, height: usize) -> Self {
         assert! {width > 0};
@@ -40,13 +53,17 @@ impl GameWorld {
             clean: true,
         }
     }
-    /// Get the unique ID of this map as hex-string
-    pub fn hash(&self) -> String {
+    /// Get the unique ID of this map as hex-string representation
+    pub fn hash_str(&self) -> String {
         let mut ret = String::new();
         for b in &self.hash {
             ret.push_str(format!("{:02X}", *b).as_str());
         }
         ret
+    }
+    /// Get the unique ID of this map as byte slice
+    pub fn hash(&self) -> &[u8; 32] {
+        &self.hash
     }
     /// Get the name of this world
     pub fn get_name(&self) -> &str {
@@ -56,7 +73,7 @@ impl GameWorld {
     pub fn get_filename(&self) -> Option<&Path> {
         match &self.filename {
             None => None,
-            Some(filename) => Some(filename.as_path())
+            Some(filename) => Some(filename.as_path()),
         }
     }
     /// Set the last used file name of this map
@@ -86,23 +103,23 @@ impl GameWorld {
     pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
         self.data[x][y] = tile;
         match &self.data[x][y].kind() {
-            TileKind::AIR => {}
-            TileKind::SOLID => {}
+            TileKind::AIR => {},
+            TileKind::SOLID => {},
             TileKind::DEADLY { .. } => {
                 //TODO
-            }
+            },
             TileKind::SPECIAL => {
                 //TODO
-            }
+            },
             TileKind::PLAYERSPAWN => {
                 self.playerspawn = (x, y);
-            }
-            TileKind::COIN => {}
-            TileKind::LADDER => {}
-            TileKind::KEY => {}
-            TileKind::DOOR => {}
-            TileKind::COLLECTIBLE => {}
-            TileKind::EXIT => {}
+            },
+            TileKind::COIN => {},
+            TileKind::LADDER => {},
+            TileKind::KEY => {},
+            TileKind::DOOR => {},
+            TileKind::COLLECTIBLE => {},
+            TileKind::EXIT => {},
         }
         self
     }
@@ -168,7 +185,11 @@ impl GameWorld {
     /// assert_eq!(1337, world.height());
     /// ```
     pub fn height(&self) -> usize {
-        self.data[0].len()
+        if self.width() > 0 {
+            self.data[0].len()
+        } else {
+            0
+        }
     }
 
     pub fn player_spawn(&self) -> (usize, usize) {
@@ -228,11 +249,8 @@ impl GameWorld {
     pub fn reset_game_state(&mut self) {
         for x in 0..self.width() {
             for y in 0..self.height() {
-                match self.get(x as i32, y as i32).unwrap() {
-                    Tile::OPENDOOR => {
-                        self.set(x, y, Tile::DOOR);
-                    }
-                    _ => {}
+                if self.get(x as i32, y as i32).unwrap() == &Tile::OPENDOOR {
+                    self.set(x, y, Tile::DOOR);
                 }
             }
         }

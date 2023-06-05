@@ -1,10 +1,16 @@
-use std::collections::LinkedList;
 use crate::movement::Movement;
+use std::collections::LinkedList;
 
 #[derive(Clone)]
 pub struct Player {
     movement_queue: LinkedList<Movement>,
     facing_left: bool,
+}
+
+impl Default for Player {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Player {
@@ -55,12 +61,8 @@ impl Player {
     /// Get the atlas index facing in the correct direction
     pub fn atlas_index(&self) -> usize {
         match self.facing_left {
-            true => {
-                Player::atlas_index_left()
-            }
-            false => {
-                Player::atlas_index_right()
-            }
+            true => Player::atlas_index_left(),
+            false => Player::atlas_index_right(),
         }
     }
 
@@ -79,5 +81,70 @@ impl Player {
     /// Check if the movement queue is empty
     pub fn movement_queue_is_empty(&self) -> bool {
         self.movement_queue.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::movement::Movement;
+    use crate::player::Player;
+
+    #[test]
+    fn test_movement_queue_default_empty() {
+        let player = Player::new();
+        assert!(player.movement_queue_is_empty());
+    }
+
+    #[test]
+    fn test_look_left() {
+        let mut player = Player::new();
+        player.set_face_right(false);
+        assert_eq!(Player::atlas_index_left(), player.atlas_index());
+        assert!(!player.is_facing_right());
+    }
+
+    #[test]
+    fn test_look_right() {
+        let mut player = Player::new();
+        player.set_face_right(true);
+        assert_eq!(Player::atlas_index_right(), player.atlas_index());
+        assert!(player.is_facing_right());
+        player.set_face_right(false);
+        assert_eq!(Player::atlas_index_left(), player.atlas_index());
+        assert!(!player.is_facing_right());
+    }
+
+    #[test]
+    fn test_movement_queue_peek() {
+        let mut player = Player::new();
+        player.push_movement_queue(Movement {
+            velocity: (1.0, 0.0),
+            target: (1, 0),
+            is_manual: true,
+        });
+        assert!(!player.movement_queue_is_empty());
+        player.push_movement_queue(Movement {
+            velocity: (0.0, 1.0),
+            target: (1, 1),
+            is_manual: true,
+        });
+        assert_eq!(player.peek_movement_queue().unwrap().velocity, (1.0, 0.0));
+        assert_eq!(player.pop_movement_queue().unwrap().velocity, (1.0, 0.0));
+        assert_eq!(player.peek_movement_queue().unwrap().velocity, (0.0, 1.0));
+        assert_eq!(player.pop_movement_queue().unwrap().velocity, (0.0, 1.0));
+        assert!(player.movement_queue_is_empty());
+    }
+
+    #[test]
+    fn test_movement_queue_clear() {
+        let mut player = Player::new();
+        player.push_movement_queue(Movement {
+            velocity: (1.0, 0.0),
+            target: (1, 0),
+            is_manual: true,
+        });
+        assert!(!player.movement_queue_is_empty());
+        player.clear_movement_queue();
+        assert!(player.movement_queue_is_empty());
     }
 }

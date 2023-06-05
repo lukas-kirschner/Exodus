@@ -1,10 +1,15 @@
-use bevy::prelude::*;
-use libexodus::player::Player;
-use libexodus::tiles::Tile;
-use crate::{App, AppState, TilesetManager};
-use crate::game::constants::{MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z, TILE_SIZE};
+use crate::game::camera::{LayerCamera, MainCamera};
+use crate::game::constants::{
+    MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z,
+};
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
+use crate::{App, AppState, GameConfig, TilesetManager, LAYER_ID};
+use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
+use bevy::window::PrimaryWindow;
+use libexodus::player::Player;
+use libexodus::tiles::Tile;
 
 #[derive(Component)]
 pub struct PreviewTile {
@@ -15,36 +20,25 @@ pub struct MapEditorPreviewTilePlugin;
 
 impl Plugin for MapEditorPreviewTilePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(AppState::MapEditor)
-                .with_system(setup_preview_tile)
-            )
-            .add_system_set(SystemSet::on_exit(AppState::MapEditor)
-                .with_system(destroy_preview_tile)
-            )
-            .add_system_set(SystemSet::on_update(AppState::MapEditor)
-                .with_system(update_preview_tile)
-            )
-        ;
+        app.add_system(setup_preview_tile.in_schedule(OnEnter(AppState::MapEditor)))
+            .add_system(destroy_preview_tile.in_schedule(OnExit(AppState::MapEditor)))
+            .add_system(update_preview_tile.in_set(OnUpdate(AppState::MapEditor)));
     }
 }
 
-fn destroy_preview_tile(
-    mut commands: Commands,
-    preview_tile_q: Query<(&PreviewTile, Entity)>,
-) {
-    let (_, ent) = preview_tile_q.single();
+fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<Entity, With<PreviewTile>>) {
+    let ent = preview_tile_q.single();
     commands.entity(ent).despawn();
 }
 
 /// Spawn a WALL PreviewTile at an invisible position
-pub fn setup_preview_tile(
-    mut commands: Commands,
-    current_texture_atlas: Res<TilesetManager>,
-) {
-    let previewtile: PreviewTile = PreviewTile { current_tile: Tile::WALL };
-    commands
-        .spawn(SpriteSheetBundle {
+pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<TilesetManager>) {
+    let previewtile: PreviewTile = PreviewTile {
+        current_tile: Tile::WALL,
+    };
+    let layer = RenderLayers::layer(LAYER_ID);
+    commands.spawn((
+        SpriteSheetBundle {
             sprite: TextureAtlasSprite {
                 color: Color::Rgba {
                     red: 1.0,
@@ -57,13 +51,14 @@ pub fn setup_preview_tile(
             },
             texture_atlas: current_texture_atlas.current_handle(),
             transform: Transform {
-                translation: Vec3::new(-1 as f32, -1 as f32, MAPEDITOR_PREVIEWTILE_Z),
-                scale: Vec3::splat(TILE_SIZE as f32 / current_texture_atlas.current_tileset().texture_size() as f32),
+                translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
                 ..default()
             },
             ..default()
-        })
-        .insert(previewtile);
+        },
+        previewtile,
+        layer,
+    ));
 }
 
 fn set_preview_tile_texture(
@@ -77,7 +72,7 @@ fn set_preview_tile_texture(
         Tile::PLAYERSPAWN => {
             *texture_atlas_handle = current_texture_atlas.current_handle();
             texture_atlas_sprite.index = Player::new().atlas_index();
-        }
+        },
         _ => {
             if let Some(atlas_index) = new_tile.atlas_index() {
                 *texture_atlas_handle = current_texture_atlas.current_handle();
@@ -86,32 +81,63 @@ fn set_preview_tile_texture(
                 *texture_atlas_handle = current_texture_atlas.current_handle();
                 texture_atlas_sprite.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
             }
-        }
+        },
     }
     preview_tile.current_tile = new_tile.clone();
 }
 
 /// System to show a transparent preview tile on the map
 fn update_preview_tile(
-    wnds: Res<Windows>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
+    q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
+    q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
-    mut preview_tile_q: Query<(&mut PreviewTile, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &mut Transform)>,
+    mut preview_tile_q: Query<(
+        &mut PreviewTile,
+        &mut Handle<TextureAtlas>,
+        &mut TextureAtlasSprite,
+        &mut Transform,
+    )>,
     current_texture_atlas: Res<TilesetManager>,
+    config: Res<GameConfig>,
 ) {
-    let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) = preview_tile_q.single_mut();
+    let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) =
+        preview_tile_q.single_mut();
     if current_tile.tile != preview_tile.current_tile {
-        set_preview_tile_texture(&current_tile.tile, &mut texture_atlas_handle, &mut texture_atlas_sprite, &mut preview_tile, &*current_texture_atlas);
+        set_preview_tile_texture(
+            &current_tile.tile,
+            &mut texture_atlas_handle,
+            &mut texture_atlas_sprite,
+            &mut preview_tile,
+            &current_texture_atlas,
+        );
     }
-    let (camera, camera_transform) = q_camera.single(); // Will crash if there is more than one camera
-    if let Some((world_x, world_y)) = compute_cursor_position_in_world(&*wnds, camera, camera_transform, &*map) {
+    let (layer_camera, layer_camera_transform) = q_layer_camera.single();
+    let (main_camera, main_camera_transform) = q_main_camera.single();
+    if let Some((world_x_coord, world_y_coord)) = compute_cursor_position_in_world(
+        &wnds,
+        main_camera,
+        main_camera_transform,
+        layer_camera,
+        layer_camera_transform,
+        config.config.tile_set.texture_size() as f32,
+    ) {
         // The cursor is inside the window
-        if transform.translation.x as i32 != world_x || transform.translation.y as i32 != world_y {
-            transform.translation.x = world_x as f32;
-            transform.translation.y = world_y as f32;
+        if world_x_coord >= 0
+            && world_y_coord >= 0
+            && world_x_coord < map.world.width() as i32
+            && world_y_coord < map.world.height() as i32
+        {
+            transform.translation.x =
+                world_x_coord as f32 * config.config.tile_set.texture_size() as f32;
+            transform.translation.y =
+                world_y_coord as f32 * config.config.tile_set.texture_size() as f32;
+        } else {
+            // The cursor is not in the window. We need to move the preview out of sight
+            transform.translation.x = -10000.0;
+            transform.translation.y = -10000.0;
         }
-        // eprintln!("World coords: {}/{}", world_x, world_y);
     } else {
         // The cursor is not in the window. We need to move the preview out of sight
         transform.translation.x = -10000.0;

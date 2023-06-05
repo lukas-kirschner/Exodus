@@ -1,33 +1,36 @@
-use bevy::prelude::*;
-use libexodus::world::GameWorld;
-use libexodus::world::presets;
 use crate::game::scoreboard::Scoreboard;
+use bevy::prelude::*;
+use libexodus::world::presets::map_with_border;
+use libexodus::world::GameWorld;
+
+#[derive(Resource, Clone)]
+pub enum GameOverState {
+    /// The game was lost, i.e., the player died losing all lives without reaching the exit
+    Lost,
+    /// The player won the game with the given scoreboard
+    Won { score: Scoreboard },
+    // /// The player won the game as part of the campaign
+    // WON_CAMPAIGN { score: Scoreboard },
+}
 
 ///
 /// A wrapper around a GameWorld
 #[derive(Resource)]
-pub struct MapWrapper<> {
+pub struct MapWrapper {
     pub world: GameWorld,
+    pub previous_best: Option<Scoreboard>,
 }
 
 impl FromWorld for MapWrapper {
     fn from_world(_: &mut World) -> Self {
         MapWrapper {
-            world: presets::map_with_border(24, 10),
+            world: map_with_border(24, 10),
+            previous_best: None,
         }
     }
 }
 
-impl MapWrapper {
-    pub fn _set_world(&mut self, world: GameWorld) {
-        self.world = world;
-    }
-}
-
-
-pub fn reset_score(
-    mut scoreboard: ResMut<Scoreboard>
-) {
+pub fn reset_score(mut scoreboard: ResMut<Scoreboard>) {
     scoreboard.coins = 0;
     scoreboard.moves = 0;
 }

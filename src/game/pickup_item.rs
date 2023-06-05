@@ -1,12 +1,14 @@
-use bevy::ecs::system::EntityCommands;
-use bevy::prelude::*;
-use libexodus::tiles::{Tile, TileKind};
-use crate::AppState;
-use crate::game::constants::{COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED, PICKUP_ITEM_ZOOM_SPEED};
+use crate::game::constants::{
+    COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
+    PICKUP_ITEM_ZOOM_SPEED,
+};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
-
+use crate::{AppLabels, AppState, GameConfig};
+use bevy::ecs::system::EntityCommands;
+use bevy::prelude::*;
+use libexodus::tiles::{Tile, TileKind};
 
 #[derive(Component)]
 pub struct PickupItem;
@@ -15,8 +17,10 @@ pub struct PickupItem;
 pub fn pickup_item_animation(
     mut commands: Commands,
     mut dead_players: Query<(&mut TextureAtlasSprite, &mut Transform, Entity), With<PickupItem>>,
+    config: Res<GameConfig>,
     time: Res<Time>,
 ) {
+    let texture_size = config.config.tile_set.texture_size() as f32;
     for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (PICKUP_ITEM_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -25,8 +29,9 @@ pub fn pickup_item_animation(
             return;
         }
         sprite.color.set_a(new_a);
-        transform.translation.y += PICKUP_ITEM_ASCEND_SPEED * time.delta_seconds();
-        transform.scale += Vec3::splat(PICKUP_ITEM_ZOOM_SPEED * time.delta_seconds());
+        transform.translation.y += PICKUP_ITEM_ASCEND_SPEED * texture_size * time.delta_seconds();
+        transform.scale +=
+            Vec3::splat(PICKUP_ITEM_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }
 
@@ -34,26 +39,14 @@ pub struct PickupItemPlugin;
 
 impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_event::<CollectibleCollectedEvent>()
+        app.add_event::<CollectibleCollectedEvent>()
             // Collision Handlers
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<CoinWrapper>).after("player_movement")
-            )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<KeyWrapper>).after("player_movement")
-            )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(setup_collectible_event::<CollectibleWrapper>).after("player_movement")
-            )
+            .add_system(setup_collectible_event::<CoinWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(setup_collectible_event::<KeyWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(setup_collectible_event::<CollectibleWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
             // Event Handlers
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(collectible_collected_event).after("player_movement")
-            )
-            .add_system_set(SystemSet::on_update(AppState::Playing)
-                .with_system(pickup_item_animation).after("player_movement")
-            )
-        ;
+            .add_system(collectible_collected_event.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_system(pickup_item_animation.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement));
     }
 }
 
@@ -125,12 +118,14 @@ fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
                     collectible: coin_entity,
                 });
                 // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
-                commands.entity(coin_entity).remove::<WrapperType>().insert(PickupItem);
+                commands
+                    .entity(coin_entity)
+                    .remove::<WrapperType>()
+                    .insert(PickupItem);
             }
         }
     }
 }
-
 
 /// Event that despawns the collected collectible and executes the associated action
 fn collectible_collected_event(
@@ -150,20 +145,17 @@ fn collectible_collected_event(
 
 /// Insert the appropriate wrapper when a tile is set up in the game world.
 /// Must be called from the game board setup routine
-pub fn insert_wrappers(
-    tile: &Tile,
-    bundle: &mut EntityCommands,
-) {
+pub fn insert_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
     match tile.kind() {
         TileKind::COIN => {
             bundle.insert(CoinWrapper { coin_value: 1 });
-        }
+        },
         TileKind::KEY => {
             bundle.insert(KeyWrapper);
-        }
+        },
         TileKind::COLLECTIBLE => {
             bundle.insert(CollectibleWrapper);
-        }
-        _ => {}
+        },
+        _ => {},
     }
 }
