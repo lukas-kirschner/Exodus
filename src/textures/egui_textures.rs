@@ -26,12 +26,12 @@ fn scale_texture(
     assets: &mut Assets<Image>,
     texture_handle: &Handle<Image>,
 ) -> (Handle<Image>, usize) {
-    const TARGET_SIZE: usize = 32;
+    const TEXTURE_SIZE: usize = 32;
     let image = assets.get(texture_handle).unwrap();
-    let scale: f64 = (uv.max.x as f64 - uv.min.x as f64) / TARGET_SIZE as f64;
+    let scale: f64 = (uv.max.x - uv.min.x) as f64 / TEXTURE_SIZE as f64;
     assert_eq!(
         scale,
-        (uv.max.y as f64 - uv.min.y as f64) / TARGET_SIZE as f64,
+        (uv.max.y - uv.min.y) as f64 / TEXTURE_SIZE as f64,
         "Expected square textures!"
     );
     let rgba_image = image.clone().try_into_dynamic().unwrap().into_rgba8();
@@ -43,13 +43,15 @@ fn scale_texture(
         TextureFormat::Rgba8UnormSrgb,
         image.texture_descriptor.format
     );
-    let mut target_arr = Vec::with_capacity(TARGET_SIZE * TARGET_SIZE * 4);
-    for y in 0..TARGET_SIZE {
-        for x in (0..TARGET_SIZE * 4).step_by(4) {
-            let real_x = x / 4;
-            let x_nearest: i32 =
-                ((((real_x + uv.min.x as usize) as f64 + 0.5) * scale).floor() as i32) * 4;
-            let y_nearest: i32 = (((y + uv.min.y as usize) as f64 + 0.5) * scale).floor() as i32;
+    let mut target_arr = Vec::with_capacity(TEXTURE_SIZE * TEXTURE_SIZE * 4);
+    for y in 0..TEXTURE_SIZE {
+        for arr_x in (0..TEXTURE_SIZE * 4).step_by(4) {
+            assert_eq!(arr_x % 4, 0);
+            let x = arr_x / 4;
+            let x_img = (x + uv.min.x as usize) as f64;
+            let y_img = (y + uv.min.y as usize) as f64;
+            let x_nearest: i32 = (((x_img + 0.5) * scale).floor() as i32) * 4;
+            let y_nearest: i32 = ((y_img + 0.5) * scale).floor() as i32;
             println!("From ({},{})", x_nearest, y_nearest);
             for offset in 0..4 {
                 assert_eq!(
@@ -63,27 +65,27 @@ fn scale_texture(
             }
             println!(
                 "Set ({},{}) to ({},{},{},{})",
-                x,
+                arr_x,
                 y,
-                target_arr[x + (x * y)],
-                target_arr[x + (x * y) + 1],
-                target_arr[x + (x * y) + 2],
-                target_arr[x + (x * y) + 3]
+                target_arr[arr_x + (arr_x * y)],
+                target_arr[arr_x + (arr_x * y) + 1],
+                target_arr[arr_x + (arr_x * y) + 2],
+                target_arr[arr_x + (arr_x * y) + 3]
             );
         }
     }
     (
         assets.add(Image::new(
             Extent3d {
-                width: TARGET_SIZE as u32,
-                height: TARGET_SIZE as u32,
+                width: TEXTURE_SIZE as u32,
+                height: TEXTURE_SIZE as u32,
                 depth_or_array_layers: 1,
             },
             TextureDimension::D2,
             target_arr,
             image.texture_descriptor.format,
         )),
-        TARGET_SIZE,
+        TEXTURE_SIZE,
     )
 }
 
