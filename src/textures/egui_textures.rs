@@ -20,7 +20,12 @@ impl FromWorld for EguiButtonTextures {
         }
     }
 }
-
+/// Scale the given texture using Nearest Neighbor Interpolation
+/// to match the TEXTURE_SIZE and create a new image.
+///
+/// # Returns
+/// a tuple of the new handle to the scaled image and the texture size in pixels.
+/// The resulting image is always square
 fn scale_texture(
     uv: &Rect,
     assets: &mut Assets<Image>,
@@ -28,14 +33,22 @@ fn scale_texture(
 ) -> (Handle<Image>, usize) {
     const TEXTURE_SIZE: usize = 32;
     let image = assets.get(texture_handle).unwrap();
-    let scale: f64 = (uv.max.x - uv.min.x) as f64 / TEXTURE_SIZE as f64;
     assert_eq!(
-        scale,
-        (uv.max.y - uv.min.y) as f64 / TEXTURE_SIZE as f64,
+        uv.max.x - uv.min.x,
+        uv.max.y - uv.min.y,
         "Expected square textures!"
     );
+    debug_assert_eq!(
+        (uv.max.x - uv.min.x).fract(),
+        0.0,
+        "Expected texture uv sizes to be an integer!"
+    );
+    let old_texture_size = (uv.max.x - uv.min.x) as usize;
+    let ratio = old_texture_size as f64 / TEXTURE_SIZE as f64;
     let rgba_image = image.clone().try_into_dynamic().unwrap().into_rgba8();
     let data = rgba_image.as_raw();
+    let (data_w, data_h) = (image.size().x as usize * 4, image.size().y as usize);
+    assert_eq!(data_w * data_h, data.len());
     assert_eq!(
         image.texture_descriptor.format,
         TextureFormat::Rgba8UnormSrgb,
@@ -45,33 +58,31 @@ fn scale_texture(
     );
     let mut target_arr = Vec::with_capacity(TEXTURE_SIZE * TEXTURE_SIZE * 4);
     for y in 0..TEXTURE_SIZE {
-        for arr_x in (0..TEXTURE_SIZE * 4).step_by(4) {
-            assert_eq!(arr_x % 4, 0);
-            let x = arr_x / 4;
-            let x_img = (x + uv.min.x as usize) as f64;
-            let y_img = (y + uv.min.y as usize) as f64;
-            let x_nearest: i32 = (((x_img + 0.5) * scale).floor() as i32) * 4;
-            let y_nearest: i32 = ((y_img + 0.5) * scale).floor() as i32;
-            println!("From ({},{})", x_nearest, y_nearest);
-            for offset in 0..4 {
-                assert_eq!(
-                    (x_nearest / 4) * 4,
-                    x_nearest,
-                    "x_nearest was not divisible by 4!"
-                );
-                let pixel = data[(x_nearest + (x_nearest * y_nearest) + offset) as usize];
-                // target_arr[x + (x * y) + offset] = pixel;
+        let py = (y as f64 * ratio).floor() as usize;
+        let y_img = py + uv.min.y as usize;
+        assert!(
+            y_img < image.size().y as usize,
+            "Y Index {} ({}) out of bounds! Height: {}",
+            y_img,
+            py,
+            image.size().y
+        );
+
+        for x in 0..TEXTURE_SIZE {
+            let px = (x as f64 * ratio).floor() as usize;
+            let x_img = px + uv.min.x as usize;
+            assert!(
+                x_img < image.size().x as usize,
+                "X Index {} ({}) out of bounds! Width: {}",
+                x_img,
+                px,
+                image.size().x
+            );
+
+            for offset in 0..4usize {
+                let pixel = data[(x_img * 4) + offset + (data_w * y_img)];
                 target_arr.push(pixel);
             }
-            println!(
-                "Set ({},{}) to ({},{},{},{})",
-                arr_x,
-                y,
-                target_arr[arr_x + (arr_x * y)],
-                target_arr[arr_x + (arr_x * y) + 1],
-                target_arr[arr_x + (arr_x * y) + 2],
-                target_arr[arr_x + (arr_x * y) + 3]
-            );
         }
     }
     (
