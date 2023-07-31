@@ -71,3 +71,40 @@ DefaultLayer --|> Screen
 ```
 
 Take note that everything that needs to be drawn into the game world must be rendered onto that layer.
+
+## Campaign Mode
+
+The campaign trail is saved in a [TGF](https://en.wikipedia.org/wiki/Trivial_Graph_Format) file with the following
+syntax:
+
+```text
+<ID> [File Name] <X Coordinate> <Y Coordinate>
+<ID> [File Name] <X Coordinate> <Y Coordinate>
+#
+<ID> <ID> [Edge Name]
+<ID> <ID> [Edge Name]
+```
+
+Each file name describes a path relative to the `campaign` folder in the program directory, e.g. `tutorial_jumping.exm`.
+Each ID must be a unique (not necessarily consecutive) integer.
+In the lines following the single hash (#), all edges of the campaign trail must be described.
+
+If the file name is omitted, an empty node is added with the sole purpose of connecting other nodes.
+
+### Limitations
+
+Depending on the implementation of the game, adjacent nodes in the campaign trail may or may not be connected to each
+other.
+Therefore, we throw an error when two adjacent nodes are NOT connected (else, this will lead to possible UI glitches).
+
+Furthermore, there cannot be any orphaned partial graphs that are unreachable from the start (0,0).
+The start node will always be at (0,0) - a node at that position will automatically be a start node.
+
+The start node must be given, usually as an empty node.
+
+All edges are bidirectional.
+When connecting two nodes, exactly one of the coordinates must match, i.e., a connection must always add a straight
+horizontal or vertical edge.
+There cannot be any diagonal edges.
+This limitation is intentional to make sure that campaign trails made out of squares can be displayed properly,
+including their edges.
