@@ -86,10 +86,11 @@ syntax:
 ```
 
 Each file name describes a path relative to the `campaign` folder in the program directory, e.g. `tutorial_jumping.exm`.
-Each ID must be a unique (not necessarily consecutive) integer.
-In the lines following the single hash (#), all edges of the campaign trail must be described.
+Each ID must be a unique (not necessarily consecutive) non-negative integer.
+The coordinates may be negative and describe the position of each node with positive X to the right and positive Y to the top.
+If the file name is omitted and only coordinates are given, an empty node is added with the sole purpose of connecting other nodes.
 
-If the file name is omitted, an empty node is added with the sole purpose of connecting other nodes.
+In the lines following the single hash (#), all edges of the campaign trail must be described.
 
 ### Limitations
 

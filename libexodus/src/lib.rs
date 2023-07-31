@@ -1,3 +1,4 @@
+pub mod campaign;
 pub mod config;
 pub mod directions;
 pub mod directories;
