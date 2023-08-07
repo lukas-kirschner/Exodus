@@ -3,7 +3,6 @@ use crate::campaign::graph::GraphParseError::{
 };
 use crate::exodus_serializable::ExodusSerializable;
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::io::{self, prelude::*, BufReader, Error};
 use std::num::ParseIntError;
 
@@ -216,7 +215,7 @@ mod tests {
         assert_node_in_graph(&graph, 2, NodeKind::Empty, (1, 1));
         assert_node_in_graph(&graph, 3, NodeKind::Empty, (1, 0));
         // Check Edges
-        assert_edges_are_connected(&graph, vec![0, 1, 2, 3, 0]);
+        assert_edges_are_connected(&graph, &[0, 1, 2, 3, 0]);
     }
 
     #[test]
@@ -234,7 +233,7 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(graph.nodes.len(), 4);
         // Check Edges
-        assert_edges_are_connected(&graph, vec![]);
+        assert_edges_are_connected(&graph, &[]);
     }
 
     /// Assert that a node with the given properties exists in the graph.
@@ -248,7 +247,7 @@ mod tests {
     }
 
     /// Assert that the ordered list of node IDs is connected in the given graph.
-    fn assert_edges_are_connected(graph: &Graph, edges: Vec<NodeID>) {
+    fn assert_edges_are_connected(graph: &Graph, edges: &[NodeID]) {
         if edges.len() <= 1 {
             assert_eq!(
                 graph.edges.values().map(|con| con.len()).sum::<usize>(),
@@ -257,7 +256,7 @@ mod tests {
             );
         }
         let mut prev: Option<NodeID> = None;
-        for next_node in edges {
+        for &next_node in edges {
             prev = match prev {
                 None => next_node,
                 Some(prev_node) => {
