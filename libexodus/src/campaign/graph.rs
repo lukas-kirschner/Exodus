@@ -176,7 +176,7 @@ impl ExodusSerializable for Graph {
                         )
                     },
                     [] => continue,
-                    _ => return Err(SyntaxError { line: lineno }),
+                    _ => Err(SyntaxError { line: lineno })?,
                 }
                 .map_or(Ok(()), |v| {
                     Err(GraphParseError::DuplicateEdgeLabel { label: v })
@@ -184,5 +184,97 @@ impl ExodusSerializable for Graph {
             }
         }
         Ok(())
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bytebuffer::ByteBuffer;
+    use strum::{EnumCount, IntoEnumIterator};
+
+    #[test]
+    fn test_simple_in_memory_deserialization() {
+        let graph_file: String = r#"
+        0 0 0
+        1 0 1
+        2 1 1
+        3 1 0
+        #
+        0 1
+        1 2
+        2 3
+        3 0
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(result.is_ok());
+        // Check Nodes
+        assert_eq!(graph.nodes.len(), 4);
+        assert_node_in_graph(&graph, 0, NodeKind::Empty, (0, 0));
+        assert_node_in_graph(&graph, 1, NodeKind::Empty, (0, 1));
+        assert_node_in_graph(&graph, 2, NodeKind::Empty, (1, 1));
+        assert_node_in_graph(&graph, 3, NodeKind::Empty, (1, 0));
+        // Check Edges
+        assert_edges_are_connected(&graph, vec![0, 1, 2, 3, 0]);
+    }
+
+    #[test]
+    fn test_simple_in_memory_deserialization_with_empty_edges() {
+        let graph_file: String = r#"
+        0 0 0
+        1 0 1
+        2 1 1
+        3 1 0
+        #
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(result.is_ok());
+        assert_eq!(graph.nodes.len(), 4);
+        // Check Edges
+        assert_edges_are_connected(&graph, vec![]);
+    }
+
+    /// Assert that a node with the given properties exists in the graph.
+    fn assert_node_in_graph(graph: &Graph, id: NodeID, kind: NodeKind, coord: (Coord, Coord)) {
+        assert_eq!(
+            graph.nodes.get(&id),
+            Some(&Node { id, kind, coord }),
+            "Expected Node with ID {} to be inside graph!",
+            id
+        )
+    }
+
+    /// Assert that the ordered list of node IDs is connected in the given graph.
+    fn assert_edges_are_connected(graph: &Graph, edges: Vec<NodeID>) {
+        if edges.len() <= 1 {
+            assert_eq!(
+                graph.edges.values().map(|con| con.len()).sum::<usize>(),
+                0,
+                "Expected Graph to have no edges at all!"
+            );
+        }
+        let mut prev: Option<NodeID> = None;
+        for next_node in edges {
+            prev = match prev {
+                None => next_node,
+                Some(prev_node) => {
+                    assert!(
+                        graph
+                            .edges
+                            .get(&prev_node)
+                            .map(|con| con.contains(&next_node))
+                            .unwrap_or(false),
+                        "Expected Node {} to be connected to node {}!",
+                        prev_node,
+                        next_node
+                    );
+                    next_node
+                },
+            }
+            .into();
+        }
     }
 }
