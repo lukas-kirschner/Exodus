@@ -11,9 +11,10 @@ pub struct GameUIPlugin;
 
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Scoreboard>().add_system(
+        app.init_resource::<Scoreboard>().add_systems(
+            Update,
             game_ui_system
-                .in_set(OnUpdate(AppState::Playing))
+                .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::GameUI),
         );
     }

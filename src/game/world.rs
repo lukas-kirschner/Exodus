@@ -15,17 +15,17 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_system(reset_world.in_schedule(OnEnter(AppState::Playing)).in_set(AppLabels::World))
-            .add_system(setup_camera.in_schedule(OnEnter(AppState::Playing)).after(AppLabels::World).in_set(AppLabels::Camera))
-            .add_system(handle_ui_resize.in_set(OnUpdate(AppState::Playing)).after(AppLabels::GameUI))
-            .add_system(destroy_camera.in_schedule(OnExit(AppState::Playing)))
-            .add_system(destroy_world.in_schedule(OnExit(AppState::Playing)))
+            .add_systems(OnEnter(AppState::Playing),reset_world.in_set(AppLabels::World))
+            .add_systems(OnEnter(AppState::Playing),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::Playing)).after(AppLabels::GameUI))
+            .add_systems(OnExit(AppState::Playing),destroy_camera)
+            .add_systems(OnExit(AppState::Playing),destroy_world)
         // Map Editor needs a world as well:
-            .add_system(reset_world.in_schedule(OnEnter(AppState::MapEditor)).in_set(AppLabels::World))
-            .add_system(setup_camera.in_schedule(OnEnter(AppState::MapEditor)).after(AppLabels::World).in_set(AppLabels::Camera))
-            .add_system(handle_ui_resize.in_set(OnUpdate(AppState::MapEditor)).after(AppLabels::GameUI))
-            .add_system(destroy_camera.in_schedule(OnExit(AppState::MapEditor)))
-            .add_system(destroy_world.in_schedule(OnExit(AppState::MapEditor)));
+            .add_systems(OnEnter(AppState::MapEditor),reset_world.in_set(AppLabels::World))
+            .add_systems(OnEnter(AppState::MapEditor),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::MapEditor)).after(AppLabels::GameUI))
+            .add_systems(OnExit(AppState::MapEditor),destroy_camera)
+            .add_systems(OnExit(AppState::MapEditor),destroy_world);
     }
 }
 

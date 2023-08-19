@@ -37,9 +37,9 @@ impl Plugin for MapEditorPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MapWrapper>()
             // The world plugin is already added here. Adding it twice causes an error
-            .add_plugin(MapEditorUiPlugin)
-            .add_plugin(MapEditorPreviewTilePlugin)
-            .add_plugin(EditWorldPlugin);
+            .add_plugins(MapEditorUiPlugin)
+            .add_plugins(MapEditorPreviewTilePlugin)
+            .add_plugins(EditWorldPlugin);
     }
 }
 

@@ -295,16 +295,22 @@ impl Plugin for MapSelectionScreenPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Maps>()
             .init_resource::<MapSelectionScreenAction>()
-            .add_system(
-                load_maps
-                    .in_schedule(OnEnter(AppState::MapSelectionScreen))
-                    .in_set(AppLabels::LoadMaps),
+            .add_systems(
+                OnEnter(AppState::MapSelectionScreen),
+                load_maps.in_set(AppLabels::LoadMaps),
             )
-            .add_system(map_selection_screen_ui.in_set(OnUpdate(AppState::MapSelectionScreen)))
-            .add_system(
+            .add_systems(
+                Update,
+                map_selection_screen_ui.run_if(in_state(AppState::MapSelectionScreen)),
+            )
+            .add_systems(
+                Update,
                 map_selection_screen_execute_event_queue
-                    .in_set(OnUpdate(AppState::MapSelectionScreen)),
+                    .run_if(in_state(AppState::MapSelectionScreen)),
             )
-            .add_system(menu_esc_control.in_set(OnUpdate(AppState::MapSelectionScreen)));
+            .add_systems(
+                Update,
+                menu_esc_control.run_if(in_state(AppState::MapSelectionScreen)),
+            );
     }
 }

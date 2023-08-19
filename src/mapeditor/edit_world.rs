@@ -13,14 +13,16 @@ pub struct EditWorldPlugin;
 
 impl Plugin for EditWorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            Update,
             mouse_down_handler
-                .in_set(OnUpdate(AppState::MapEditor))
+                .run_if(in_state(AppState::MapEditor))
                 .in_set(MapeditorSystems::GameBoardMouseHandlers),
         )
-        .add_system(
+        .add_systems(
+            Update,
             mouse_down_handler_playerspawn
-                .in_set(OnUpdate(AppState::MapEditor))
+                .run_if(in_state(AppState::MapEditor))
                 .in_set(MapeditorSystems::GameBoardMouseHandlers),
         );
     }

@@ -31,7 +31,7 @@ pub fn menu_esc_control(
     mut app_state: ResMut<NextState<AppState>>,
     current_app_state: ResMut<State<AppState>>,
 ) {
-    if current_app_state.0 != AppState::MainMenu && keys.just_pressed(KeyCode::Escape) {
+    if *current_app_state != AppState::MainMenu && keys.just_pressed(KeyCode::Escape) {
         app_state.set(AppState::MainMenu);
         keys.reset(KeyCode::Escape);
     }

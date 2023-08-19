@@ -20,9 +20,12 @@ pub struct MapEditorPreviewTilePlugin;
 
 impl Plugin for MapEditorPreviewTilePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup_preview_tile.in_schedule(OnEnter(AppState::MapEditor)))
-            .add_system(destroy_preview_tile.in_schedule(OnExit(AppState::MapEditor)))
-            .add_system(update_preview_tile.in_set(OnUpdate(AppState::MapEditor)));
+        app.add_systems(OnEnter(AppState::MapEditor), setup_preview_tile)
+            .add_systems(OnExit(AppState::MapEditor), destroy_preview_tile)
+            .add_systems(
+                Update,
+                update_preview_tile.run_if(in_state(AppState::MapEditor)),
+            );
     }
 }
 
