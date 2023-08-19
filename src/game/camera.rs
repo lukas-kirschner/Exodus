@@ -55,9 +55,9 @@ pub fn handle_ui_resize(
 pub fn rescale_main_camera(
     window: &Window,
     map: &MapWrapper,
-    mut layer_camera_transform: &mut Transform,
-    mut main_camera_transform: &mut Transform,
-    mut main_camera_projection: &mut OrthographicProjection,
+    layer_camera_transform: &mut Transform,
+    main_camera_transform: &mut Transform,
+    main_camera_projection: &mut OrthographicProjection,
     ui_margins: &WindowUiOverlayInfo,
     texture_size: f32,
 ) {

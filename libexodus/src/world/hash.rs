@@ -22,7 +22,7 @@ impl GameWorld {
             Err(error) => return RecomputeHashResult::ERROR { error },
         };
         let mut hasher = Sha256::new();
-        hasher.update(buf.to_bytes());
+        hasher.update(buf.as_bytes());
         let new_hash: [u8; 32] = hasher.finalize().into();
         self.hash = new_hash;
         let differing = self

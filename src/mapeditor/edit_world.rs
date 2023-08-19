@@ -208,7 +208,7 @@ fn mouse_down_handler_playerspawn(
                 layer_camera_transform,
                 config.config.tile_set.texture_size() as f32,
             ) {
-                let mut translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
+                let translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
                 translation.x = world_x as f32 * config.config.tile_set.texture_size() as f32;
                 translation.y = world_y as f32 * config.config.tile_set.texture_size() as f32;
             }
