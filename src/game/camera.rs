@@ -1,3 +1,4 @@
+use crate::game::constants::RENDER_PLANE_Z;
 use crate::game::tilewrapper::MapWrapper;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::UiSizeChangedEvent;
@@ -122,11 +123,11 @@ pub fn setup_camera(
     };
     image.resize(size);
     let image_handle = images.add(image);
-    let mut layer_camera = Camera2dBundle::new_with_far(1000.);
+    let mut layer_camera = Camera2dBundle::default();
     layer_camera.camera.target = RenderTarget::Image(image_handle.clone());
     layer_camera.camera.order = -1;
 
-    let main_camera = Camera2dBundle::new_with_far(1000.);
+    let main_camera = Camera2dBundle::default();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
     commands.spawn((main_camera, MainCamera));
@@ -137,7 +138,8 @@ pub fn setup_camera(
             transform: Transform {
                 // Rescale the world, such that 1 world unit = 1 tile
                 scale: Vec3::splat(1. / (config.config.tile_set.texture_size() as f32)),
-                ..Transform::IDENTITY
+                translation: Vec3::new(0., 0., RENDER_PLANE_Z),
+                ..default()
             },
             ..default()
         },
