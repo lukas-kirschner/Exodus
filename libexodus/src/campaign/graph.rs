@@ -143,64 +143,69 @@ impl ExodusSerializable for Graph {
         let mut state = ReadState::Nodes;
         for (lineno, line) in reader.lines().enumerate() {
             let line = line?;
-            let parts: Vec<&str> = line.split_whitespace().collect();
             match state {
-                ReadState::Nodes => match parts[..] {
-                    [id, x, y] => self.nodes.insert(
-                        str::parse::<NodeID>(id)?,
-                        Node {
-                            id: str::parse::<NodeID>(id)?,
-                            kind: NodeKind::Empty,
-                            coord: (str::parse::<Coord>(x)?, str::parse::<Coord>(y)?),
-                        },
-                    ),
-                    [id, map_file, x, y] => self.nodes.insert(
-                        str::parse::<NodeID>(id)?,
-                        Node {
-                            id: str::parse::<NodeID>(id)?,
-                            kind: NodeKind::MapFilename {
-                                map: map_file.to_string(),
+                ReadState::Nodes => {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    match parts[..] {
+                        [id, x, y] => self.nodes.insert(
+                            str::parse::<NodeID>(id)?,
+                            Node {
+                                id: str::parse::<NodeID>(id)?,
+                                kind: NodeKind::Empty,
+                                coord: (str::parse::<Coord>(x)?, str::parse::<Coord>(y)?),
                             },
-                            coord: (str::parse::<Coord>(x)?, str::parse::<Coord>(y)?),
+                        ),
+                        [id, map_file, x, y] => self.nodes.insert(
+                            str::parse::<NodeID>(id)?,
+                            Node {
+                                id: str::parse::<NodeID>(id)?,
+                                kind: NodeKind::MapFilename {
+                                    map: map_file.to_string(),
+                                },
+                                coord: (str::parse::<Coord>(x)?, str::parse::<Coord>(y)?),
+                            },
+                        ),
+                        ["#"] => {
+                            state = ReadState::Edges;
+                            continue;
                         },
-                    ),
-                    ["#"] => {
-                        state = ReadState::Edges;
-                        continue;
-                    },
-                    [] => continue,
-                    _ => Err(SyntaxError { line: lineno })?,
-                }
-                .map_or(Ok(()), |v| {
-                    Err(DuplicateNodeId {
-                        line: lineno,
-                        id: v.id,
-                    })
-                })?,
-                ReadState::Edges => match parts[..] {
-                    [id_a, id_b] => {
-                        self.edges
-                            .entry(str::parse::<NodeID>(id_a)?)
-                            .or_insert(vec![])
-                            .push(str::parse::<NodeID>(id_b)?);
-                        None
-                    },
-                    [id_a, id_b, edge_label] => {
-                        self.edges
-                            .entry(str::parse::<NodeID>(id_a)?)
-                            .or_insert(vec![])
-                            .push(str::parse::<NodeID>(id_b)?);
-                        self.edge_labels.insert(
-                            (str::parse::<NodeID>(id_a)?, str::parse::<NodeID>(id_b)?),
-                            edge_label.to_string(),
-                        )
-                    },
-                    [] => continue,
-                    _ => Err(SyntaxError { line: lineno })?,
-                }
-                .map_or(Ok(()), |v| {
-                    Err(GraphParseError::DuplicateEdgeLabel { label: v })
-                })?,
+                        [] => continue,
+                        _ => Err(SyntaxError { line: lineno })?,
+                    }
+                    .map_or(Ok(()), |v| {
+                        Err(DuplicateNodeId {
+                            line: lineno,
+                            id: v.id,
+                        })
+                    })?
+                },
+                ReadState::Edges => {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    match parts[..] {
+                        [id_a, id_b] => {
+                            self.edges
+                                .entry(str::parse::<NodeID>(id_a)?)
+                                .or_insert(vec![])
+                                .push(str::parse::<NodeID>(id_b)?);
+                            None
+                        },
+                        [id_a, id_b, edge_label] => {
+                            self.edges
+                                .entry(str::parse::<NodeID>(id_a)?)
+                                .or_insert(vec![])
+                                .push(str::parse::<NodeID>(id_b)?);
+                            self.edge_labels.insert(
+                                (str::parse::<NodeID>(id_a)?, str::parse::<NodeID>(id_b)?),
+                                edge_label.to_string(),
+                            )
+                        },
+                        [] => continue,
+                        _ => Err(SyntaxError { line: lineno })?,
+                    }
+                    .map_or(Ok(()), |v| {
+                        Err(GraphParseError::DuplicateEdgeLabel { label: v.clone() })
+                    })?
+                },
             }
         }
         Ok(())
