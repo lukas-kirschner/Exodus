@@ -3,7 +3,8 @@ use crate::campaign::graph::GraphParseError::{
 };
 use crate::exodus_serializable::ExodusSerializable;
 use std::collections::HashMap;
-use std::io::{self, prelude::*, BufReader, Error};
+use std::fmt::{Display, Formatter};
+use std::io::{prelude::*, BufReader, Error};
 use std::num::ParseIntError;
 
 pub type NodeID = u16;
@@ -76,6 +77,26 @@ impl From<std::io::Error> for GraphParseError {
 impl From<ParseIntError> for GraphParseError {
     fn from(error: ParseIntError) -> Self {
         InvalidInteger { error }
+    }
+}
+
+impl Display for GraphParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GraphParseError::IOError { error } => std::fmt::Display::fmt(&error, f),
+            GraphParseError::SyntaxError { line } => write!(f, "Syntax Error in line {}", line),
+            DuplicateNodeId { line, id } => write!(f, "Duplicate Node {} in line {}", id, line),
+            GraphParseError::NegativeIDGiven { id, line } => {
+                write!(f, "Invalid negative ID {} in line {}", id, line)
+            },
+            GraphParseError::MissingEdgeSpecificationSection => {
+                write!(f, "Missing Edge Specification Section")
+            },
+            GraphParseError::DuplicateEdgeLabel { label } => {
+                write!(f, "Duplicate Edge Label: {}", label)
+            },
+            InvalidInteger { error } => write!(f, "Could not parse Integer: {}", error),
+        }
     }
 }
 
@@ -214,6 +235,136 @@ mod tests {
         assert_node_in_graph(&graph, 1, NodeKind::Empty, (0, 1));
         assert_node_in_graph(&graph, 2, NodeKind::Empty, (1, 1));
         assert_node_in_graph(&graph, 3, NodeKind::Empty, (1, 0));
+        // Check Edges
+        assert_edges_are_connected(&graph, &[0, 1, 2, 3, 0]);
+    }
+    #[test]
+    fn test_simple_in_memory_deserialization_with_edge_names() {
+        let graph_file: String = r#"
+        0 0 0
+        1 0 1
+        2 1 1
+        3 1 0
+        #
+        0 1 Campaign Mode
+        1 2 lululu
+        2 3 1 2 3 4 5 Text
+        3 0 TestCase
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(result.is_ok());
+        // Check Nodes
+        assert_eq!(graph.nodes.len(), 4);
+        assert_node_in_graph(&graph, 0, NodeKind::Empty, (0, 0));
+        assert_node_in_graph(&graph, 1, NodeKind::Empty, (0, 1));
+        assert_node_in_graph(&graph, 2, NodeKind::Empty, (1, 1));
+        assert_node_in_graph(&graph, 3, NodeKind::Empty, (1, 0));
+        // Check Edges
+        assert_edges_are_connected(&graph, &[0, 1, 2, 3, 0]);
+        assert_eq!("Campaign Mode", graph.edge_labels[&(0, 1)]);
+        assert_eq!("lululu", graph.edge_labels[&(1, 2)]);
+        assert_eq!("1 2 3 4 5 Text", graph.edge_labels[&(2, 3)]);
+        assert_eq!("TestCase", graph.edge_labels[&(2, 3)]);
+    }
+    #[test]
+    fn test_simple_in_memory_deserialization_with_edge_names_and_file_names() {
+        let graph_file: String = r#"
+        0 0 0
+        1 testmap.exm 0 1
+        2 hello world.exm 1 1
+        3 Oh! Really?.exm 1 0
+        #
+        0 1 Campaign Mode
+        1 2 lululu
+        2 3 1 2 3 4 5 Text
+        3 0 TestCase
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(result.is_ok());
+        // Check Nodes
+        assert_eq!(graph.nodes.len(), 4);
+        assert_node_in_graph(&graph, 0, NodeKind::Empty, (0, 0));
+        assert_node_in_graph(
+            &graph,
+            1,
+            NodeKind::MapFilename {
+                map: "testmap.exm".to_string(),
+            },
+            (0, 1),
+        );
+        assert_node_in_graph(
+            &graph,
+            2,
+            NodeKind::MapFilename {
+                map: "hello world.exm".to_string(),
+            },
+            (1, 1),
+        );
+        assert_node_in_graph(
+            &graph,
+            3,
+            NodeKind::MapFilename {
+                map: "Oh! Really?.exm".to_string(),
+            },
+            (1, 0),
+        );
+        // Check Edges
+        assert_edges_are_connected(&graph, &[0, 1, 2, 3, 0]);
+        assert_eq!("Campaign Mode", graph.edge_labels[&(0, 1)]);
+        assert_eq!("lululu", graph.edge_labels[&(1, 2)]);
+        assert_eq!("1 2 3 4 5 Text", graph.edge_labels[&(2, 3)]);
+        assert_eq!("TestCase", graph.edge_labels[&(2, 3)]);
+    }
+    #[test]
+    fn test_simple_in_memory_deserialization_with_filenames() {
+        let graph_file: String = r#"
+        0 0 0
+        1 map1.exm 0 1
+        2 map with whitespaces.exm 1 1
+        3 map 1 2 3 1 0
+        #
+        0 1
+        1 2
+        2 3
+        3 0
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        match graph.parse(&mut graph_file.as_bytes().clone()) {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e),
+        };
+        // Check Nodes
+        assert_eq!(graph.nodes.len(), 4);
+        assert_node_in_graph(&graph, 0, NodeKind::Empty, (0, 0));
+        assert_node_in_graph(
+            &graph,
+            1,
+            NodeKind::MapFilename {
+                map: "map1.exm".to_string(),
+            },
+            (0, 1),
+        );
+        assert_node_in_graph(
+            &graph,
+            2,
+            NodeKind::MapFilename {
+                map: "map with whitespaces.exm".to_string(),
+            },
+            (1, 1),
+        );
+        assert_node_in_graph(
+            &graph,
+            3,
+            NodeKind::MapFilename {
+                map: "map 1 2 3".to_string(),
+            },
+            (1, 0),
+        );
         // Check Edges
         assert_edges_are_connected(&graph, &[0, 1, 2, 3, 0]);
     }
