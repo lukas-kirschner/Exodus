@@ -2,6 +2,7 @@ use crate::campaign::graph::GraphParseError::{
     DuplicateNodeId, IOError, InvalidInteger, SyntaxError,
 };
 use crate::exodus_serializable::ExodusSerializable;
+use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::io::{prelude::*, BufReader, Error};
@@ -209,7 +210,7 @@ impl ExodusSerializable for Graph {
         Ok(())
     }
 }
-
+#[derive(Debug)]
 enum NodeParseResult<'s> {
     Error,
     UnnamedNode {
@@ -227,8 +228,32 @@ enum NodeParseResult<'s> {
     Empty,
 }
 fn parse_node_line(line: &str) -> NodeParseResult {
-    todo!()
+    if line.trim().is_empty() {
+        NodeParseResult::Empty
+    } else if matches!(line.trim(), "#") {
+        NodeParseResult::Hash
+    } else {
+        let re_filename = Regex::new(r"^\s*(\S+)\s+(\S.*\S)\s+(\S+)\s+(\S+)\s*$").unwrap();
+        let re_no_filename = Regex::new(r"^\s*(\S+)\s+(\S+)\s+(\S+)\s*$").unwrap();
+        if let Some(captures) = re_filename.captures(line) {
+            NodeParseResult::NamedNode {
+                id: captures.get(1).unwrap().as_str(),
+                map_file: captures.get(2).unwrap().as_str(),
+                x: captures.get(3).unwrap().as_str(),
+                y: captures.get(4).unwrap().as_str(),
+            }
+        } else if let Some(captures) = re_no_filename.captures(line) {
+            NodeParseResult::UnnamedNode {
+                id: captures.get(1).unwrap().as_str(),
+                x: captures.get(2).unwrap().as_str(),
+                y: captures.get(3).unwrap().as_str(),
+            }
+        } else {
+            NodeParseResult::Error
+        }
+    }
 }
+#[derive(Debug)]
 enum EdgeParseResult<'s> {
     Error,
     UnnamedEdge {
@@ -242,8 +267,26 @@ enum EdgeParseResult<'s> {
     },
     Empty,
 }
+
 fn parse_edge_line(line: &str) -> EdgeParseResult {
-    todo!()
+    let re_named = Regex::new(r"^\s*(\S+)\s+(\S+)\s+(\S.*\S)\s*$").unwrap();
+    let re_unnamed = Regex::new(r"^\s*(\S+)\s+(\S+)\s*$").unwrap();
+    if line.trim().is_empty() {
+        EdgeParseResult::Empty
+    } else if let Some(captures) = re_named.captures(line) {
+        EdgeParseResult::NamedEdge {
+            id_a: captures.get(1).unwrap().as_str(),
+            id_b: captures.get(2).unwrap().as_str(),
+            edge_label: captures.get(3).unwrap().as_str(),
+        }
+    } else if let Some(captures) = re_unnamed.captures(line) {
+        EdgeParseResult::UnnamedEdge {
+            id_a: captures.get(1).unwrap().as_str(),
+            id_b: captures.get(2).unwrap().as_str(),
+        }
+    } else {
+        EdgeParseResult::Error
+    }
 }
 
 #[cfg(test)]
@@ -306,7 +349,7 @@ mod tests {
         assert_eq!("Campaign Mode", graph.edge_labels[&(0, 1)]);
         assert_eq!("lululu", graph.edge_labels[&(1, 2)]);
         assert_eq!("1 2 3 4 5 Text", graph.edge_labels[&(2, 3)]);
-        assert_eq!("TestCase", graph.edge_labels[&(2, 3)]);
+        assert_eq!("TestCase", graph.edge_labels[&(3, 0)]);
     }
     #[test]
     fn test_simple_in_memory_deserialization_with_edge_names_and_file_names() {
@@ -357,7 +400,193 @@ mod tests {
         assert_eq!("Campaign Mode", graph.edge_labels[&(0, 1)]);
         assert_eq!("lululu", graph.edge_labels[&(1, 2)]);
         assert_eq!("1 2 3 4 5 Text", graph.edge_labels[&(2, 3)]);
-        assert_eq!("TestCase", graph.edge_labels[&(2, 3)]);
+        assert_eq!("TestCase", graph.edge_labels[&(3, 0)]);
+    }
+    #[test]
+    fn test_parse_node_line_1() {
+        let line = "0 1 2".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                NodeParseResult::UnnamedNode {
+                    id: "0",
+                    x: "1",
+                    y: "2"
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_node_line_2() {
+        let line = "  \t 0 12 2345   \t \t".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                NodeParseResult::UnnamedNode {
+                    id: "0",
+                    x: "12",
+                    y: "2345"
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_node_line_3() {
+        let line = "  \t 0 map \t\t  12      2345   \t \t".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                NodeParseResult::NamedNode {
+                    id: "0",
+                    map_file: "map",
+                    x: "12",
+                    y: "2345"
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_node_line_4() {
+        let line = "  \t 0 map with whitespaces.exm \t\t  -12345      -2   \t \t".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                NodeParseResult::NamedNode {
+                    id: "0",
+                    map_file: "map with whitespaces.exm",
+                    x: "-12345",
+                    y: "-2"
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_node_line_5() {
+        let line = "  \t #   \t \t".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(matches!(result, NodeParseResult::Hash), "Got {:?}", result);
+    }
+    #[test]
+    fn test_parse_node_line_6() {
+        let line = "  \t    \t \t".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(matches!(result, NodeParseResult::Empty), "Got {:?}", result);
+    }
+    #[test]
+    fn test_parse_node_line_err_1() {
+        let line = "0 1".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(result, NodeParseResult::Error),
+            "Expected Parse Error, got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_node_line_err_2() {
+        let line = "# 0 ".to_string();
+        let result = parse_node_line(line.as_str());
+        assert!(
+            matches!(result, NodeParseResult::Error),
+            "Expected Parse Error, got {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_parse_edge_line_1() {
+        let line = "0 1".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                EdgeParseResult::UnnamedEdge {
+                    id_a: "0",
+                    id_b: "1",
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_edge_line_2() {
+        let line = "0 1 lululu".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                EdgeParseResult::NamedEdge {
+                    id_a: "0",
+                    id_b: "1",
+                    edge_label: "lululu",
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_edge_line_3() {
+        let line = "0 1 lululu Name with Whitespaces".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                EdgeParseResult::NamedEdge {
+                    id_a: "0",
+                    id_b: "1",
+                    edge_label: "lululu Name with Whitespaces",
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_edge_line_4() {
+        let line = "\t 0123 12345  \t\t  lululu Name with Whitespaces \t\t".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(
+            matches!(
+                result,
+                EdgeParseResult::NamedEdge {
+                    id_a: "0123",
+                    id_b: "12345",
+                    edge_label: "lululu Name with Whitespaces",
+                }
+            ),
+            "Got {:?}",
+            result
+        );
+    }
+    #[test]
+    fn test_parse_edge_line_5() {
+        let line = "\t   \t\t  \t\t".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(matches!(result, EdgeParseResult::Empty), "Got {:?}", result);
+    }
+    #[test]
+    fn test_parse_edge_line_err_1() {
+        let line = "#".to_string();
+        let result = parse_edge_line(line.as_str());
+        assert!(
+            matches!(result, EdgeParseResult::Error),
+            "Expected Parse Error, got {:?}",
+            result
+        );
     }
     #[test]
     fn test_simple_in_memory_deserialization_with_filenames() {
