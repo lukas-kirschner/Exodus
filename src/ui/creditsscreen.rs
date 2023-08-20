@@ -73,7 +73,13 @@ fn credits_screen_ui(
 
 impl Plugin for CreditsScreen {
     fn build(&self, app: &mut App) {
-        app.add_system(credits_screen_ui.in_set(OnUpdate(AppState::CreditsScreen)))
-            .add_system(menu_esc_control.in_set(OnUpdate(AppState::CreditsScreen)));
+        app.add_systems(
+            Update,
+            credits_screen_ui.run_if(in_state(AppState::CreditsScreen)),
+        )
+        .add_systems(
+            Update,
+            menu_esc_control.run_if(in_state(AppState::CreditsScreen)),
+        );
     }
 }

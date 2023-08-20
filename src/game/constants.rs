@@ -1,9 +1,11 @@
 /// The Player's Z coordinate
-pub const PLAYER_Z: f32 = -1.0;
+pub const PLAYER_Z: f32 = 10.0;
 /// The World Tiles' Z coordinate
-pub const WORLD_Z: f32 = -2.0;
+pub const WORLD_Z: f32 = 5.0;
+/// The Render Plane' Z coordinate
+pub const RENDER_PLANE_Z: f32 = 99.0;
 /// The Map Editor Preview Tiles' Z coordinate
-pub const MAPEDITOR_PREVIEWTILE_Z: f32 = 0.0;
+pub const MAPEDITOR_PREVIEWTILE_Z: f32 = 50.0;
 /// The Map Editor Preview Tiles' Alpha value [0.0,1.0]
 pub const MAPEDITOR_PREVIEWTILE_ALPHA: f32 = 0.40;
 /// The Map Editor Preview Tiles' Air Texture Atlas Index

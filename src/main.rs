@@ -188,7 +188,7 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RpgSpriteHandles>()
             .init_resource::<TilesetManager>()
-            .add_plugin(Textures);
+            .add_plugins(Textures);
     }
 }
 
@@ -235,7 +235,7 @@ fn main() {
         .init_resource::<GameDirectoriesWrapper>()
         .add_event::<UiSizeChangedEvent>()
         .init_resource::<WindowUiOverlayInfo>()
-        .add_startup_system(game_init)
+        .add_systems(Startup, game_init)
         .add_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
@@ -262,11 +262,11 @@ fn main() {
                     level: bevy::log::Level::DEBUG,
                 }),
         )
-        .add_system(resize_notificator)
-        .add_plugin(EguiPlugin)
-        .add_plugin(GamePlugin)
-        .add_plugin(Ui)
-        .add_plugin(MapEditorPlugin)
-        .add_plugin(LoadingPlugin)
+        .add_systems(Update, resize_notificator)
+        .add_plugins(EguiPlugin)
+        .add_plugins(GamePlugin)
+        .add_plugins(Ui)
+        .add_plugins(MapEditorPlugin)
+        .add_plugins(LoadingPlugin)
         .run();
 }
