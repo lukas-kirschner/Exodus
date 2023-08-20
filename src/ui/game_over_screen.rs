@@ -213,13 +213,14 @@ enum SaveHighscoreState {
 
 impl Plugin for GameOverScreen {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            Update,
             game_over_screen_ui
-                .in_set(OnUpdate(AppState::GameOverScreen))
+                .run_if(in_state(AppState::GameOverScreen))
                 .after(EguiSet::InitContexts),
         )
-        .add_system(init_game_over_screen_ui.in_schedule(OnEnter(AppState::GameOverScreen)))
-        .add_system(save_highscores.in_schedule(OnExit(AppState::GameOverScreen)));
+        .add_systems(OnEnter(AppState::GameOverScreen), init_game_over_screen_ui)
+        .add_systems(OnExit(AppState::GameOverScreen), save_highscores);
     }
 
     fn name(&self) -> &str {

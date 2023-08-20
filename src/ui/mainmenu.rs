@@ -104,8 +104,8 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app.add_system(configure_visuals.in_schedule(OnEnter(AppState::MainMenu)))
-            .add_system(mainmenu_ui.in_set(OnUpdate(AppState::MainMenu)))
-            .add_system(atlas_to_egui_textures.in_schedule(OnEnter(AppState::MainMenu)));
+        app.add_systems(OnEnter(AppState::MainMenu), configure_visuals)
+            .add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
+            .add_systems(OnEnter(AppState::MainMenu), atlas_to_egui_textures);
     }
 }

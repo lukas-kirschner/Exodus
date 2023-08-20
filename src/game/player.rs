@@ -16,33 +16,40 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            OnEnter(AppState::Playing),
             setup_player
-                .in_schedule(OnEnter(AppState::Playing))
                 .after(AppLabels::World)
                 .after(AppLabels::ResetScore)
                 .in_set(AppLabels::Player),
         )
-        .add_system(keyboard_controls.in_set(OnUpdate(AppState::Playing)))
-        .add_system(
+        .add_systems(
+            Update,
+            keyboard_controls.run_if(in_state(AppState::Playing)),
+        )
+        .add_systems(
+            Update,
             player_movement
-                .in_set(OnUpdate(AppState::Playing))
+                .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::PlayerMovement),
         )
-        .add_system(
+        .add_systems(
+            Update,
             despawn_dead_player
-                .in_set(OnUpdate(AppState::Playing))
+                .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::GameOverTrigger),
         )
-        .add_system(
+        .add_systems(
+            Update,
             despawn_exited_player
-                .in_set(OnUpdate(AppState::Playing))
+                .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::GameOverTrigger),
         )
-        .add_system(despawn_players.in_schedule(OnExit(AppState::Playing)))
-        .add_system(
+        .add_systems(OnExit(AppState::Playing), despawn_players)
+        .add_systems(
+            Update,
             game_over_event_listener
-                .in_set(OnUpdate(AppState::Playing))
+                .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::GameOverTrigger),
         )
         .add_event::<GameOverEvent>();
@@ -106,6 +113,7 @@ fn despawn_dead_player(
 }
 
 /// Event that is triggered when a game is won or lost
+#[derive(Event)]
 struct GameOverEvent {
     state: GameOverState,
 }

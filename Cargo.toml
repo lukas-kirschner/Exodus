@@ -13,10 +13,10 @@ members = [
 [dependencies]
 indoc = "2.0.1"
 libexodus = { path = "libexodus" }
-bevy_egui = { version = "0.20", default-features = false }
-strum = "0.24.1"
+bevy_egui = { version = "0.21.0", default-features = false }
+strum = "0.25.0"
 once_cell = "1.16.0"
-rust-i18n = "1.0.1"
+rust-i18n = "2.1.0"
 
 [package.metadata.i18n]
 available-locales = ["en_US", "de_DE"]
@@ -25,7 +25,7 @@ load_path = "locales"
 
 # Bevy Debloating - see https://bevy-cheatbook.github.io/setup/bevy-config.html
 [dependencies.bevy]
-version = "0.10"
+version = "0.11.2"
 # Disable the default features if there are any that you do not want
 default-features = false
 features = [

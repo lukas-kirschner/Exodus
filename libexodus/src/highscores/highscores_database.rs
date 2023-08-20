@@ -352,7 +352,7 @@ mod tests {
         );
         assert_eq!(db.len(), db2.len());
         assert_eq!(db.records.len(), db2.records.len());
-        for (r_hash, r_data) in &db.records {
+        for (r_hash, _r_data) in &db.records {
             assert!(db2.records.contains_key(r_hash));
         }
     }

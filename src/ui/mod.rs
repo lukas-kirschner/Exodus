@@ -30,14 +30,14 @@ pub struct Ui;
 
 impl Plugin for Ui {
     fn build(&self, app: &mut App) {
-        app.add_plugin(MainMenu)
-            .add_plugin(MapSelectionScreenPlugin)
-            .add_plugin(CreditsScreen)
-            .add_plugin(GameOverScreen)
-            .add_plugin(ConfigScreen);
+        app.add_plugins(MainMenu)
+            .add_plugins(MapSelectionScreenPlugin)
+            .add_plugins(CreditsScreen)
+            .add_plugins(GameOverScreen)
+            .add_plugins(ConfigScreen);
     }
 }
-
+#[derive(Event)]
 pub struct UiSizeChangedEvent;
 
 pub fn check_ui_size_changed(

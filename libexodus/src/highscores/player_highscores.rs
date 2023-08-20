@@ -300,7 +300,7 @@ mod tests {
         std::thread::sleep(Duration::from_millis(2));
         player_highscores.store_with_current_time(Highscore::new(5, 2));
         assert_eq!(2, player_highscores.len());
-        let (best_ts, best) = player_highscores.best().unwrap();
+        let (_best_ts, best) = player_highscores.best().unwrap();
         assert_eq!(2, best.coins());
         assert_eq!(5, best.moves());
     }

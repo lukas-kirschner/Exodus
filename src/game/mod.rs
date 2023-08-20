@@ -23,15 +23,17 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MapWrapper>()
-            .add_plugin(WorldPlugin)
-            .add_plugin(GameUIPlugin)
-            .add_plugin(PlayerPlugin)
-            .add_plugin(PickupItemPlugin)
-            .add_system(back_to_main_menu_controls.in_set(OnUpdate(AppState::Playing)))
-            .add_system(
-                reset_score
-                    .in_schedule(OnEnter(AppState::Playing))
-                    .in_set(AppLabels::ResetScore),
+            .add_plugins(WorldPlugin)
+            .add_plugins(GameUIPlugin)
+            .add_plugins(PlayerPlugin)
+            .add_plugins(PickupItemPlugin)
+            .add_systems(
+                Update,
+                back_to_main_menu_controls.run_if(in_state(AppState::Playing)),
+            )
+            .add_systems(
+                OnEnter(AppState::Playing),
+                reset_score.in_set(AppLabels::ResetScore),
             );
     }
 }
@@ -47,7 +49,7 @@ fn back_to_main_menu_controls(
     current_app_state: ResMut<State<AppState>>,
     mut app_state: ResMut<NextState<AppState>>,
 ) {
-    if current_app_state.0 == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
+    if *current_app_state == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
         app_state.set(AppState::MainMenu);
         keys.reset(KeyCode::Escape);
     }

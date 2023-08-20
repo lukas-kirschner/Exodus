@@ -22,25 +22,28 @@ pub struct MapEditorUiPlugin;
 impl Plugin for MapEditorUiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SelectedTile>()
-            .add_system(
+            .add_systems(
+                OnEnter(AppState::MapEditor),
                 init_player_spawn
-                    .in_schedule(OnEnter(AppState::MapEditor))
                     .after(AppLabels::World)
                     .in_set(MapeditorSystems::PlayerSpawnPlaceholderInit),
             )
-            .add_system(destroy_player_spawn.in_schedule(OnExit(AppState::MapEditor)))
-            .add_system(
-                atlas_to_egui_textures
-                    .in_schedule(OnEnter(AppState::MapEditor))
-                    .after(MapeditorSystems::PlayerSpawnPlaceholderInit),
+            .add_systems(OnExit(AppState::MapEditor), destroy_player_spawn)
+            .add_systems(
+                OnEnter(AppState::MapEditor),
+                atlas_to_egui_textures.after(MapeditorSystems::PlayerSpawnPlaceholderInit),
             )
-            .add_system(
+            .add_systems(
+                Update,
                 mapeditor_ui
-                    .in_set(OnUpdate(AppState::MapEditor))
+                    .run_if(in_state(AppState::MapEditor))
                     .after(MapeditorSystems::GameBoardMouseHandlers)
                     .in_set(MapeditorSystems::UiDrawing),
             )
-            .add_system(mapeditor_dialog.in_set(OnUpdate(AppState::MapEditorDialog)));
+            .add_systems(
+                Update,
+                mapeditor_dialog.run_if(in_state(AppState::MapEditorDialog)),
+            );
     }
 }
 

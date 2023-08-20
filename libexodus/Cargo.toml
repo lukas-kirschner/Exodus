@@ -12,13 +12,13 @@ bench = true
 doc = true
 
 [dependencies]
-directories = "4.0"
+directories = "5.0.1"
 walkdir = "2.3.2"
-strum = "0.24.1"
-strum_macros = "0.24.3"
+strum = "0.25.0"
+strum_macros = "0.25.2"
 bincode = "1.3.3"
 sha2 = "0.10.6"
-bytebuffer = "0.2.1"
+bytebuffer = "2.1.1"
 regex = "1.9.3"
 
 [dependencies.chrono]

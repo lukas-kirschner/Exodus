@@ -398,7 +398,7 @@ mod tests {
         buf.set_rpos(hash_offset);
         let val = buf.read_u8();
         buf.set_rpos(hash_offset);
-        buf.write_u8(val + 1);
+        buf.write_u8(val.unwrap() + 1);
         buf.set_rpos(0);
         let result = result_map.parse(&mut buf);
         assert!(&result.is_err(), "Map with invalid hash parsed correctly");

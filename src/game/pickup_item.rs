@@ -41,12 +41,12 @@ impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollectibleCollectedEvent>()
             // Collision Handlers
-            .add_system(setup_collectible_event::<CoinWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_system(setup_collectible_event::<KeyWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_system(setup_collectible_event::<CollectibleWrapper>.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_systems(Update,setup_collectible_event::<CoinWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_systems(Update,setup_collectible_event::<KeyWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_systems(Update,setup_collectible_event::<CollectibleWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
             // Event Handlers
-            .add_system(collectible_collected_event.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_system(pickup_item_animation.in_set(OnUpdate(AppState::Playing)).after(AppLabels::PlayerMovement));
+            .add_systems(Update,collectible_collected_event.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_systems(Update,pickup_item_animation.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement));
     }
 }
 
@@ -92,7 +92,7 @@ enum CollectibleAction {
     AddKeys { keys: u32 },
     None,
 }
-
+#[derive(Event)]
 struct CollectibleCollectedEvent {
     player: Entity,
     action: CollectibleAction,

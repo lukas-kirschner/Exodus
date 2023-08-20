@@ -18,9 +18,12 @@ pub struct Textures;
 
 impl Plugin for Textures {
     fn build(&self, app: &mut App) {
-        app.add_system(load_textures.in_schedule(OnEnter(AppState::Loading)))
-            .add_system(egui_fonts.in_schedule(OnEnter(AppState::Loading)))
-            .add_system(check_and_init_textures.in_set(OnUpdate(AppState::Loading)));
+        app.add_systems(OnEnter(AppState::Loading), load_textures)
+            .add_systems(OnEnter(AppState::Loading), egui_fonts)
+            .add_systems(
+                Update,
+                check_and_init_textures.run_if(in_state(AppState::Loading)),
+            );
     }
 
     fn name(&self) -> &str {
