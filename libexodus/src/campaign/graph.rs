@@ -1,8 +1,6 @@
-use crate::campaign::graph::GraphParseError::{
-    DuplicateNodeId, IOError, InvalidInteger, SyntaxError,
-};
 use crate::exodus_serializable::ExodusSerializable;
 use regex::Regex;
+use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::io::{prelude::*, BufReader, Error};
@@ -21,6 +19,18 @@ pub struct Node {
     pub id: NodeID,
     pub kind: NodeKind,
     pub coord: (Coord, Coord),
+}
+
+impl Node {
+    pub fn is_adjacent_to(&self, other: &Node) -> bool {
+        if self.coord.0 == other.coord.0 {
+            self.coord.1 == other.coord.1 - 1 || self.coord.1 == other.coord.1 + 1
+        } else if self.coord.1 == other.coord.1 {
+            self.coord.0 == other.coord.0 - 1 || self.coord.0 == other.coord.0 + 1
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -49,17 +59,17 @@ impl Default for Graph {
             edges: Default::default(),
             edge_labels: Default::default(),
             start_node: None,
-            min_x: Coord::max_value(),
-            max_x: Coord::min_value(),
-            min_y: Coord::max_value(),
-            max_y: Coord::min_value(),
+            min_x: Coord::MAX,
+            max_x: Coord::MIN,
+            min_y: Coord::MAX,
+            max_y: Coord::MIN,
         }
     }
 }
 
 #[derive(Debug)]
 #[repr(u8)]
-/// An error that might be thrown in a Game World Parser
+/// An error that might be thrown in a Campaign Graph Parser
 pub enum GraphParseError {
     SyntaxError { line: usize },
     DuplicateNodeId { line: usize, id: NodeID },
@@ -68,16 +78,59 @@ pub enum GraphParseError {
     DuplicateEdgeLabel { label: String },
     IOError { error: std::io::Error },
     InvalidInteger { error: ParseIntError },
+    ValidationError { error: GraphValidationError },
+}
+
+#[derive(Debug)]
+#[repr(u8)]
+/// An error that might be thrown in a Graph Validator
+pub enum GraphValidationError {
+    AdjacentNodesAreNotConnected {
+        node1_id: NodeID,
+        node1_x: Coord,
+        node1_y: Coord,
+        node2_id: NodeID,
+        node2_x: Coord,
+        node2_y: Coord,
+    },
+}
+
+impl GraphParseError {
+    pub fn numeric_error(&self) -> u8 {
+        match *self {
+            GraphParseError::SyntaxError { .. } => 0,
+            GraphParseError::DuplicateNodeId { .. } => 1,
+            GraphParseError::NegativeIDGiven { .. } => 2,
+            GraphParseError::MissingEdgeSpecificationSection => 3,
+            GraphParseError::DuplicateEdgeLabel { .. } => 4,
+            GraphParseError::IOError { .. } => 5,
+            GraphParseError::InvalidInteger { .. } => 6,
+            GraphParseError::ValidationError { .. } => 7,
+        }
+    }
+}
+
+impl GraphValidationError {
+    pub fn numeric_error(&self) -> u8 {
+        match *self {
+            GraphValidationError::AdjacentNodesAreNotConnected { .. } => 0,
+        }
+    }
 }
 
 impl From<std::io::Error> for GraphParseError {
     fn from(error: Error) -> Self {
-        IOError { error }
+        GraphParseError::IOError { error }
+    }
+}
+impl From<GraphValidationError> for GraphParseError {
+    fn from(error: GraphValidationError) -> Self {
+        GraphParseError::ValidationError { error }
     }
 }
 impl From<ParseIntError> for GraphParseError {
     fn from(error: ParseIntError) -> Self {
-        InvalidInteger { error }
+        GraphParseError::InvalidInteger { error }
     }
 }
 
@@ -86,7 +139,9 @@ impl Display for GraphParseError {
         match self {
             GraphParseError::IOError { error } => std::fmt::Display::fmt(&error, f),
             GraphParseError::SyntaxError { line } => write!(f, "Syntax Error in line {}", line),
-            DuplicateNodeId { line, id } => write!(f, "Duplicate Node {} in line {}", id, line),
+            GraphParseError::DuplicateNodeId { line, id } => {
+                write!(f, "Duplicate Node {} in line {}", id, line)
+            },
             GraphParseError::NegativeIDGiven { id, line } => {
                 write!(f, "Invalid negative ID {} in line {}", id, line)
             },
@@ -96,8 +151,58 @@ impl Display for GraphParseError {
             GraphParseError::DuplicateEdgeLabel { label } => {
                 write!(f, "Duplicate Edge Label: {}", label)
             },
-            InvalidInteger { error } => write!(f, "Could not parse Integer: {}", error),
+            GraphParseError::InvalidInteger { error } => {
+                write!(f, "Could not parse Integer: {}", error)
+            },
+            GraphParseError::ValidationError { error } => {
+                write!(f, "Graph Validation failed: {}", error)
+            },
         }
+    }
+}
+impl Display for GraphValidationError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GraphValidationError::AdjacentNodesAreNotConnected {
+                node1_id,
+                node1_x,
+                node1_y,
+                node2_id,
+                node2_x,
+                node2_y,
+            } => write!(f, "The adjacent nodes {} (at {},{}) and {} (at {},{}) must be connected through an edge explicitly!", node1_id,node1_x,node1_y,node2_id,node2_x,node2_y),
+        }
+    }
+}
+
+impl Graph {
+    fn validate(&self) -> Result<(), GraphValidationError> {
+        // Check if there are adjacent nodes that are not connected
+        for (nodeId, node) in self.nodes.iter() {
+            for (inner_nodeId, inner_node) in self.nodes.iter() {
+                if nodeId != inner_nodeId && node.is_adjacent_to(inner_node) {
+                    let empty_vec = vec![];
+                    if self
+                        .edges
+                        .get(&nodeId)
+                        .unwrap_or_else(|| &empty_vec)
+                        .contains(inner_nodeId)
+                    {
+                        continue;
+                    } else {
+                        return Err(GraphValidationError::AdjacentNodesAreNotConnected {
+                            node1_id: nodeId.clone(),
+                            node1_x: node.coord.0,
+                            node1_y: node.coord.1,
+                            node2_id: inner_nodeId.clone(),
+                            node2_x: inner_node.coord.0,
+                            node2_y: inner_node.coord.1,
+                        });
+                    }
+                }
+            }
+        }
+        Ok(())
     }
 }
 
@@ -129,7 +234,9 @@ impl ExodusSerializable for Graph {
     }
 
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
-        self.parse_current_version(file)
+        self.parse_current_version(file)?;
+        self.validate()?;
+        Ok(())
     }
 
     fn parse_current_version<T: Read>(&mut self, file: &mut T) -> Result<(), Self::ParseError> {
@@ -169,10 +276,10 @@ impl ExodusSerializable for Graph {
                         continue;
                     },
                     NodeParseResult::Empty => continue,
-                    NodeParseResult::Error => Err(SyntaxError { line: lineno })?,
+                    NodeParseResult::Error => Err(GraphParseError::SyntaxError { line: lineno })?,
                 }
                 .map_or(Ok(()), |v| {
-                    Err(DuplicateNodeId {
+                    Err(GraphParseError::DuplicateNodeId {
                         line: lineno,
                         id: v.id,
                     })
@@ -183,6 +290,10 @@ impl ExodusSerializable for Graph {
                             .entry(str::parse::<NodeID>(id_a)?)
                             .or_insert(vec![])
                             .push(str::parse::<NodeID>(id_b)?);
+                        self.edges
+                            .entry(str::parse::<NodeID>(id_b)?)
+                            .or_insert(vec![])
+                            .push(str::parse::<NodeID>(id_a)?);
                         None
                     },
                     EdgeParseResult::NamedEdge {
@@ -194,19 +305,38 @@ impl ExodusSerializable for Graph {
                             .entry(str::parse::<NodeID>(id_a)?)
                             .or_insert(vec![])
                             .push(str::parse::<NodeID>(id_b)?);
+                        self.edges
+                            .entry(str::parse::<NodeID>(id_b)?)
+                            .or_insert(vec![])
+                            .push(str::parse::<NodeID>(id_a)?);
                         self.edge_labels.insert(
                             (str::parse::<NodeID>(id_a)?, str::parse::<NodeID>(id_b)?),
+                            edge_label.to_string(),
+                        );
+                        self.edge_labels.insert(
+                            (str::parse::<NodeID>(id_b)?, str::parse::<NodeID>(id_a)?),
                             edge_label.to_string(),
                         )
                     },
                     EdgeParseResult::Empty => continue,
-                    EdgeParseResult::Error => Err(SyntaxError { line: lineno })?,
+                    EdgeParseResult::Error => Err(GraphParseError::SyntaxError { line: lineno })?,
                 }
                 .map_or(Ok(()), |v| {
                     Err(GraphParseError::DuplicateEdgeLabel { label: v.clone() })
                 })?,
             }
         }
+        (self.min_x, self.max_x, self.min_y, self.max_y) = self.nodes.values().fold(
+            (Coord::MAX, Coord::MIN, Coord::MAX, Coord::MIN),
+            |(min_x1, max_x1, min_y1, max_y1), node| {
+                (
+                    min(min_x1, node.coord.0),
+                    max(max_x1, node.coord.0),
+                    min(min_y1, node.coord.1),
+                    max(max_y1, node.coord.1),
+                )
+            },
+        );
         Ok(())
     }
 }
@@ -293,6 +423,7 @@ fn parse_edge_line(line: &str) -> EdgeParseResult {
 mod tests {
     use super::*;
     use bytebuffer::ByteBuffer;
+    use std::num::IntErrorKind;
     use strum::{EnumCount, IntoEnumIterator};
 
     #[test]
@@ -311,7 +442,9 @@ mod tests {
         .to_string();
         let mut graph = Graph::default();
         let result = graph.parse(&mut graph_file.as_bytes().clone());
-        assert!(result.is_ok());
+        if result.is_err() {
+            panic!("{}", result.unwrap_err());
+        }
         // Check Nodes
         assert_eq!(graph.nodes.len(), 4);
         assert_node_in_graph(&graph, 0, NodeKind::Empty, (0, 0));
@@ -642,9 +775,9 @@ mod tests {
     fn test_simple_in_memory_deserialization_with_empty_edges() {
         let graph_file: String = r#"
         0 0 0
-        1 0 1
-        2 1 1
-        3 1 0
+        1 0 2
+        2 2 2
+        3 2 0
         #
         "#
         .to_string();
@@ -654,6 +787,61 @@ mod tests {
         assert_eq!(graph.nodes.len(), 4);
         // Check Edges
         assert_edges_are_connected(&graph, &[]);
+    }
+    #[test]
+    fn test_limits_simple() {
+        let graph_file: String = r#"
+        0 0 0
+        1 -2 2
+        2 2 2
+        3 2 0
+        #
+        0 3 lululu
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(result.is_ok());
+        assert_eq!(graph.min_x, -2);
+        assert_eq!(graph.max_x, 2);
+        assert_eq!(graph.min_y, 0);
+        assert_eq!(graph.max_y, 2);
+    }
+
+    #[test]
+    fn test_err_graph_adjacent_nodes() {
+        let graph_file: String = r#"
+        0 0 0
+        1 0 1
+        #
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(matches!(
+            result.expect_err("Expected unconnected adjacent nodes to return a Validation Error"),
+            GraphParseError::ValidationError {
+                error: GraphValidationError::AdjacentNodesAreNotConnected { .. }
+            }
+        ));
+    }
+    #[test]
+    fn test_err_graph_not_a_number() {
+        let graph_file: String = r#"
+        0 0 0
+        1 0 2
+        3 x 1
+        #
+        "#
+        .to_string();
+        let mut graph = Graph::default();
+        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        assert!(matches!(
+            result.expect_err("Expected graphs containing invalid numbers to return a Parse Error"),
+            GraphParseError::InvalidInteger {
+                error: ParseIntError { .. }
+            }
+        ));
     }
 
     /// Assert that a node with the given properties exists in the graph.
