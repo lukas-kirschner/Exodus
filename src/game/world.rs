@@ -15,19 +15,19 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(AppState::Playing),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
+            .add_systems(OnEnter(AppState::Playing),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
             .add_systems(OnEnter(AppState::Playing),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
             .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::Playing)).after(AppLabels::GameUI))
             .add_systems(OnExit(AppState::Playing),destroy_camera)
             .add_systems(OnExit(AppState::Playing),destroy_world)
         // Map Editor needs a world as well:
-            .add_systems(OnEnter(AppState::MapEditor),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
+            .add_systems(OnEnter(AppState::MapEditor),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
             .add_systems(OnEnter(AppState::MapEditor),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
             .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::MapEditor)).after(AppLabels::GameUI))
             .add_systems(OnExit(AppState::MapEditor),destroy_camera)
             .add_systems(OnExit(AppState::MapEditor),destroy_world)
         // Campaign Trails are "worlds" as well:
-            .add_systems(OnEnter(AppState::CampaignTrailScreen),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
+            .add_systems(OnEnter(AppState::CampaignTrailScreen),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
             .add_systems(OnEnter(AppState::CampaignTrailScreen),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
             .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::CampaignTrailScreen)).after(AppLabels::GameUI))
             .add_systems(OnExit(AppState::CampaignTrailScreen),destroy_camera)
@@ -135,5 +135,10 @@ pub fn reset_world(
         commands.entity(entity).despawn_recursive();
     }
     worldwrapper.world.reset_game_state();
+    debug!(
+        "Setting up Game World with size {}x{}",
+        worldwrapper.world.width(),
+        worldwrapper.world.height(),
+    );
     setup_game_world(commands, worldwrapper, atlas_handle);
 }

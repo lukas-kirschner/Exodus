@@ -64,7 +64,9 @@ impl Plugin for CampaignTrailPlugin {
         )
         .add_systems(
             OnEnter(AppState::CampaignTrailScreen),
-            reset_trail.in_set(AppLabels::PrepareData),
+            reset_trail
+                .in_set(AppLabels::PrepareData)
+                .before(AppLabels::World),
             //TODO Player Movement
             //TODO Key controls to play a map
             //TODO UI that shows a previous highscore to the player and that lets the player enter a map, if they are on an appropriate tile
