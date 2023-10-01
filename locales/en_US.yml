@@ -1,4 +1,5 @@
 main_menu:
+  campaign_screen: Campaign
   map_selection_screen: Maps
   credits_screen: Credits
   config_screen: Config

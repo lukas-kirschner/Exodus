@@ -1,5 +1,6 @@
 #file: noinspection SpellCheckingInspection
 main_menu:
+  campaign_screen: Kampagne spielen
   map_selection_screen: Karten
   credits_screen: Über...
   config_screen: Einstellungen

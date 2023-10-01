@@ -1,6 +1,7 @@
 use crate::exodus_serializable::ExodusSerializable;
 use regex::Regex;
 use std::cmp::{max, min};
+use std::collections::hash_map::Values;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::io::{prelude::*, BufReader, Error};
@@ -51,6 +52,30 @@ pub struct Graph {
     min_y: Coord,
     /// The greatest Y coordinate of all nodes of this graph
     max_y: Coord,
+}
+impl Graph {
+    pub fn min_x(&self) -> Coord {
+        self.min_x
+    }
+    pub fn min_y(&self) -> Coord {
+        self.min_y
+    }
+    pub fn width(&self) -> usize {
+        assert!(self.max_x >= self.min_x);
+        (self.max_x - self.min_x) as usize + 1
+    }
+    pub fn height(&self) -> usize {
+        assert!(self.max_y >= self.min_y);
+        (self.max_y - self.min_y) as usize + 1
+    }
+    /// Iterate over all nodes
+    pub fn nodes(&self) -> impl Iterator<Item = &Node> + '_ {
+        self.nodes.values()
+    }
+    /// Get a node with a known ID
+    pub fn get_node(&self, node_id: &NodeID) -> Option<&Node> {
+        self.nodes.get(node_id)
+    }
 }
 impl Default for Graph {
     fn default() -> Self {
@@ -534,6 +559,8 @@ mod tests {
         assert_eq!("lululu", graph.edge_labels[&(1, 2)]);
         assert_eq!("1 2 3 4 5 Text", graph.edge_labels[&(2, 3)]);
         assert_eq!("TestCase", graph.edge_labels[&(3, 0)]);
+        assert_eq!(2usize, graph.width());
+        assert_eq!(2usize, graph.height());
     }
     #[test]
     fn test_parse_node_line_1() {
@@ -806,6 +833,8 @@ mod tests {
         assert_eq!(graph.max_x, 2);
         assert_eq!(graph.min_y, 0);
         assert_eq!(graph.max_y, 2);
+        assert_eq!(5, graph.width());
+        assert_eq!(3, graph.height());
     }
 
     #[test]

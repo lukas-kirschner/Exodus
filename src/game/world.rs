@@ -15,17 +15,23 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(AppState::Playing),reset_world.in_set(AppLabels::World))
+            .add_systems(OnEnter(AppState::Playing),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
             .add_systems(OnEnter(AppState::Playing),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
             .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::Playing)).after(AppLabels::GameUI))
             .add_systems(OnExit(AppState::Playing),destroy_camera)
             .add_systems(OnExit(AppState::Playing),destroy_world)
         // Map Editor needs a world as well:
-            .add_systems(OnEnter(AppState::MapEditor),reset_world.in_set(AppLabels::World))
+            .add_systems(OnEnter(AppState::MapEditor),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
             .add_systems(OnEnter(AppState::MapEditor),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
             .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::MapEditor)).after(AppLabels::GameUI))
             .add_systems(OnExit(AppState::MapEditor),destroy_camera)
-            .add_systems(OnExit(AppState::MapEditor),destroy_world);
+            .add_systems(OnExit(AppState::MapEditor),destroy_world)
+        // Campaign Trails are "worlds" as well:
+            .add_systems(OnEnter(AppState::CampaignTrailScreen),reset_world.in_set(AppLabels::World).after(AppLabels::PrepareData))
+            .add_systems(OnEnter(AppState::CampaignTrailScreen),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::CampaignTrailScreen)).after(AppLabels::GameUI))
+            .add_systems(OnExit(AppState::CampaignTrailScreen),destroy_camera)
+            .add_systems(OnExit(AppState::CampaignTrailScreen),destroy_world);
     }
 }
 
@@ -80,11 +86,11 @@ pub fn spawn_tile(
 pub fn setup_game_world(
     mut commands: Commands,
     mut worldwrapper: ResMut<MapWrapper>,
-    the_atlas_handle: Res<TilesetManager>,
+    atlas_handle: Res<TilesetManager>,
 ) {
     let layer: RenderLayers = RenderLayers::layer(LAYER_ID);
     // Set Background Color
-    let bg_color = the_atlas_handle.current_tileset.background_color();
+    let bg_color = atlas_handle.current_tileset.background_color();
     commands.insert_resource(ClearColor(Color::rgb_u8(
         bg_color.r, bg_color.g, bg_color.b,
     )));
@@ -106,7 +112,7 @@ pub fn setup_game_world(
             if let Some(index) = tile.atlas_index() {
                 spawn_tile(
                     &mut commands,
-                    &the_atlas_handle,
+                    &atlas_handle,
                     index,
                     &tile_position,
                     tile,
@@ -123,11 +129,11 @@ pub fn reset_world(
     mut commands: Commands,
     mut worldwrapper: ResMut<MapWrapper>,
     tiles_query: Query<Entity, With<WorldTile>>,
-    the_atlas_handle: Res<TilesetManager>,
+    atlas_handle: Res<TilesetManager>,
 ) {
     for entity in tiles_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
     worldwrapper.world.reset_game_state();
-    setup_game_world(commands, worldwrapper, the_atlas_handle);
+    setup_game_world(commands, worldwrapper, atlas_handle);
 }

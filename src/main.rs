@@ -37,6 +37,8 @@ pub enum AppLabels {
     GameUI,
     Camera,
     LoadMaps,
+    /// Prepare data to display to the player, e.g. maps. Executed before all camera systems
+    PrepareData,
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
