@@ -3,7 +3,7 @@ use crate::ui::{image_button, BUTTON_HEIGHT};
 use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
-use bevy_egui::egui::Align;
+use bevy_egui::egui::{Align, InnerResponse};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::UITiles;
 
@@ -41,7 +41,7 @@ pub fn add_navbar(
     egui_ctx: &mut EguiContexts,
     state: &mut NextState<AppState>,
     egui_textures: &EguiButtonTextures,
-) {
+) -> InnerResponse<()> {
     egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
         ui.set_height(BUTTON_HEIGHT);
         ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
@@ -60,5 +60,5 @@ pub fn add_navbar(
                 });
             });
         });
-    });
+    })
 }

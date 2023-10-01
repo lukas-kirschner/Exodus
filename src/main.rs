@@ -1,3 +1,4 @@
+use crate::campaign::campaign_trail::CampaignTrailPlugin;
 use crate::campaign::campaign_trail_asset_loader::{
     CampaignTrailAsset, CampaignTrailAssetPlugin, CampaignTrailLoader,
 };
@@ -292,6 +293,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(Ui)
         .add_plugins(MapEditorPlugin)
+        .add_plugins(CampaignTrailPlugin)
         .add_plugins(LoadingPlugin)
         .run();
 }

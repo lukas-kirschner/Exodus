@@ -58,7 +58,8 @@ fn insert_main_campaign(
                         trail: graph.0,
                         ..default()
                     })
-                    .insert(MainCampaignTrail);
+                    .insert(MainCampaignTrail)
+                    .insert(SelectedCampaignTrail);
                 // TODO Change this line as soon as multiple campaign trails are supported:.insert(SelectedCampaignTrail);
                 // TODO Change this to support multiple campaign trails:
                 state.set(AppState::MainMenu);
