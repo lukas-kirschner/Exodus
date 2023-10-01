@@ -29,6 +29,7 @@ mod util;
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum AppLabels {
     PlayerMovement,
+    Gravity,
     World,
     ResetScore,
     Player,
@@ -44,6 +45,7 @@ pub enum AppState {
     MapSelectionScreen,
     CreditsScreen,
     ConfigScreen,
+    CampaignTrailScreen,
     Playing,
     MapEditor,
     MapEditorDialog,

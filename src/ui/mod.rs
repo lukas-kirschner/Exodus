@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use libexodus::tiles::UITiles;
 
+pub mod campaign_trail;
 mod configscreen;
 mod creditsscreen;
 pub mod game_over_screen;

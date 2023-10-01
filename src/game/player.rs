@@ -35,6 +35,13 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             Update,
+            player_gravity
+                .in_set(AppLabels::Gravity)
+                .run_if(in_state(AppState::Playing))
+                .after(AppLabels::PlayerMovement),
+        )
+        .add_systems(
+            Update,
             despawn_dead_player
                 .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::GameOverTrigger),
@@ -382,7 +389,27 @@ pub fn player_movement(
                 player.pop_movement_queue();
             }
         }
+    }
+}
 
+fn player_gravity(
+    mut player_positions: Query<
+        (
+            &mut PlayerComponent,
+            &mut TextureAtlasSprite,
+            Entity,
+            &mut Transform,
+            &Handle<TextureAtlas>,
+        ),
+        Without<DoorWrapper>,
+    >,
+    mut worldwrapper: ResMut<MapWrapper>,
+    config: Res<GameConfig>,
+    time: Res<Time>,
+) {
+    for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
+        // Peek the player's movement queue
+        let player: &mut Player = &mut _player.player;
         // Gravity: If Queue is empty and the tile below the player is non-solid and the block the player stands on is not a ladder, add downward movement
         if player.movement_queue_is_empty() {
             let current_x_coord =
