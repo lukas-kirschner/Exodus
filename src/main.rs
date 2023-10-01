@@ -19,6 +19,7 @@ use std::path::PathBuf;
 extern crate rust_i18n;
 i18n!("locales");
 
+mod campaign;
 mod dialogs;
 mod game;
 mod mapeditor;
