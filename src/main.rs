@@ -1,3 +1,7 @@
+use crate::campaign::campaign_trail_asset_loader::{
+    CampaignTrailAsset, CampaignTrailAssetPlugin, CampaignTrailLoader,
+};
+use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
 use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
@@ -44,7 +48,6 @@ pub enum AppLabels {
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
-    MainMenu,
     MapSelectionScreen,
     CreditsScreen,
     ConfigScreen,
@@ -54,6 +57,8 @@ pub enum AppState {
     MapEditorDialog,
     #[default]
     Loading,
+    Process,
+    MainMenu,
     GameOverScreen,
 }
 
@@ -83,6 +88,7 @@ pub const LAYER_ID: Layer = 1;
 
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
+/// TODO - This needs to be COMPLETELY refactored in order to make this game portable for WebGL and Android
 fn game_init(
     mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
@@ -219,6 +225,17 @@ pub(crate) fn get_buildnr() -> String {
         .unwrap_or_default()
 }
 
+#[derive(Resource)]
+/// A struct containing all asset handles that should be waited for before entering the main menu
+pub struct AllAssetHandles {
+    pub handles: Vec<HandleUntyped>,
+}
+impl FromWorld for AllAssetHandles {
+    fn from_world(world: &mut World) -> Self {
+        AllAssetHandles { handles: vec![] }
+    }
+}
+
 fn main() {
     let mut window_title: String = format!(
         "{} {}{}",
@@ -240,6 +257,7 @@ fn main() {
         .init_resource::<GameDirectoriesWrapper>()
         .add_event::<UiSizeChangedEvent>()
         .init_resource::<WindowUiOverlayInfo>()
+        .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
         .add_state::<AppState>()
         .insert_resource(Msaa::Sample2)
@@ -268,6 +286,8 @@ fn main() {
                 }),
         )
         .add_systems(Update, resize_notificator)
+        .add_plugins(CampaignTrailAssetPlugin)
+        .add_plugins(MainCampaignLoader)
         .add_plugins(EguiPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(Ui)

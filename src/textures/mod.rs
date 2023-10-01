@@ -2,7 +2,7 @@ use crate::textures::fonts::egui_fonts;
 use crate::textures::tileset_manager::{
     file_name_for_tileset, find_handle_with_path, RpgSpriteHandles, TilesetManager,
 };
-use crate::AppState;
+use crate::{AllAssetHandles, AppState};
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 use libexodus::tilesets::Tileset;
@@ -36,9 +36,16 @@ fn load_asset_folder_or_panic(asset_server: &AssetServer, path: &str) -> Vec<Han
         .unwrap_or_else(|_| panic!("Could not find asset folder at {}", path))
 }
 
-fn load_textures(mut rpg_sprite_handles: ResMut<RpgSpriteHandles>, asset_server: Res<AssetServer>) {
+fn load_textures(
+    mut rpg_sprite_handles: ResMut<RpgSpriteHandles>,
+    asset_server: Res<AssetServer>,
+    mut all_assets: ResMut<AllAssetHandles>,
+) {
     // Load the textures - Bevy takes care of resolving the paths, see https://bevy-cheatbook.github.io/assets/assetserver.html
     rpg_sprite_handles.handles = load_asset_folder_or_panic(&asset_server, "textures/tilesets");
+    all_assets
+        .handles
+        .append(&mut rpg_sprite_handles.handles.clone());
 }
 
 fn check_and_init_textures(
@@ -47,9 +54,10 @@ fn check_and_init_textures(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut tileset_manager: ResMut<TilesetManager>,
+    all_assets: Res<AllAssetHandles>,
 ) {
     if let LoadState::Loaded =
-        asset_server.get_group_load_state(sprite_handles.handles.iter().map(|handle| handle.id()))
+        asset_server.get_group_load_state(all_assets.handles.iter().map(|handle| handle.id()))
     {
         // Load Tilesets
         for tileset in Tileset::iter() {
@@ -83,6 +91,6 @@ fn check_and_init_textures(
             );
         }
         // Finish loading and start the main menu
-        state.set(AppState::MainMenu);
+        state.set(AppState::Process);
     }
 }

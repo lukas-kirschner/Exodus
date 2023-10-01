@@ -29,6 +29,16 @@ pub struct CampaignTrail {
     pub trail: Graph,
     pub last_player_position: (usize, usize),
 }
+
+impl Default for CampaignTrail {
+    fn default() -> Self {
+        CampaignTrail {
+            trail: Graph::default(),
+            last_player_position: (0, 0),
+        }
+    }
+}
+
 /// Marker Struct that marks the main campaign trail entry point
 #[derive(Component)]
 pub struct MainCampaignTrail;

@@ -1,17 +1,23 @@
-use bevy::asset::{AssetLoader, BoxedFuture, LoadContext, LoadedAsset};
+use bevy::asset::{AddAsset, AssetLoader, BoxedFuture, LoadContext, LoadedAsset};
+use bevy::prelude::*;
 use libexodus::campaign::graph::Graph;
 use libexodus::exodus_serializable::ExodusSerializable;
-use std::fmt::Error;
+
+pub struct CampaignTrailAssetPlugin;
+impl Plugin for CampaignTrailAssetPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_asset::<CampaignTrailAsset>()
+            .init_asset_loader::<CampaignTrailLoader>();
+    }
+}
 
 #[derive(Debug, TypeUuid, TypePath)]
 #[uuid = "b1cec786-f177-4067-91b7-dc05dc869eb0"]
-struct CampaignTrailAsset(pub Graph);
-use bevy::prelude::*;
-use bevy::reflect::erased_serde::__private::serde::__private::de::Content::ByteBuf;
+pub(crate) struct CampaignTrailAsset(pub Graph);
 use bevy::reflect::{TypePath, TypeUuid};
 
 #[derive(Default)]
-struct CampaignTrailLoader;
+pub(crate) struct CampaignTrailLoader;
 
 impl AssetLoader for CampaignTrailLoader {
     fn load<'a>(
@@ -22,6 +28,7 @@ impl AssetLoader for CampaignTrailLoader {
         Box::pin(async move {
             let mut graph = Graph::default();
             graph
+                // TODO inefficient
                 .parse(&mut bytes.clone())
                 .map_err(|e| bevy::asset::Error::msg(e.to_string()))?;
             let asset = CampaignTrailAsset(graph);
@@ -31,6 +38,6 @@ impl AssetLoader for CampaignTrailLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["toml"]
+        &["tgf"]
     }
 }
