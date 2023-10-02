@@ -92,6 +92,11 @@ If the file name is omitted and only coordinates are given, an empty node is add
 
 In the lines following the single hash (#), all edges of the campaign trail must be described.
 
+##### Editing Campaign Mode Maps
+
+To edit campaign mode maps, you can create a link of the assets/maps folder inside your exodus user maps folder, 
+e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/share/libexodus/maps/campaign`
+
 ### Limitations
 
 Depending on the implementation of the game, adjacent nodes in the campaign trail may or may not be connected to each

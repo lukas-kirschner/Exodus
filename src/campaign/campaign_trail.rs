@@ -33,6 +33,7 @@ struct CampaignMaps {
 #[derive(Component)]
 pub struct CampaignTrail {
     pub trail: Graph,
+    /// The last player position in the campaign trail, as graph coordinates (not map coordinates!)
     pub last_player_position: (Coord, Coord),
 }
 
@@ -151,7 +152,7 @@ fn reset_trail(
             (node.coord.1 + offset_y) as usize,
             match &node.kind {
                 NodeKind::Empty => Tile::CAMPAIGNTRAILWALKWAY,
-                NodeKind::MapFilename { map } => Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                NodeKind::MapFilename { map } => Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
                     interaction: InteractionKind::LaunchMap {
                         map_name: map.clone(),
                     },
@@ -184,6 +185,8 @@ fn reset_trail(
     }
     // TODO Traverse the graph using a breadth-first search to unlock all maps that are already won, or reachable from a won map
     // TODO Load all campaign maps as asset and assign them into the CampaignMaps resource
+    // TODO Support saving maps into subfolders, treat links as subfolders
+    // TODO Campaign Maps need a language key as title + description, which will then be translated through i18n
     debug!(
         "Loaded a campaign trail with size {0}x{1}, Offset {2}x{3} and player spawn at {4},{5} in a world size of {6}x{7}",
         trail.trail.width(),

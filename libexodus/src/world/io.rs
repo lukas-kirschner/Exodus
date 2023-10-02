@@ -258,6 +258,7 @@ impl Tile {
             Tile::CAMPAIGNTRAILWALKWAY => 0xf0,
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
             Tile::CAMPAIGNTRAILBORDER => 0xf2,
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => 0xf3,
         }
     }
 
@@ -300,6 +301,11 @@ impl Tile {
                 },
             }),
             0xf2 => Some(Tile::CAMPAIGNTRAILBORDER),
+            0xf3 => Some(Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
+                interaction: InteractionKind::LaunchMap {
+                    map_name: String::new(),
+                },
+            }),
             _ => None,
         }
     }
