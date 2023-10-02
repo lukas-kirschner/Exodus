@@ -1,3 +1,7 @@
+use crate::game::player::{
+    despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
+    GameOverEvent,
+};
 use crate::game::tilewrapper::MapWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
@@ -15,8 +19,8 @@ use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
-use libexodus::campaign::graph::Graph;
-use libexodus::tiles::Tile;
+use libexodus::campaign::graph::{Graph, NodeKind};
+use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
 
 /// A struct that holds all maps that may be played in the campaign trail
@@ -70,9 +74,50 @@ impl Plugin for CampaignTrailPlugin {
             //TODO Player Movement
             //TODO Key controls to play a map
             //TODO UI that shows a previous highscore to the player and that lets the player enter a map, if they are on an appropriate tile
-        );
+        )
+        .add_systems(
+            Update,
+            keyboard_controls.run_if(in_state(AppState::CampaignTrailScreen)),
+        )
+        .add_systems(
+            OnEnter(AppState::CampaignTrailScreen),
+            setup_player
+                .after(AppLabels::World)
+                .after(AppLabels::ResetScore)
+                .in_set(AppLabels::Player),
+        )
+        .add_systems(
+            Update,
+            player_movement
+                .run_if(in_state(AppState::CampaignTrailScreen))
+                .in_set(AppLabels::PlayerMovement),
+        )
+        .add_systems(
+            Update,
+            despawn_exited_player
+                .run_if(in_state(AppState::CampaignTrailScreen))
+                .in_set(AppLabels::GameOverTrigger),
+        )
+        .add_systems(
+            Update,
+            play_map_event_listener
+                .run_if(in_state(AppState::Playing))
+                .in_set(AppLabels::GameOverTrigger),
+        )
+        .add_systems(OnExit(AppState::CampaignTrailScreen), despawn_players);
     }
 }
+fn play_map_event_listener(
+    mut reader: EventReader<GameOverEvent>,
+    mut state: ResMut<NextState<AppState>>,
+    mut commands: Commands,
+) {
+    if let Some(event) = reader.iter().next() {
+        // commands.insert_resource(event.state.clone());
+        // state.set(AppState::GameOverScreen);
+    }
+}
+
 /// Load the current campaign trail as "map" (MapWrapper) and place the player spawn at the last position.
 /// This is executed in the PrepareData set, and the map is loaded and displayed immediately after loading the trail in world.rs.
 fn reset_trail(
@@ -99,7 +144,14 @@ fn reset_trail(
         world.set(
             (node.coord.0 + offset_x) as usize,
             (node.coord.1 + offset_y) as usize,
-            Tile::ARROWDOWN,
+            match &node.kind {
+                NodeKind::Empty => Tile::CAMPAIGNTRAILWALKWAY,
+                NodeKind::MapFilename { map } => Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                    interaction: InteractionKind::LaunchMap {
+                        map_name: map.clone(),
+                    },
+                },
+            },
         );
     }
     debug!(

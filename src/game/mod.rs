@@ -7,7 +7,7 @@ use std::path::PathBuf;
 pub mod camera;
 pub mod constants;
 mod pickup_item;
-mod player;
+pub mod player;
 pub mod scoreboard;
 pub mod tilewrapper;
 mod ui;

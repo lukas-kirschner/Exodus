@@ -1,5 +1,5 @@
 use crate::exodus_serializable::ExodusSerializable;
-use crate::tiles::Tile;
+use crate::tiles::{InteractionKind, Tile};
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
 use crate::world::GameWorld;
@@ -255,6 +255,8 @@ impl Tile {
             Tile::ARROWUP => 0x34,
             Tile::ARROWDOWN => 0x35,
             Tile::EXIT => 0x11,
+            Tile::CAMPAIGNTRAILWALKWAY => 0xf0,
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
         }
     }
 
@@ -290,6 +292,12 @@ impl Tile {
             0x33 => Some(Tile::ARROWLEFT),
             0x34 => Some(Tile::ARROWUP),
             0x35 => Some(Tile::ARROWDOWN),
+            0xf0 => Some(Tile::CAMPAIGNTRAILWALKWAY),
+            0xf1 => Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                interaction: InteractionKind::LaunchMap {
+                    map_name: String::new(),
+                },
+            }),
             _ => None,
         }
     }

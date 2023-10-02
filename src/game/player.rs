@@ -121,13 +121,13 @@ fn despawn_dead_player(
 
 /// Event that is triggered when a game is won or lost
 #[derive(Event)]
-struct GameOverEvent {
-    state: GameOverState,
+pub struct GameOverEvent {
+    pub state: GameOverState,
 }
 
 ///
 /// Handler that takes care of despawning the player after he exited the game through an exit
-fn despawn_exited_player(
+pub fn despawn_exited_player(
     mut commands: Commands,
     mut exited_players: Query<
         (&mut TextureAtlasSprite, &mut Transform, Entity),
@@ -352,7 +352,6 @@ pub fn player_movement(
                                     },
                                     layer,
                                 ));
-                                // println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                             }
                         },
                         TileKind::SPECIAL { interaction: _ } => {},
@@ -473,7 +472,7 @@ fn respawn_player(
     ));
 }
 
-fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
+pub fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
     for entity in players.iter() {
         commands.entity(entity).despawn_recursive();
     }
