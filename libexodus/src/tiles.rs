@@ -5,6 +5,13 @@ use std::fmt::Formatter;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub enum InteractionKind {
+    /// When interacting with this tile, the player may decide to play a map.
+    /// This interaction kind is mainly used for tile-based Campaign Trails
+    LaunchMap { map_name: String },
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TileKind {
     ///
     /// A tile that cannot interact with the player in any way
@@ -17,7 +24,7 @@ pub enum TileKind {
     DEADLY { from: Vec<FromDirection> },
     ///
     /// A special tile that the player can interact with
-    SPECIAL,
+    SPECIAL { interaction: InteractionKind },
     ///
     ///
     PLAYERSPAWN,
@@ -209,7 +216,7 @@ impl Tile {
             TileKind::AIR => false,
             TileKind::SOLID => true,
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
-            TileKind::SPECIAL => false,
+            TileKind::SPECIAL { interaction: _ } => false,
             TileKind::PLAYERSPAWN => false,
             TileKind::COIN => false,
             TileKind::LADDER => false,
@@ -224,7 +231,7 @@ impl Tile {
             TileKind::AIR => false,
             TileKind::SOLID => false,
             TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
-            TileKind::SPECIAL => false,
+            TileKind::SPECIAL { interaction: _ } => false,
             TileKind::PLAYERSPAWN => false,
             TileKind::COIN => false,
             TileKind::LADDER => false,

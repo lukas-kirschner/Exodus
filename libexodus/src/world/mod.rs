@@ -108,7 +108,7 @@ impl GameWorld {
             TileKind::DEADLY { .. } => {
                 //TODO
             },
-            TileKind::SPECIAL => {
+            TileKind::SPECIAL { interaction: _ } => {
                 //TODO
             },
             TileKind::PLAYERSPAWN => {

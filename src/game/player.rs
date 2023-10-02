@@ -355,7 +355,7 @@ pub fn player_movement(
                                 // println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                             }
                         },
-                        TileKind::SPECIAL => {},
+                        TileKind::SPECIAL { interaction: _ } => {},
                         TileKind::PLAYERSPAWN => {},
                         TileKind::COIN => {},
                         TileKind::LADDER => {
