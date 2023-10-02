@@ -124,6 +124,8 @@ pub enum Tile {
     CAMPAIGNTRAILWALKWAY,
     /// A Campaign Trail Map Entry Point
     CAMPAIGNTRAILMAPENTRYPOINT { interaction: InteractionKind },
+    /// The border of a campaign trail, invisible but cannot be entered or interacted with
+    CAMPAIGNTRAILBORDER,
 }
 
 impl Tile {
@@ -190,6 +192,7 @@ impl Tile {
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction } => TileKind::SPECIAL {
                 interaction: interaction.clone(),
             },
+            Tile::CAMPAIGNTRAILBORDER => TileKind::SOLID,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -226,6 +229,7 @@ impl Tile {
             Tile::EXIT => Some(40),
             Tile::CAMPAIGNTRAILWALKWAY => Some(9),
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => Some(10),
+            Tile::CAMPAIGNTRAILBORDER => None,
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -294,6 +298,7 @@ impl Tile {
             Tile::EXIT => "exit",
             Tile::CAMPAIGNTRAILWALKWAY => "campaign_trail_walkway",
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => "campaign_trail_entry_point",
+            Tile::CAMPAIGNTRAILBORDER => "campaign_trail_border",
         }
     }
 }
@@ -336,6 +341,7 @@ impl fmt::Display for Tile {
                 Tile::EXIT => "Exit",
                 Tile::CAMPAIGNTRAILWALKWAY => "Campaign Trail Walkway",
                 Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => "Campaign Trail Map Entry Point",
+                Tile::CAMPAIGNTRAILBORDER => "Campaign Trail Border",
             }
         )
     }

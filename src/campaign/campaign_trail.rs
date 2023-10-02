@@ -19,9 +19,10 @@ use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
-use libexodus::campaign::graph::{Graph, NodeKind};
+use libexodus::campaign::graph::{Coord, Graph, NodeKind};
 use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
+use std::cmp::{max, min};
 
 /// A struct that holds all maps that may be played in the campaign trail
 #[derive(Resource)]
@@ -32,7 +33,7 @@ struct CampaignMaps {
 #[derive(Component)]
 pub struct CampaignTrail {
     pub trail: Graph,
-    pub last_player_position: (usize, usize),
+    pub last_player_position: (Coord, Coord),
 }
 
 impl Default for CampaignTrail {
@@ -120,6 +121,9 @@ fn play_map_event_listener(
 
 /// Load the current campaign trail as "map" (MapWrapper) and place the player spawn at the last position.
 /// This is executed in the PrepareData set, and the map is loaded and displayed immediately after loading the trail in world.rs.
+/// All maps that are 'behind' non-finished maps are automatically 'locked', therefore
+/// each time a map has been newly unlocked, this function must be called to unlock those maps
+/// in the campaign trail.
 fn reset_trail(
     trail_query: Query<&CampaignTrail, With<SelectedCampaignTrail>>,
     mut commands: Commands,
@@ -135,9 +139,10 @@ fn reset_trail(
     let offset_x = -trail_graph.min_x();
     let offset_y = -trail_graph.min_y();
     let mut world = GameWorld::new(trail_graph.width(), trail_graph.height());
+    world.fill(&Tile::CAMPAIGNTRAILBORDER);
     world.set(
-        trail.last_player_position.0,
-        trail.last_player_position.1,
+        (trail.last_player_position.0 + offset_x) as usize,
+        (trail.last_player_position.1 + offset_y) as usize,
         Tile::PLAYERSPAWN,
     );
     for node in trail_graph.nodes() {
@@ -154,6 +159,31 @@ fn reset_trail(
             },
         );
     }
+    for (edge_from, edges_to) in trail_graph.edges() {
+        for edge_to in edges_to {
+            let (from_x, from_y) = trail_graph.get_node(edge_from).unwrap().coord;
+            let (to_x, to_y) = trail_graph.get_node(edge_to).unwrap().coord;
+            if from_x == to_x {
+                for y in (min(from_y, to_y) + 1)..max(from_y, to_y) {
+                    world.set(
+                        (from_x + offset_x) as usize,
+                        (y + offset_y) as usize,
+                        Tile::CAMPAIGNTRAILWALKWAY,
+                    );
+                }
+            } else {
+                for x in (min(from_x, to_x) + 1)..max(from_x, to_x) {
+                    world.set(
+                        (x + offset_x) as usize,
+                        (from_y + offset_y) as usize,
+                        Tile::CAMPAIGNTRAILWALKWAY,
+                    );
+                }
+            }
+        }
+    }
+    // TODO Traverse the graph using a breadth-first search to unlock all maps that are already won, or reachable from a won map
+    // TODO Load all campaign maps as asset and assign them into the CampaignMaps resource
     debug!(
         "Loaded a campaign trail with size {0}x{1}, Offset {2}x{3} and player spawn at {4},{5} in a world size of {6}x{7}",
         trail.trail.width(),

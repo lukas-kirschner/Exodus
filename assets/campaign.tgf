@@ -1,9 +1,9 @@
 0 0 0
 10 tutorial_walking.exm 0 2
-11 tutorial_jumping.exm 0 3
-12 0 4
-13 tutorial_coins.exm 1 4
-14 tutorial_doors.exm 1 5
+11 tutorial_jumping.exm 0 4
+12 -2 4
+13 tutorial_coins.exm -2 3
+14 tutorial_doors.exm -2 1
 #
 0 10 tutorial
 10 11

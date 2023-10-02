@@ -257,6 +257,7 @@ impl Tile {
             Tile::EXIT => 0x11,
             Tile::CAMPAIGNTRAILWALKWAY => 0xf0,
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
+            Tile::CAMPAIGNTRAILBORDER => 0xf2,
         }
     }
 
@@ -298,6 +299,7 @@ impl Tile {
                     map_name: String::new(),
                 },
             }),
+            0xf2 => Some(Tile::CAMPAIGNTRAILBORDER),
             _ => None,
         }
     }

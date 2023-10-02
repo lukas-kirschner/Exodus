@@ -72,6 +72,10 @@ impl Graph {
     pub fn nodes(&self) -> impl Iterator<Item = &Node> + '_ {
         self.nodes.values()
     }
+    /// Iterate over all edges
+    pub fn edges(&self) -> &HashMap<NodeID, Vec<NodeID>> {
+        &self.edges
+    }
     /// Get a node with a known ID
     pub fn get_node(&self, node_id: &NodeID) -> Option<&Node> {
         self.nodes.get(node_id)
