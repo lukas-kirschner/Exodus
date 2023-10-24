@@ -95,7 +95,9 @@ In the lines following the single hash (#), all edges of the campaign trail must
 ##### Editing Campaign Mode Maps
 
 To edit campaign mode maps, you can create a link of the assets/maps folder inside your exodus user maps folder, 
-e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/share/libexodus/maps/campaign`
+e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/share/libexodus/maps/campaign`.
+Exodus will automatically follow the symlink when new maps are searched.
+To save a map as campaign map, simply prefix the map name with `campaign/`.
 
 ### Limitations
 

@@ -94,6 +94,7 @@ fn mapeditor_ui(
     mut worldwrapper: ResMut<MapWrapper>,
     current_window_size: ResMut<WindowUiOverlayInfo>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
+    directories: Res<GameDirectoriesWrapper>,
 ) {
     let player_it = player
         .iter()
@@ -150,6 +151,7 @@ fn mapeditor_ui(
                                             worldwrapper.world.get_name(),
                                             worldwrapper.world.get_author(),
                                             &worldwrapper.world.hash_str().as_str()[..16],
+                                            &directories.game_directories,
                                         )),
                                     });
                                     state.set(AppState::MapEditorDialog);
@@ -377,7 +379,7 @@ fn mapeditor_ui(
         &mut window_size_event_writer,
     );
 }
-
+/// Handle all possible kinds of dialogs that can occur in the Map Editor
 fn mapeditor_dialog(
     mut egui_ctx: EguiContexts,
     egui_textures: Res<EguiButtonTextures>,
