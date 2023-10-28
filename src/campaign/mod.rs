@@ -1,3 +1,4 @@
+use crate::campaign::campaign_maps::CampaignMapsLoadingPlugin;
 use crate::campaign::campaign_trail::{CampaignTrail, MainCampaignTrail, SelectedCampaignTrail};
 use crate::campaign::campaign_trail_asset_loader::CampaignTrailAsset;
 use crate::{AllAssetHandles, AppState};
@@ -5,6 +6,8 @@ use bevy::app::{App, Plugin};
 use bevy::asset::{AssetServer, LoadState};
 use bevy::prelude::*;
 
+pub mod campaign_map_asset_loader;
+pub mod campaign_maps;
 pub mod campaign_trail;
 pub mod campaign_trail_asset_loader;
 
@@ -12,7 +15,8 @@ pub struct MainCampaignLoader;
 /// Plugin that loads the main campaign trail from the campaign.tgf file
 impl Plugin for MainCampaignLoader {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_main_campaign);
+        app.add_plugins(CampaignMapsLoadingPlugin)
+            .add_systems(Startup, load_main_campaign);
         app.add_systems(
             Update,
             insert_main_campaign.run_if(in_state(AppState::Process)),

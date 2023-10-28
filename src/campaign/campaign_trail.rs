@@ -1,11 +1,3 @@
-use crate::game::player::{
-    despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    GameOverEvent,
-};
-use crate::game::tilewrapper::MapWrapper;
-use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
-use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 /// This file contains all required UI and logic structs that are required to show the user a
 /// campaign trail where they can choose a map to play and save their progress while doing so.
 /// Since in the future, multiple campaign trails may be supported, we derive the campaign trail
@@ -16,6 +8,14 @@ use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 /// world here as possible.
 /// Especially the movement, camera and tile placement functions are exactly the same, except in the
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
+use crate::game::player::{
+    despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
+    GameOverEvent,
+};
+use crate::game::tilewrapper::MapWrapper;
+use crate::textures::egui_textures::EguiButtonTextures;
+use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
+use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;

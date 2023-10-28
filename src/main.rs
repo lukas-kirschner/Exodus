@@ -57,7 +57,10 @@ pub enum AppState {
     MapEditor,
     MapEditorDialog,
     #[default]
+    /// Loading and processing all textures
     Loading,
+    /// Loading all campaign maps
+    LoadingCampaign,
     Process,
     MainMenu,
     GameOverScreen,
@@ -227,7 +230,8 @@ pub(crate) fn get_buildnr() -> String {
 }
 
 #[derive(Resource)]
-/// A struct containing all asset handles that should be waited for before entering the main menu
+/// A struct containing all asset handles that should be waited for before entering the
+/// Process state. These handles are only used for waiting, not for querying
 pub struct AllAssetHandles {
     pub handles: Vec<HandleUntyped>,
 }

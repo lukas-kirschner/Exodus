@@ -30,7 +30,7 @@ impl Plugin for Textures {
         "Textures Handler"
     }
 }
-fn load_asset_folder_or_panic(asset_server: &AssetServer, path: &str) -> Vec<HandleUntyped> {
+pub fn load_asset_folder_or_panic(asset_server: &AssetServer, path: &str) -> Vec<HandleUntyped> {
     asset_server
         .load_folder(path)
         .unwrap_or_else(|_| panic!("Could not find asset folder at {}", path))
@@ -90,7 +90,7 @@ fn check_and_init_textures(
                 tileset.texture_size()
             );
         }
-        // Finish loading and start the main menu
+        // Finish loading and start the processing
         state.set(AppState::Process);
     }
 }
