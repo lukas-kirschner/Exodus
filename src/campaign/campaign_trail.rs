@@ -26,6 +26,7 @@ use bevy::utils::HashSet;
 use bevy_egui::egui::{Align, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
+use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
 use std::cmp::{max, min};
@@ -80,6 +81,10 @@ impl Plugin for CampaignTrailPlugin {
         .add_systems(
             Update,
             keyboard_controls.run_if(in_state(AppState::CampaignTrailScreen)),
+        )
+        .add_systems(
+            Update,
+            play_map_keyboard_controls.run_if(in_state(AppState::CampaignTrailScreen)),
         )
         .add_systems(
             OnEnter(AppState::CampaignTrailScreen),
@@ -335,4 +340,47 @@ fn campaign_screen_ui(
         current_window_size,
         &mut window_size_event_writer,
     );
+}
+
+pub fn play_map_keyboard_controls(
+    keyboard_input: Res<Input<KeyCode>>,
+    player_query: Query<&Transform, With<PlayerComponent>>,
+    config: Res<GameConfig>,
+    campaign_trail: Res<MapWrapper>,
+    campaign_maps: Res<CampaignMaps>,
+    mut state: ResMut<NextState<AppState>>,
+    mut commands: Commands,
+    highscores: Res<HighscoresDatabaseWrapper>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Return) {
+        let player_pos = player_query.single();
+        match campaign_trail.world.get(
+            (player_pos.translation.x / (config.config.tile_set.texture_size() as f32)) as i32,
+            (player_pos.translation.y / (config.config.tile_set.texture_size() as f32)) as i32,
+        ) {
+            Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
+                InteractionKind::LaunchMap { map_name } => {
+                    let map = campaign_maps.maps.get(map_name).expect(
+                        format!("Could not find map with file name \"{}\"!", map_name).as_str(),
+                    );
+                    commands.insert_resource(MapWrapper {
+                        world: map.clone(),
+                        previous_best: match &highscores
+                            .highscores
+                            .get_best(map.hash(), &config.config.player_id)
+                        {
+                            Some((_, score)) => Some(Scoreboard {
+                                coins: score.coins() as i32,
+                                moves: score.moves() as usize,
+                                keys: 0,
+                            }),
+                            _ => None,
+                        },
+                    });
+                    state.set(AppState::Playing);
+                },
+            },
+            _ => {},
+        };
+    }
 }
