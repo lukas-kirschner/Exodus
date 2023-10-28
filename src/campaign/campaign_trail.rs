@@ -1,3 +1,4 @@
+use crate::campaign::campaign_maps::CampaignMaps;
 /// This file contains all required UI and logic structs that are required to show the user a
 /// campaign trail where they can choose a map to play and save their progress while doing so.
 /// Since in the future, multiple campaign trails may be supported, we derive the campaign trail
@@ -13,22 +14,18 @@ use crate::game::player::{
     GameOverEvent,
 };
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
 use crate::{AppLabels, AppState};
 use bevy::prelude::*;
+use bevy::utils::HashSet;
 use bevy_egui::EguiContexts;
-use libexodus::campaign::graph::{Coord, Graph, NodeKind};
+use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
 use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
 use std::cmp::{max, min};
-
-/// A struct that holds all maps that may be played in the campaign trail
-#[derive(Resource)]
-struct CampaignMaps {
-    maps: Vec<MapWrapper>,
-}
 
 #[derive(Component)]
 pub struct CampaignTrail {
@@ -128,6 +125,8 @@ fn play_map_event_listener(
 fn reset_trail(
     trail_query: Query<&CampaignTrail, With<SelectedCampaignTrail>>,
     mut commands: Commands,
+    highscores: Res<HighscoresDatabaseWrapper>,
+    campaign_maps: Res<CampaignMaps>,
 ) {
     let trail: &CampaignTrail = match trail_query.get_single() {
         Ok(trail) => trail,
@@ -152,9 +151,31 @@ fn reset_trail(
             (node.coord.1 + offset_y) as usize,
             match &node.kind {
                 NodeKind::Empty => Tile::CAMPAIGNTRAILWALKWAY,
-                NodeKind::MapFilename { map } => Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
-                    interaction: InteractionKind::LaunchMap {
-                        map_name: map.clone(),
+                NodeKind::MapFilename { map } => match campaign_maps.maps.get(map) {
+                    None => {
+                        error!("Map file not found: {}", map);
+                        Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
+                            interaction: InteractionKind::LaunchMap {
+                                map_name: map.clone(),
+                            },
+                        }
+                    },
+                    Some(world) => {
+                        // Insert an unlocked map entry point if the map has already been won before by the current player
+                        if highscores.highscores.get(world.hash()).is_some() {
+                            Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                                interaction: InteractionKind::LaunchMap {
+                                    map_name: map.clone(),
+                                },
+                            }
+                        } else {
+                            // The map has not been won yet, insert a locked map entry point.
+                            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
+                                interaction: InteractionKind::LaunchMap {
+                                    map_name: map.clone(),
+                                },
+                            }
+                        }
                     },
                 },
             },
@@ -183,9 +204,42 @@ fn reset_trail(
             }
         }
     }
-    // TODO Traverse the graph using a breadth-first search to unlock all maps that are already won, or reachable from a won map
-    // TODO Load all campaign maps as asset and assign them into the CampaignMaps resource
-    // TODO Support saving maps into subfolders, treat links as subfolders
+    // Traverse the graph using a breadth-first search to unlock all maps that are reachable from
+    // a won map, starting at node id 0. Unlock all maps adjacent to unlocked maps.
+    let mut stack: Vec<&Node> = vec![trail_graph.get_node(&0).unwrap()];
+    let mut visited: HashSet<NodeID> = HashSet::new();
+    visited.insert(0);
+    while !stack.is_empty() {
+        let cur = stack.pop().unwrap();
+        for node in trail_graph
+            .edges()
+            .get(&cur.id)
+            .unwrap()
+            .iter()
+            .map(|id| trail_graph.get_node(id).unwrap())
+        {
+            match world.get(
+                (node.coord.0 + offset_x) as i32,
+                (node.coord.1 + offset_y) as i32,
+            ) {
+                Some(Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { interaction }) => {
+                    world.set(
+                        (node.coord.0 + offset_x) as usize,
+                        (node.coord.1 + offset_y) as usize,
+                        Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                            interaction: interaction.clone(),
+                        },
+                    );
+                },
+                _ => {
+                    if !visited.contains(&node.id) {
+                        visited.insert(node.id);
+                        stack.push(node);
+                    }
+                },
+            }
+        }
+    }
     // TODO Campaign Maps need a language key as title + description, which will then be translated through i18n
     debug!(
         "Loaded a campaign trail with size {0}x{1}, Offset {2}x{3} and player spawn at {4},{5} in a world size of {6}x{7}",
