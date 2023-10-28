@@ -11,17 +11,20 @@ use crate::campaign::campaign_maps::CampaignMaps;
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
     despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    GameOverEvent,
+    GameOverEvent, PlayerComponent,
 };
+use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
-use crate::ui::{check_ui_size_changed, UiSizeChangedEvent};
-use crate::{AppLabels, AppState};
+use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, CAMPAIGN_MAPINFO_HEIGHT};
+use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
+use bevy::reflect::erased_serde::__private::serde::de::Unexpected::Option;
 use bevy::utils::HashSet;
-use bevy_egui::EguiContexts;
+use bevy_egui::egui::{Align, Layout};
+use bevy_egui::{egui, EguiContexts};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
 use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
@@ -263,12 +266,70 @@ fn campaign_screen_ui(
     current_window_size: ResMut<WindowUiOverlayInfo>,
     egui_textures: Res<EguiButtonTextures>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
+    player_query: Query<&Transform, With<PlayerComponent>>,
+    campaign_trail: Res<MapWrapper>,
+    campaign_maps: Res<CampaignMaps>,
+    highscores: Res<HighscoresDatabaseWrapper>,
+    config: Res<GameConfig>,
 ) {
+    let player_pos = player_query.single();
     let navbar_response = add_navbar(&mut egui_ctx, &mut state, &egui_textures);
-    let ui_height = navbar_response.response.rect.height();
+    let ui_top_height = navbar_response.response.rect.height();
+
+    // Bottom UI
+    let (in_map, scoreboard, map_name) = match campaign_trail.world.get(
+        (player_pos.translation.x / (config.config.tile_set.texture_size() as f32)) as i32,
+        (player_pos.translation.y / (config.config.tile_set.texture_size() as f32)) as i32,
+    ) {
+        Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
+            InteractionKind::LaunchMap { map_name } => {
+                let map = campaign_maps.maps.get(map_name).expect(
+                    format!("Could not find map with file name \"{}\"!", map_name).as_str(),
+                );
+                let name = &config.config.player_id;
+                if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
+                    (
+                        true,
+                        Some(Scoreboard {
+                            coins: score.coins() as i32,
+                            moves: score.moves() as usize,
+                            keys: 0,
+                        }),
+                        map.get_name().to_string(),
+                    )
+                } else {
+                    (true, None, map.get_name().to_string())
+                }
+            },
+        },
+        _ => (false, None, "".to_string()),
+    };
+    let bot = egui::TopBottomPanel::bottom("map_info").show(egui_ctx.ctx_mut(), |ui| {
+        ui.set_height(CAMPAIGN_MAPINFO_HEIGHT);
+        ui.set_width(ui.available_width());
+        ui.vertical(|ui| {
+            ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                if in_map {
+                    ui.label(t!(format!("campaign_screen.map.{}", map_name).as_str()));
+                }
+            });
+            ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                if in_map {
+                    egui_highscore_label(ui, &scoreboard);
+                }
+            });
+            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                if in_map {
+                    ui.label(t!("campaign_screen.press_x_to_play"));
+                }
+            });
+        });
+    });
+    let ui_bot_height = bot.response.rect.height();
     check_ui_size_changed(
         &WindowUiOverlayInfo {
-            top: ui_height,
+            top: ui_top_height,
+            bottom: ui_bot_height,
             ..default()
         },
         current_window_size,

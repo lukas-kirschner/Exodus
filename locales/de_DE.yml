@@ -90,3 +90,7 @@ game_over_screen:
     won: "Herzlichen Glückwunsch! Der Spielstand wird gespeichert als Spieler: %{player}"
     won_discard: Der Spielstand wird nicht gespeichert.
     lost: Die Karte kann mit dem "Erneut Spielen"-Button neu gestartet werden.
+campaign_screen:
+  press_x_to_play: Bitte Enter drücken, um diese Map zu spielen!
+  map:
+    tutorial_walking: "Tutorial: Laufen"

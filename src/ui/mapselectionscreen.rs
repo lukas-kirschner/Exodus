@@ -1,5 +1,5 @@
 use crate::game::constants::FONT_SIZE_HIGHSCORE;
-use crate::game::scoreboard::Scoreboard;
+use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
@@ -205,7 +205,7 @@ fn map_selection_screen_ui(
                                     });
                                     ui.scope(|ui| ui.set_height(UIMARGIN));
                                     ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
-                                        labels_row2(ui, &map.previous_best);
+                                        egui_highscore_label(ui, &map.previous_best);
                                     });
                                 });
                             });
@@ -255,38 +255,6 @@ fn labels_row1(ui: &mut Ui, world: &GameWorld) {
     ui.label(world.get_name());
     ui.label(" ");
     ui.label(world.get_author());
-}
-
-fn labels_row2(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
-    match scoreboard {
-        None => {
-            ui.label(
-                RichText::new(t!("map_selection_screen.no_highscore")).size(FONT_SIZE_HIGHSCORE),
-            );
-        },
-        Some(score) => {
-            ui.label(
-                RichText::new(t!("map_selection_screen.highscore_heading"))
-                    .size(FONT_SIZE_HIGHSCORE),
-            );
-            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
-            ui.label(
-                RichText::new(t!(
-                    "map_selection_screen.moves_fmt",
-                    moves = &score.moves.to_string()
-                ))
-                .size(14.),
-            );
-            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
-            ui.label(
-                RichText::new(t!(
-                    "map_selection_screen.coins_fmt",
-                    coins = &score.coins.to_string()
-                ))
-                .size(FONT_SIZE_HIGHSCORE),
-            );
-        },
-    }
 }
 
 pub struct MapSelectionScreenPlugin;
