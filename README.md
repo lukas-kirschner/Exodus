@@ -87,14 +87,16 @@ syntax:
 
 Each file name describes a path relative to the `campaign` folder in the program directory, e.g. `tutorial_jumping.exm`.
 Each ID must be a unique (not necessarily consecutive) non-negative integer.
-The coordinates may be negative and describe the position of each node with positive X to the right and positive Y to the top.
-If the file name is omitted and only coordinates are given, an empty node is added with the sole purpose of connecting other nodes.
+The coordinates may be negative and describe the position of each node with positive X to the right and positive Y to
+the top.
+If the file name is omitted and only coordinates are given, an empty node is added with the sole purpose of connecting
+other nodes.
 
 In the lines following the single hash (#), all edges of the campaign trail must be described.
 
 ##### Editing Campaign Mode Maps
 
-To edit campaign mode maps, you can create a link of the assets/maps folder inside your exodus user maps folder, 
+To edit campaign mode maps, you can create a link of the assets/maps folder inside your exodus user maps folder,
 e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/share/libexodus/maps/campaign`.
 Exodus will automatically follow the symlink when new maps are searched.
 To save a map as campaign map, simply prefix the map name with `campaign/`.
@@ -116,3 +118,25 @@ horizontal or vertical edge.
 There cannot be any diagonal edges.
 This limitation is intentional to make sure that campaign trails made out of squares can be displayed properly,
 including their edges.
+
+## Message Tiles
+
+The message tiles (probably shown as "Question Mark Signpost") are tiles that show a brief message to the player
+when they interact with them.
+Their main purpose is to show tutorial messages to the player, but they may also be used to show arbitrary hints
+and messages in custom maps.
+Each message tile gets an assigned Message ID - that is, an integer pointing to the message to be displayed.
+Upon a map save, the ID is completely discarded and all text messages are stored in one contiguous memory allocation.
+The order of messages is exactly the same as the order of message tiles, and upon load, each message tile gets
+an auto-assigned continuous ID starting from 0 that exactly corresponds with the index of each message in the
+messages section of map memory.
+This way, we can uniquely assign one message to each message tile without needing to store an explicit mapping.
+The map itself holds the message data in a vector of strings that can be assigned by the index of each message tile.
+
+### Special Text in Message Tile's Messages
+
+There are some text fragments that are interpreted to show special text in the game UI:
+
+| Text                    | Meaning/Example                                   |
+|-------------------------|---------------------------------------------------|
+| `t!(text)`              | Translate `text` in the global translation table  |
