@@ -27,8 +27,9 @@ impl AssetLoader for CampaignTrailLoader {
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
             let mut graph = Graph::default();
+            // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
+            #[allow(noop_method_call)]
             graph
-                // TODO inefficient
                 .parse(&mut bytes.clone())
                 .map_err(|e| bevy::asset::Error::msg(e.to_string()))?;
             let asset = CampaignTrailAsset(graph);

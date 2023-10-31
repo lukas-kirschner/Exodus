@@ -447,19 +447,19 @@ fn mapeditor_dialog(
                     edit_dialog.get_message_id(),
                     edit_dialog.get_message().to_string(),
                 )
-                .and_then(|e| {
+                .map(|_| {
                     debug!(
                         "Successfully set message {} to {}",
                         edit_dialog.get_message_id(),
                         edit_dialog.get_message()
                     );
-                    Ok(())
                 })
                 .unwrap_or_else(|e| {
                     error!(
-                        "Could not set message {} to {}!",
+                        "Could not set message {} to {}: {}!",
                         edit_dialog.get_message_id(),
-                        edit_dialog.get_message()
+                        edit_dialog.get_message(),
+                        e
                     )
                 });
             state.set(AppState::MapEditor);

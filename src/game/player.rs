@@ -392,21 +392,11 @@ pub fn player_movement(
 }
 
 fn player_gravity(
-    mut player_positions: Query<
-        (
-            &mut PlayerComponent,
-            &mut TextureAtlasSprite,
-            Entity,
-            &mut Transform,
-            &Handle<TextureAtlas>,
-        ),
-        Without<DoorWrapper>,
-    >,
-    mut worldwrapper: ResMut<MapWrapper>,
+    mut player_positions: Query<(&mut PlayerComponent, &Transform), Without<DoorWrapper>>,
+    worldwrapper: ResMut<MapWrapper>,
     config: Res<GameConfig>,
-    time: Res<Time>,
 ) {
-    for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
+    for (mut _player, transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // Gravity: If Queue is empty and the tile below the player is non-solid and the block the player stands on is not a ladder, add downward movement

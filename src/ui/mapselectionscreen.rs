@@ -1,4 +1,3 @@
-use crate::game::constants::FONT_SIZE_HIGHSCORE;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
@@ -7,7 +6,7 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Layout, RichText, Ui};
+use bevy_egui::egui::{Align, Layout, Ui};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;

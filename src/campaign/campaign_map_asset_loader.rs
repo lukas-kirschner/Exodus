@@ -27,9 +27,9 @@ impl AssetLoader for CampaignMapLoader {
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
             let mut map = GameWorld::default();
-            map
-                // TODO inefficient
-                .parse(&mut bytes.clone())
+            // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
+            #[allow(noop_method_call)]
+            map.parse(&mut bytes.clone())
                 .map_err(|e| bevy::asset::Error::msg(e.to_string()))?;
             map.set_filename(load_context.path().to_path_buf());
             let asset = CampaignMapAsset(map);

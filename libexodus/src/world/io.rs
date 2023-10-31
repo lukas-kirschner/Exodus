@@ -7,7 +7,6 @@ use bincode;
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
-use std::thread::current;
 
 pub(crate) const MAGICBYTES: [u8; 9] = [0x45, 0x78, 0x6f, 0x64, 0x75, 0x73, 0x4d, 0x61, 0x70];
 pub(crate) const MAX_MAP_WIDTH: usize = 1024;
@@ -164,7 +163,7 @@ impl ExodusSerializable for GameWorld {
         assert_eq!(map_height, self.height());
 
         // Parse actual map content
-        /// The message ID of the current message tile
+        // The message ID of the current message tile
         let mut current_message_id = 0usize;
         for y in 0..self.height() {
             for x in 0..self.width() {
@@ -178,7 +177,7 @@ impl ExodusSerializable for GameWorld {
                 let mut tile = Tile::from_bytes(buf[0])
                     .ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?;
                 // Assign the current message ID to message tiles
-                if let Tile::MESSAGE { message_id } = tile {
+                if let Tile::MESSAGE { .. } = tile {
                     tile = Tile::MESSAGE {
                         message_id: current_message_id,
                     };
@@ -201,6 +200,12 @@ impl GameWorld {
         expected_len: usize,
     ) -> Result<(), GameWorldParseError> {
         let actual_len = bincode::deserialize_from::<&mut T, u32>(file)?;
+        if actual_len != expected_len as u32 {
+            return Err(GameWorldParseError::MissingMessageString {
+                expected_length: expected_len as u32,
+                actual_length: actual_len,
+            });
+        }
         for _ in 0..actual_len {
             let message = self.parse_current_version_string(file)?;
             self.messages.push(message);
@@ -241,13 +246,13 @@ impl GameWorld {
         file.write_all(&height_b)?;
 
         // Write Map Tiles
-        /// All message IDs in correct order
+        // All message IDs in correct order
         let mut message_ids: Vec<usize> = vec![];
         for y in 0..self.height() {
             for x in 0..self.width() {
                 let tile = self.get(x as i32, y as i32).unwrap();
                 if let Tile::MESSAGE { message_id } = tile {
-                    message_ids.push(message_id.clone());
+                    message_ids.push(*message_id);
                 }
                 file.write_all(&[tile.to_bytes()])?;
             }
@@ -269,7 +274,7 @@ impl GameWorld {
         // Write all messages
         for message_id in message_ids {
             let serialized_message_text =
-                bincode::serialize(match self.get_message(message_id.clone()) {
+                bincode::serialize(match self.get_message(*message_id) {
                     None => "",
                     Some(text) => text,
                 })?;

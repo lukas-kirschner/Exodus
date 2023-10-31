@@ -188,11 +188,8 @@ fn mouse_down_handler(
                 // The new tile is a message with the given ID. Open the Editor and allow the user to set or edit the message. Setting an appropriate ID has been taken care of by the replace_world_tile_at function.
                 commands.insert_resource(MapEditorDialogResource {
                     ui_dialog: Box::new(EditMessageDialog::new(
-                        message_id.clone(),
-                        map.world
-                            .get_message(message_id.clone())
-                            .unwrap_or("")
-                            .to_string(),
+                        *message_id,
+                        map.world.get_message(*message_id).unwrap_or("").to_string(),
                     )),
                 });
                 state.set(AppState::MapEditorDialog);

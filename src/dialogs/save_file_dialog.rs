@@ -5,7 +5,6 @@ use crate::textures::egui_textures::EguiButtonTextures;
 use bevy::log::{debug, warn};
 use bevy_egui::egui::Ui;
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
-use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 #[derive(Eq, PartialEq)]

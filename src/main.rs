@@ -1,7 +1,5 @@
 use crate::campaign::campaign_trail::CampaignTrailPlugin;
-use crate::campaign::campaign_trail_asset_loader::{
-    CampaignTrailAsset, CampaignTrailAssetPlugin, CampaignTrailLoader,
-};
+use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
 use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
@@ -236,7 +234,7 @@ pub struct AllAssetHandles {
     pub handles: Vec<HandleUntyped>,
 }
 impl FromWorld for AllAssetHandles {
-    fn from_world(world: &mut World) -> Self {
+    fn from_world(_: &mut World) -> Self {
         AllAssetHandles { handles: vec![] }
     }
 }

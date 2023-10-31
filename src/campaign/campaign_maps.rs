@@ -1,13 +1,10 @@
 use crate::campaign::campaign_map_asset_loader::*;
-use crate::game::tilewrapper::MapWrapper;
 use crate::textures::load_asset_folder_or_panic;
 use crate::{AllAssetHandles, AppState};
-use bevy::app::AppLabel;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use libexodus::world::GameWorld;
-use std::path::Path;
 
 pub struct CampaignMapsLoadingPlugin;
 impl Plugin for CampaignMapsLoadingPlugin {

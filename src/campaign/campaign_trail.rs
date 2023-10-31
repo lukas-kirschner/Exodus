@@ -11,7 +11,7 @@ use crate::campaign::campaign_maps::CampaignMaps;
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
     despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    GameOverEvent, PlayerComponent,
+    PlayerComponent,
 };
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -21,30 +21,19 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, CAMPAIGN_MAPINFO_HEIGHT};
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
-use bevy::reflect::erased_serde::__private::serde::de::Unexpected::Option;
 use bevy::utils::HashSet;
 use bevy_egui::egui::{Align, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
-use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::{InteractionKind, Tile};
 use libexodus::world::GameWorld;
 use std::cmp::{max, min};
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct CampaignTrail {
     pub trail: Graph,
     /// The last player position in the campaign trail, as graph coordinates (not map coordinates!)
     pub last_player_position: (Coord, Coord),
-}
-
-impl Default for CampaignTrail {
-    fn default() -> Self {
-        CampaignTrail {
-            trail: Graph::default(),
-            last_player_position: (0, 0),
-        }
-    }
 }
 
 /// Marker Struct that marks the main campaign trail entry point
@@ -105,23 +94,7 @@ impl Plugin for CampaignTrailPlugin {
                 .run_if(in_state(AppState::CampaignTrailScreen))
                 .in_set(AppLabels::GameOverTrigger),
         )
-        .add_systems(
-            Update,
-            play_map_event_listener
-                .run_if(in_state(AppState::Playing))
-                .in_set(AppLabels::GameOverTrigger),
-        )
         .add_systems(OnExit(AppState::CampaignTrailScreen), despawn_players);
-    }
-}
-fn play_map_event_listener(
-    mut reader: EventReader<GameOverEvent>,
-    mut state: ResMut<NextState<AppState>>,
-    mut commands: Commands,
-) {
-    if let Some(event) = reader.iter().next() {
-        // commands.insert_resource(event.state.clone());
-        // state.set(AppState::GameOverScreen);
     }
 }
 
@@ -214,11 +187,12 @@ fn reset_trail(
     }
     // Traverse the graph using a breadth-first search to unlock all maps that are reachable from
     // a won map, starting at node id 0. Unlock all maps adjacent to unlocked maps.
-    let mut stack: Vec<&Node> = vec![trail_graph.get_node(&0).unwrap()];
+    let mut stack: Vec<&Node> = vec![trail_graph
+        .start_node()
+        .expect("The campaign graph did not have a start node!")];
     let mut visited: HashSet<NodeID> = HashSet::new();
     visited.insert(0);
-    while !stack.is_empty() {
-        let cur = stack.pop().unwrap();
+    while let Some(cur) = stack.pop() {
         for node in trail_graph
             .edges()
             .get(&cur.id)
@@ -288,9 +262,9 @@ fn campaign_screen_ui(
     ) {
         Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
             InteractionKind::LaunchMap { map_name } => {
-                let map = campaign_maps.maps.get(map_name).expect(
-                    format!("Could not find map with file name \"{}\"!", map_name).as_str(),
-                );
+                let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
+                    panic!("Could not find map with file name \"{}\"!", map_name)
+                });
                 let name = &config.config.player_id;
                 if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
                     (
@@ -354,15 +328,15 @@ pub fn play_map_keyboard_controls(
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
         let player_pos = player_query.single();
-        match campaign_trail.world.get(
+        if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail.world.get(
             (player_pos.translation.x / (config.config.tile_set.texture_size() as f32)) as i32,
             (player_pos.translation.y / (config.config.tile_set.texture_size() as f32)) as i32,
         ) {
-            Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
+            match interaction {
                 InteractionKind::LaunchMap { map_name } => {
-                    let map = campaign_maps.maps.get(map_name).expect(
-                        format!("Could not find map with file name \"{}\"!", map_name).as_str(),
-                    );
+                    let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
+                        panic!("Could not find map with file name \"{}\"!", map_name)
+                    });
                     commands.insert_resource(MapWrapper {
                         world: map.clone(),
                         previous_best: match &highscores
@@ -379,8 +353,7 @@ pub fn play_map_keyboard_controls(
                     });
                     state.set(AppState::Playing);
                 },
-            },
-            _ => {},
+            }
         };
     }
 }

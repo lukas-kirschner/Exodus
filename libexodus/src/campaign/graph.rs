@@ -1,7 +1,6 @@
 use crate::exodus_serializable::ExodusSerializable;
 use regex::Regex;
 use std::cmp::{max, min};
-use std::collections::hash_map::Values;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::io::{prelude::*, BufReader, Error};
@@ -43,7 +42,7 @@ pub struct Graph {
     /// All edge labels for labeled edges
     edge_labels: HashMap<(NodeID, NodeID), String>,
     /// The start node at (0,0)
-    start_node: Option<Node>,
+    start_node: Option<NodeID>,
     /// The smallest X coordinate of all nodes of this graph
     min_x: Coord,
     /// The greatest X coordinate of all nodes of this graph
@@ -54,6 +53,10 @@ pub struct Graph {
     max_y: Coord,
 }
 impl Graph {
+    /// Get the start node of this graph
+    pub fn start_node(&self) -> Option<&Node> {
+        self.start_node.map(|id| self.nodes.get(&id).unwrap())
+    }
     pub fn min_x(&self) -> Coord {
         self.min_x
     }
@@ -207,23 +210,23 @@ impl Display for GraphValidationError {
 impl Graph {
     fn validate(&self) -> Result<(), GraphValidationError> {
         // Check if there are adjacent nodes that are not connected
-        for (nodeId, node) in self.nodes.iter() {
-            for (inner_nodeId, inner_node) in self.nodes.iter() {
-                if nodeId != inner_nodeId && node.is_adjacent_to(inner_node) {
+        for (node_id, node) in self.nodes.iter() {
+            for (inner_node_id, inner_node) in self.nodes.iter() {
+                if node_id != inner_node_id && node.is_adjacent_to(inner_node) {
                     let empty_vec = vec![];
                     if self
                         .edges
-                        .get(&nodeId)
-                        .unwrap_or_else(|| &empty_vec)
-                        .contains(inner_nodeId)
+                        .get(node_id)
+                        .unwrap_or(&empty_vec)
+                        .contains(inner_node_id)
                     {
                         continue;
                     } else {
                         return Err(GraphValidationError::AdjacentNodesAreNotConnected {
-                            node1_id: nodeId.clone(),
+                            node1_id: *node_id,
                             node1_x: node.coord.0,
                             node1_y: node.coord.1,
-                            node2_id: inner_nodeId.clone(),
+                            node2_id: *inner_node_id,
                             node2_x: inner_node.coord.0,
                             node2_y: inner_node.coord.1,
                         });
@@ -242,20 +245,20 @@ impl ExodusSerializable for Graph {
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), Self::ParseError> {
         for node in self.nodes.values() {
             match &node.kind {
-                NodeKind::Empty => write!(file, "{} {} {}\n", node.id, node.coord.0, node.coord.1)?,
-                NodeKind::MapFilename { map } => write!(
+                NodeKind::Empty => writeln!(file, "{} {} {}", node.id, node.coord.0, node.coord.1)?,
+                NodeKind::MapFilename { map } => writeln!(
                     file,
-                    "{} {} {} {}\n",
+                    "{} {} {} {}",
                     node.id, map, node.coord.0, node.coord.1
                 )?,
             };
         }
-        write!(file, "#\n")?;
+        writeln!(file, "#")?;
         for (edge_a, edges) in &self.edges {
             for edge_b in edges {
                 match self.edge_labels.get(&(*edge_a, *edge_b)) {
-                    None => write!(file, "{} {}\n", edge_a, edge_b)?,
-                    Some(label) => write!(file, "{} {} {}\n", edge_a, edge_b, label)?,
+                    None => writeln!(file, "{} {}", edge_a, edge_b)?,
+                    Some(label) => writeln!(file, "{} {} {}", edge_a, edge_b, label)?,
                 };
             }
         }
@@ -317,11 +320,11 @@ impl ExodusSerializable for Graph {
                     EdgeParseResult::UnnamedEdge { id_a, id_b } => {
                         self.edges
                             .entry(str::parse::<NodeID>(id_a)?)
-                            .or_insert(vec![])
+                            .or_default()
                             .push(str::parse::<NodeID>(id_b)?);
                         self.edges
                             .entry(str::parse::<NodeID>(id_b)?)
-                            .or_insert(vec![])
+                            .or_default()
                             .push(str::parse::<NodeID>(id_a)?);
                         None
                     },
@@ -332,11 +335,11 @@ impl ExodusSerializable for Graph {
                     } => {
                         self.edges
                             .entry(str::parse::<NodeID>(id_a)?)
-                            .or_insert(vec![])
+                            .or_default()
                             .push(str::parse::<NodeID>(id_b)?);
                         self.edges
                             .entry(str::parse::<NodeID>(id_b)?)
-                            .or_insert(vec![])
+                            .or_default()
                             .push(str::parse::<NodeID>(id_a)?);
                         self.edge_labels.insert(
                             (str::parse::<NodeID>(id_a)?, str::parse::<NodeID>(id_b)?),
@@ -366,6 +369,7 @@ impl ExodusSerializable for Graph {
                 )
             },
         );
+        self.start_node = Some(0);
         Ok(())
     }
 }

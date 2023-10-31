@@ -1,4 +1,6 @@
 use crate::tiles::{Tile, TileKind};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
 pub mod exampleworlds;
@@ -6,6 +8,15 @@ pub mod hash;
 pub mod io;
 pub mod io_error;
 pub mod presets;
+
+#[derive(Debug)]
+pub struct OutOfBoundsError(usize);
+impl Error for OutOfBoundsError {}
+impl Display for OutOfBoundsError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Index out of bounds: {}", self.0)
+    }
+}
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -189,12 +200,16 @@ impl GameWorld {
     /// world.set_message(0,"Goodbye World".to_string()).unwrap();
     /// assert_eq!(world.get_message(0).unwrap(), "Goodbye World");
     /// ```
-    pub fn set_message(&mut self, message_id: usize, message: String) -> Result<(), ()> {
-        if 0 <= message_id && message_id < self.messages.len() {
+    pub fn set_message(
+        &mut self,
+        message_id: usize,
+        message: String,
+    ) -> Result<(), OutOfBoundsError> {
+        if message_id < self.messages.len() {
             self.messages[message_id] = message;
             Ok(())
         } else {
-            Err(())
+            Err(OutOfBoundsError(message_id))
         }
     }
 
