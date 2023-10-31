@@ -48,8 +48,8 @@ impl Plugin for MapEditorUiPlugin {
 }
 
 #[derive(Resource)]
-struct MapEditorDialogResource {
-    ui_dialog: Box<dyn UIDialog + Send + Sync>,
+pub struct MapEditorDialogResource {
+    pub ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }
 
 /// Create an egui button to select a tile that can currently be placed
@@ -365,6 +365,15 @@ fn mapeditor_ui(
                             &mut selected_tile,
                             player_it,
                         );
+                        ui.separator();
+
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::MESSAGE { message_id: 0 },
+                            &mut selected_tile,
+                            player_it,
+                        );
                     })
                 });
             });
@@ -431,6 +440,29 @@ fn mapeditor_dialog(
             state.set(AppState::MapEditor);
         } else if dialog.ui_dialog.as_unsaved_changes_dialog().is_some() {
             state.set(AppState::MapSelectionScreen);
+        } else if let Some(edit_dialog) = dialog.ui_dialog.as_edit_message_dialog() {
+            worldwrapper
+                .world
+                .set_message(
+                    edit_dialog.get_message_id(),
+                    edit_dialog.get_message().to_string(),
+                )
+                .and_then(|e| {
+                    debug!(
+                        "Successfully set message {} to {}",
+                        edit_dialog.get_message_id(),
+                        edit_dialog.get_message()
+                    );
+                    Ok(())
+                })
+                .unwrap_or_else(|e| {
+                    error!(
+                        "Could not set message {} to {}!",
+                        edit_dialog.get_message_id(),
+                        edit_dialog.get_message()
+                    )
+                });
+            state.set(AppState::MapEditor);
         }
     } else if dialog.ui_dialog.is_cancelled() {
         state.set(AppState::MapEditor);

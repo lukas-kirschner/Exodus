@@ -34,6 +34,7 @@ map_editor:
     save_dialog_map_name: Name
     save_dialog_map_hash: Prüfsumme
     save_dialog_overwrite: Soll die Karte überschrieben werden?
+    edit_message_dialog_title: Nachricht bearbeiten
   buttons:
     currently_selected: momentan gewählt
 common_buttons:
@@ -73,6 +74,7 @@ tile:
   arrow_up: Pfeil nach oben
   arrow_down: Pfeil nach unten
   exit: Ziel
+  message: Nachricht
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX

@@ -33,6 +33,7 @@ map_editor:
     save_dialog_map_name: Map Name
     save_dialog_map_hash: Map Hash
     save_dialog_overwrite: Do you want to overwrite the map?
+    edit_message_dialog_title: Edit Message
   buttons:
     currently_selected: currently selected
 common_buttons:
@@ -72,6 +73,7 @@ tile:
   arrow_up: Up Arrow
   arrow_down: Down Arrow
   exit: Exit
+  message: Message
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map

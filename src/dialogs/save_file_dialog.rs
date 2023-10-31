@@ -1,3 +1,4 @@
+use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
@@ -203,6 +204,10 @@ impl UIDialog for SaveFileDialog {
     }
 
     fn as_unsaved_changes_dialog(&mut self) -> Option<&mut UnsavedChangesDialog> {
+        None
+    }
+
+    fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog> {
         None
     }
 }
