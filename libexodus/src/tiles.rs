@@ -233,10 +233,10 @@ impl Tile {
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
             Tile::EXIT => Some(40),
-            Tile::CAMPAIGNTRAILWALKWAY => Some(9),
-            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => Some(10),
+            Tile::CAMPAIGNTRAILWALKWAY => Some(78),
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => Some(76),
             Tile::CAMPAIGNTRAILBORDER => None,
-            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => Some(8),
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => Some(77),
             Tile::MESSAGE { .. } => Some(33),
         }
     }
