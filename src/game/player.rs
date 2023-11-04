@@ -9,7 +9,7 @@ use libexodus::directions::Directions::*;
 use libexodus::directions::FromDirection;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{Tile, TileKind};
+use libexodus::tiles::{Tile, TileKind, EXITING_PLAYER_SPRITE};
 use libexodus::world::GameWorld;
 
 pub struct PlayerPlugin;
@@ -372,7 +372,7 @@ pub fn player_movement(
                         TileKind::COLLECTIBLE => {},
                         TileKind::EXIT => {
                             commands.entity(entity).despawn_recursive();
-                            sprite.index = 247; // Player turning their back to the camera
+                            sprite.index = EXITING_PLAYER_SPRITE;
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
                                 SpriteSheetBundle {

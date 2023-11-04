@@ -1,4 +1,7 @@
 use crate::campaign::campaign_maps::CampaignMaps;
+use crate::game::constants::{
+    EXITED_PLAYER_ASCEND_SPEED, EXITED_PLAYER_DECAY_SPEED, EXITED_PLAYER_ZOOM_SPEED,
+};
 /// This file contains all required UI and logic structs that are required to show the user a
 /// campaign trail where they can choose a map to play and save their progress while doing so.
 /// Since in the future, multiple campaign trails may be supported, we derive the campaign trail
@@ -11,7 +14,7 @@ use crate::campaign::campaign_maps::CampaignMaps;
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
     despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    PlayerComponent, ReturnTo,
+    ExitingPlayerComponent, PlayerComponent, ReturnTo,
 };
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -19,13 +22,14 @@ use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, CAMPAIGN_MAPINFO_HEIGHT};
-use crate::{AppLabels, AppState, GameConfig};
+use crate::{AppLabels, AppState, GameConfig, LAYER_ID};
 use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
 use bevy::utils::HashSet;
 use bevy_egui::egui::{Align, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
-use libexodus::tiles::{InteractionKind, Tile};
+use libexodus::tiles::{InteractionKind, Tile, EXITING_PLAYER_SPRITE};
 use libexodus::world::GameWorld;
 use std::cmp::{max, min};
 
@@ -85,6 +89,12 @@ impl Plugin for CampaignTrailPlugin {
         .add_systems(
             Update,
             player_movement
+                .run_if(in_state(AppState::CampaignTrailScreen))
+                .in_set(AppLabels::PlayerMovement),
+        )
+        .add_systems(
+            Update,
+            player_enter_map_handler
                 .run_if(in_state(AppState::CampaignTrailScreen))
                 .in_set(AppLabels::PlayerMovement),
         )
@@ -267,84 +277,90 @@ fn campaign_screen_ui(
     highscores: Res<HighscoresDatabaseWrapper>,
     config: Res<GameConfig>,
 ) {
-    let player_pos = player_query.single();
-    let navbar_response = add_navbar(&mut egui_ctx, &mut state, &egui_textures);
-    let ui_top_height = navbar_response.response.rect.height();
+    if let Ok(player_pos) = player_query.get_single() {
+        let navbar_response = add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+        let ui_top_height = navbar_response.response.rect.height();
 
-    // Bottom UI
-    let (in_map, scoreboard, map_name) = match campaign_trail.world.get(
-        (player_pos.translation.x / (config.texture_size())) as i32,
-        (player_pos.translation.y / (config.texture_size())) as i32,
-    ) {
-        Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
-            InteractionKind::LaunchMap { map_name } => {
-                let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
-                    panic!("Could not find map with file name \"{}\"!", map_name)
-                });
-                let name = &config.config.player_id;
-                if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
-                    (
-                        true,
-                        Some(Scoreboard {
-                            coins: score.coins() as i32,
-                            moves: score.moves() as usize,
-                            keys: 0,
-                        }),
-                        map.get_name().to_string(),
-                    )
-                } else {
-                    (true, None, map.get_name().to_string())
-                }
+        // Bottom UI
+        let (in_map, scoreboard, map_name) = match campaign_trail.world.get(
+            (player_pos.translation.x / (config.texture_size())) as i32,
+            (player_pos.translation.y / (config.texture_size())) as i32,
+        ) {
+            Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
+                InteractionKind::LaunchMap { map_name } => {
+                    let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
+                        panic!("Could not find map with file name \"{}\"!", map_name)
+                    });
+                    let name = &config.config.player_id;
+                    if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
+                        (
+                            true,
+                            Some(Scoreboard {
+                                coins: score.coins() as i32,
+                                moves: score.moves() as usize,
+                                keys: 0,
+                            }),
+                            map.get_name().to_string(),
+                        )
+                    } else {
+                        (true, None, map.get_name().to_string())
+                    }
+                },
             },
-        },
-        _ => (false, None, "".to_string()),
-    };
-    let bot = egui::TopBottomPanel::bottom("map_info").show(egui_ctx.ctx_mut(), |ui| {
-        ui.set_height(CAMPAIGN_MAPINFO_HEIGHT);
-        ui.set_width(ui.available_width());
-        ui.vertical(|ui| {
-            ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                if in_map {
-                    ui.label(t!(format!("campaign_screen.map.{}", map_name).as_str()));
-                }
-            });
-            ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                if in_map {
-                    egui_highscore_label(ui, &scoreboard);
-                }
-            });
-            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                if in_map {
-                    ui.label(t!("campaign_screen.press_x_to_play"));
-                }
+            _ => (false, None, "".to_string()),
+        };
+        let bot = egui::TopBottomPanel::bottom("map_info").show(egui_ctx.ctx_mut(), |ui| {
+            ui.set_height(CAMPAIGN_MAPINFO_HEIGHT);
+            ui.set_width(ui.available_width());
+            ui.vertical(|ui| {
+                ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                    if in_map {
+                        ui.label(t!(format!("campaign_screen.map.{}", map_name).as_str()));
+                    }
+                });
+                ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                    if in_map {
+                        egui_highscore_label(ui, &scoreboard);
+                    }
+                });
+                ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                    if in_map {
+                        ui.label(t!("campaign_screen.press_x_to_play"));
+                    }
+                });
             });
         });
-    });
-    let ui_bot_height = bot.response.rect.height();
-    check_ui_size_changed(
-        &WindowUiOverlayInfo {
-            top: ui_top_height,
-            bottom: ui_bot_height,
-            ..default()
-        },
-        current_window_size,
-        &mut window_size_event_writer,
-    );
+        let ui_bot_height = bot.response.rect.height();
+        check_ui_size_changed(
+            &WindowUiOverlayInfo {
+                top: ui_top_height,
+                bottom: ui_bot_height,
+                ..default()
+            },
+            current_window_size,
+            &mut window_size_event_writer,
+        );
+    }
 }
 
 pub fn play_map_keyboard_controls(
     keyboard_input: Res<Input<KeyCode>>,
-    player_query: Query<&Transform, With<PlayerComponent>>,
+    player_query: Query<(
+        &mut PlayerComponent,
+        &Transform,
+        Entity,
+        &mut TextureAtlasSprite,
+        &Handle<TextureAtlas>,
+    )>,
     config: Res<GameConfig>,
     campaign_trail: Res<MapWrapper>,
     campaign_maps: Res<CampaignMaps>,
-    mut state: ResMut<NextState<AppState>>,
     mut commands: Commands,
     highscores: Res<HighscoresDatabaseWrapper>,
     mut current_campaign_trail: Query<&mut CampaignTrail, With<SelectedCampaignTrail>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
-        let player_pos = player_query.single();
+        let (player, player_pos, entity, sprite, handle) = player_query.single();
         let player_map_x = (player_pos.translation.x / (config.texture_size())) as Coord;
         let player_map_y = (player_pos.translation.y / (config.texture_size())) as Coord;
         if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail
@@ -378,9 +394,54 @@ pub fn play_map_keyboard_controls(
                     commands.insert_resource(ReturnTo(AppState::CampaignTrailScreen));
                     current_campaign_trail.single_mut().last_player_position =
                         (player_map_x - offset_x, player_map_y - offset_y);
-                    state.set(AppState::Playing);
+
+                    commands.entity(entity).despawn_recursive();
+                    let mut exit_sprite = sprite.clone();
+                    exit_sprite.index = EXITING_PLAYER_SPRITE;
+                    let layer = RenderLayers::layer(LAYER_ID);
+                    commands.spawn((
+                        SpriteSheetBundle {
+                            sprite: sprite.clone(),
+                            texture_atlas: handle.clone(),
+                            transform: *player_pos,
+                            ..default()
+                        },
+                        ExitingPlayerComponent {
+                            player: player.player.clone(),
+                        },
+                        layer,
+                    ));
                 },
             }
         };
+    }
+}
+
+/// Handler that takes care of animating an entering player and entering a map when the
+/// player-enter animation has finished
+pub fn player_enter_map_handler(
+    mut commands: Commands,
+    mut exited_players: Query<
+        (&mut TextureAtlasSprite, &mut Transform, Entity),
+        With<ExitingPlayerComponent>,
+    >,
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut state: ResMut<NextState<AppState>>,
+) {
+    let texture_size = config.texture_size();
+    for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
+        let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
+        if new_a <= 0.0 {
+            // The player has fully decayed and can be despawned.
+            sprite.color.set_a(0.0);
+            commands.entity(entity).despawn_recursive();
+            state.set(AppState::Playing);
+            return;
+        }
+        sprite.color.set_a(new_a);
+        transform.translation.y += EXITED_PLAYER_ASCEND_SPEED * texture_size * time.delta_seconds();
+        transform.scale +=
+            Vec3::splat(EXITED_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }

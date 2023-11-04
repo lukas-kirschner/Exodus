@@ -4,6 +4,7 @@ use std::fmt;
 use std::fmt::Formatter;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
+pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning heir back to the camera
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum InteractionKind {
     /// When interacting with this tile, the player may decide to play a map.
