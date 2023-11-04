@@ -358,9 +358,15 @@ pub fn play_map_keyboard_controls(
     mut commands: Commands,
     highscores: Res<HighscoresDatabaseWrapper>,
     mut current_campaign_trail: Query<&mut CampaignTrail, With<SelectedCampaignTrail>>,
+    mut state: ResMut<NextState<AppState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
-        let (player, player_pos, entity, sprite, handle) = player_query.single();
+        let Ok((player, player_pos, entity, sprite, handle)) = player_query.get_single() else {
+            debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
+            state.set(AppState::Playing);
+            return;
+        };
+
         let player_map_x = (player_pos.translation.x / (config.texture_size())) as Coord;
         let player_map_y = (player_pos.translation.y / (config.texture_size())) as Coord;
         if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail
@@ -432,10 +438,12 @@ pub fn player_enter_map_handler(
     let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
-        if new_a <= 0.0 {
+        debug!("a is {}", new_a);
+        if (new_a - 0.01) <= 0.0 {
             // The player has fully decayed and can be despawned.
             sprite.color.set_a(0.0);
             commands.entity(entity).despawn_recursive();
+            debug!("Entering Campaign Map");
             state.set(AppState::Playing);
             return;
         }
