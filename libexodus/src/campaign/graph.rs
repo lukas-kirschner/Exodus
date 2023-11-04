@@ -455,10 +455,6 @@ fn parse_edge_line(line: &str) -> EdgeParseResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bytebuffer::ByteBuffer;
-    use std::num::IntErrorKind;
-    use strum::{EnumCount, IntoEnumIterator};
-
     #[test]
     fn test_simple_in_memory_deserialization() {
         let graph_file: String = r#"
@@ -474,7 +470,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         if result.is_err() {
             panic!("{}", result.unwrap_err());
         }

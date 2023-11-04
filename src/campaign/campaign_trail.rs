@@ -11,7 +11,7 @@ use crate::campaign::campaign_maps::CampaignMaps;
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
     despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    PlayerComponent,
+    PlayerComponent, ReturnTo,
 };
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -121,11 +121,28 @@ fn reset_trail(
     let offset_y = -trail_graph.min_y();
     let mut world = GameWorld::new(trail_graph.width(), trail_graph.height());
     world.fill(&Tile::CAMPAIGNTRAILBORDER);
-    world.set(
-        (trail.last_player_position.0 + offset_x) as usize,
-        (trail.last_player_position.1 + offset_y) as usize,
-        Tile::PLAYERSPAWN,
-    );
+    if (trail.last_player_position.0 + offset_x) >= trail_graph.width() as Coord
+        || (trail.last_player_position.1 + offset_y) >= trail_graph.height() as Coord
+    {
+        error!(
+            "The player position in the campaign trail {:?} was out of bounds {},{}",
+            trail.last_player_position,
+            trail_graph.width(),
+            trail_graph.height()
+        );
+        world.set(
+            (trail.trail.start_node().unwrap().coord.0 + offset_x) as usize,
+            (trail.trail.start_node().unwrap().coord.1 + offset_y) as usize,
+            Tile::PLAYERSPAWN,
+        );
+    } else {
+        world.set(
+            (trail.last_player_position.0 + offset_x) as usize,
+            (trail.last_player_position.1 + offset_y) as usize,
+            Tile::PLAYERSPAWN,
+        );
+    }
+
     for node in trail_graph.nodes() {
         world.set(
             (node.coord.0 + offset_x) as usize,
@@ -222,7 +239,6 @@ fn reset_trail(
             }
         }
     }
-    // TODO Campaign Maps need a language key as title + description, which will then be translated through i18n
     debug!(
         "Loaded a campaign trail with size {0}x{1}, Offset {2}x{3} and player spawn at {4},{5} in a world size of {6}x{7}",
         trail.trail.width(),
@@ -325,13 +341,16 @@ pub fn play_map_keyboard_controls(
     mut state: ResMut<NextState<AppState>>,
     mut commands: Commands,
     highscores: Res<HighscoresDatabaseWrapper>,
+    mut current_campaign_trail: Query<&mut CampaignTrail, With<SelectedCampaignTrail>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
         let player_pos = player_query.single();
-        if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail.world.get(
-            (player_pos.translation.x / (config.texture_size())) as i32,
-            (player_pos.translation.y / (config.texture_size())) as i32,
-        ) {
+        let player_map_x = (player_pos.translation.x / (config.texture_size())) as Coord;
+        let player_map_y = (player_pos.translation.y / (config.texture_size())) as Coord;
+        if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail
+            .world
+            .get(player_map_x as i32, player_map_y as i32)
+        {
             match interaction {
                 InteractionKind::LaunchMap { map_name } => {
                     let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
@@ -351,6 +370,14 @@ pub fn play_map_keyboard_controls(
                             _ => None,
                         },
                     });
+                    // Insert the ReturnTo resource and update the player position, such that it
+                    // can be restored later:
+                    let trail_graph = &current_campaign_trail.single().trail;
+                    let offset_x = -trail_graph.min_x();
+                    let offset_y = -trail_graph.min_y();
+                    commands.insert_resource(ReturnTo(AppState::CampaignTrailScreen));
+                    current_campaign_trail.single_mut().last_player_position =
+                        (player_map_x - offset_x, player_map_y - offset_y);
                     state.set(AppState::Playing);
                 },
             }

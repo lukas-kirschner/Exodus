@@ -2,6 +2,7 @@ use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
+use crate::game::player::ReturnTo;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::player_spawn::{
     destroy_player_spawn, init_player_spawn, PlayerSpawnComponent,
@@ -95,6 +96,7 @@ fn mapeditor_ui(
     current_window_size: ResMut<WindowUiOverlayInfo>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
     directories: Res<GameDirectoriesWrapper>,
+    return_to: Res<ReturnTo>,
 ) {
     let player_it = player
         .iter()
@@ -127,7 +129,7 @@ fn mapeditor_ui(
                                         });
                                         state.set(AppState::MapEditorDialog);
                                     } else {
-                                        state.set(AppState::MapSelectionScreen);
+                                        state.set(return_to.0);
                                     }
                                 }
                             });
@@ -396,6 +398,7 @@ fn mapeditor_dialog(
     mut state: ResMut<NextState<AppState>>,
     mut worldwrapper: ResMut<MapWrapper>,
     directories: Res<GameDirectoriesWrapper>,
+    return_to: Res<ReturnTo>,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
@@ -439,7 +442,7 @@ fn mapeditor_dialog(
             }
             state.set(AppState::MapEditor);
         } else if dialog.ui_dialog.as_unsaved_changes_dialog().is_some() {
-            state.set(AppState::MapSelectionScreen);
+            state.set(return_to.0);
         } else if let Some(edit_dialog) = dialog.ui_dialog.as_edit_message_dialog() {
             worldwrapper
                 .world

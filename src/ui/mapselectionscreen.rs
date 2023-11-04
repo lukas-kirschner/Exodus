@@ -1,3 +1,4 @@
+use crate::game::player::ReturnTo;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
@@ -154,6 +155,7 @@ fn map_selection_screen_execute_event_queue(
         MapSelectionScreenAction::Play { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
+            commands.insert_resource(ReturnTo(AppState::MapSelectionScreen));
             state.set(AppState::Playing);
             commands.insert_resource(MapSelectionScreenAction::None)
         },
@@ -166,6 +168,7 @@ fn map_selection_screen_execute_event_queue(
         MapSelectionScreenAction::Edit { map_index } => {
             let mapwrapper = maps.maps.remove(map_index);
             commands.insert_resource(mapwrapper);
+            commands.insert_resource(ReturnTo(AppState::MapSelectionScreen));
             state.set(AppState::MapEditor);
             commands.insert_resource(MapSelectionScreenAction::None)
         },

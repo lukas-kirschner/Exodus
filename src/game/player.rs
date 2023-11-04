@@ -118,6 +118,10 @@ fn despawn_dead_player(
             Vec3::splat(DEAD_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }
+/// Resource that determines what screen to return to when a GameOver event is triggered
+/// or ESC is pressed
+#[derive(Resource)]
+pub struct ReturnTo(pub AppState);
 
 /// Event that is triggered when a game is won or lost
 #[derive(Event)]
