@@ -96,8 +96,14 @@ campaign_screen:
 campaign:
   map:
     tutorial_walking: "Tutorial: Walking"
+    tutorial_jumping: "Tutorial: Jumping"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
     tutorial_walking_signs: "When the player steps onto a sign, a message is shown, as you probably already noticed."
     tutorial_walking_exit: "Please advance the player onto the exit tile to finish this map and continue with the tutorial."
+    tutorial_jumping_jumping: "To jump three tiles up, press the Arrow Up key."
+    tutorial_jumping_w: "By pressing the W key, you can jump two tiles up and two tiles to the right."
+    tutorial_jumping_q: "Likewise, by pressing the Q key, you can jump two tiles up and two tiles to the left."
+    tutorial_jumping_spikes: "Always take care not to touch any spikes!"
+    tutorial_jumping_finish: "Use your new jumping abilities to reach the exit and finish this tutorial."

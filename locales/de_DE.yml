@@ -97,8 +97,14 @@ campaign_screen:
 campaign:
   map:
     tutorial_walking: "Tutorial: Laufen"
+    tutorial_jumping: "Tutorial: Springen"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."
     tutorial_walking_signs: "Läuft die Spielfigur auf ein Schild, wird eine Nachricht angezeigt."
     tutorial_walking_exit: "Bewege die Spielfigur auf den Ausgang, um mit der nächsten Karte fortzufahren."
+    tutorial_jumping_jumping: "Drücke Pfeil nach Oben, um drei Kacheln hochzuspringen."
+    tutorial_jumping_w: "Um zwei Kacheln hoch und zwei nach rechts zu springen, drücke die W-Taste."
+    tutorial_jumping_q: "Genau so kann man mit der Q-Taste zwei Kacheln hoch und zwei nach links springen."
+    tutorial_jumping_spikes: "Immer gut aufpassen, keine Stacheln zu berühren!"
+    tutorial_jumping_finish: "Benutze die Sprung-Fähigkeit, um dieses Tutorial zu beenden und mit dem nächsten fortzufahren."
