@@ -1,3 +1,4 @@
+use crate::game::camera::{compute_world_to_viewport, LayerCamera, MainCamera};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
@@ -5,6 +6,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
+use bevy_egui::egui::{Align, Align2, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::Tile;
 
@@ -65,14 +67,87 @@ fn game_ui_system(
         &mut event_writer,
     );
 }
+#[derive(Debug)]
+enum WindowAlignTo {
+    TopLeft,
+    BotLeft,
+    TopRight,
+    BotRight,
+}
+impl From<WindowAlignTo> for Align2 {
+    fn from(value: WindowAlignTo) -> Self {
+        match value {
+            WindowAlignTo::TopLeft => Align2::RIGHT_BOTTOM,
+            WindowAlignTo::BotLeft => Align2::RIGHT_TOP,
+            WindowAlignTo::TopRight => Align2::LEFT_BOTTOM,
+            WindowAlignTo::BotRight => Align2::LEFT_TOP,
+        }
+    }
+}
 
+/// Calculate the placement coordinates for message subwindows
+fn message_window_position(
+    ctx: &egui::Context,
+    player_position: &Transform,
+    main_camera: &Camera,
+    main_camera_transform: &GlobalTransform,
+    layer_camera: &Camera,
+    layer_camera_transform: &GlobalTransform,
+    texture_size: f32,
+) -> (f32, f32, WindowAlignTo) {
+    let available_rect = ctx.available_rect();
+    let (screen_x, screen_y) = available_rect.size().into();
+    // Bevy coordinates have an inverted y axis
+    let player_screen = compute_world_to_viewport(
+        &player_position.translation,
+        main_camera,
+        main_camera_transform,
+        layer_camera,
+        layer_camera_transform,
+        texture_size,
+    )
+    .unwrap();
+    let player_ui_x = player_screen.x + available_rect.min.x;
+    let player_ui_y = player_screen.y + available_rect.min.y;
+    let player_left_half = player_ui_x > (available_rect.min.x + (screen_x / 2.));
+    let player_bottom_half = player_ui_y < (available_rect.min.y + (screen_y / 2.));
+    let align_to = match (player_left_half, player_bottom_half) {
+        (true, true) => WindowAlignTo::BotLeft,
+        (false, true) => WindowAlignTo::BotRight,
+        (true, false) => WindowAlignTo::TopLeft,
+        (false, false) => WindowAlignTo::TopRight,
+    };
+    /// Number of tiles that a floating window is offset from the player's center
+    const OFFSET: f32 = 3.75;
+    let offset_player_pos_x = if player_left_half {
+        player_ui_x - OFFSET * texture_size
+    } else {
+        player_ui_x + OFFSET * texture_size
+    };
+    let offset_player_pos_y = if player_bottom_half {
+        player_ui_y + OFFSET * texture_size
+    } else {
+        player_ui_y - OFFSET * texture_size
+    };
+    (offset_player_pos_x, offset_player_pos_y, align_to)
+}
+/// System that shows a message to the user when they enter a message sign
 fn sign_message_system(
     mut egui_ctx: EguiContexts,
     player_positions: Query<&Transform, With<PlayerComponent>>,
     worldwrapper: Res<MapWrapper>,
     config: Res<GameConfig>,
+    q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
+    q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
+    let (layer_camera, layer_camera_transform) = q_layer_camera
+        .get_single()
+        .expect("There were multiple layer cameras spawned");
+    let (main_camera, main_camera_transform) = q_main_camera
+        .get_single()
+        .expect("There were multiple main cameras spawned");
     let mut messages_to_show: Vec<&str> = vec![];
+    let mut first_player_pos: Option<&Transform> = None;
     for player_position in player_positions.iter() {
         let player_map_position = player_position.translation / Vec3::splat(config.texture_size());
         if let Some(Tile::MESSAGE { message_id }) = worldwrapper
@@ -81,22 +156,38 @@ fn sign_message_system(
         {
             if let Some(message) = worldwrapper.world.get_message(*message_id) {
                 messages_to_show.push(message);
+                first_player_pos = Some(player_position);
             }
         }
     }
-    if !messages_to_show.is_empty() {
-        let _sign_floating_window = egui::Window::new("Floating Message Window")
+    if let Some(player_position) = first_player_pos {
+        let (xpos, ypos, message_alignment) = message_window_position(
+            egui_ctx.ctx_mut(),
+            player_position,
+            main_camera,
+            main_camera_transform,
+            layer_camera,
+            layer_camera_transform,
+            config.texture_size(),
+        );
+        let _sign_floating_window = egui::Window::new("Message Window")
             .resizable(false)
             .movable(false)
             .collapsible(false)
             .title_bar(false)
+            .interactable(false)
+            // Set max width to 1/3 of available screen size
+            .fixed_size(egui_ctx.ctx_mut().available_rect().size() / 3.)
+            // move window to the left of the player position if the player position is > 1/2 of the screen width, right otherwise.
+            // move window to top-align with player position, if player is >1/2 of screen height, bottom-align otherwise.
+            .pivot(message_alignment.into())
+            .fixed_pos((xpos, ypos))
+            // Show the actual message inside a label. If there are multiple players triggering
+            // messages simultaneously, show all messages concatenated with a " / ".
             .show(egui_ctx.ctx_mut(), |ui| {
-                // Set max width to 1/4 of available screen size
-                // Show the actual message inside a label. If there are multiple players triggering
-                // messages simultaneously, show all messages concatenated with a " / ".
+            ui.with_layout(Layout::top_down(Align::TOP),|ui| {
                 ui.label(messages_to_show.join(" / "));
             });
-        // move window to the left of the player position if the player position is > 1/2 of the screen width, right otherwise.
-        // move window to top-align with player position, if player is >1/2 of screen height, bottom-align otherwise.
+            });
     }
 }

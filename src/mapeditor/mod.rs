@@ -1,3 +1,4 @@
+use crate::game::camera::compute_viewport_to_world;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::edit_world::EditWorldPlugin;
 use crate::mapeditor::mapeditor_ui::MapEditorUiPlugin;
@@ -47,7 +48,7 @@ pub fn compute_cursor_position_in_world(
     windows: &Query<&Window, With<PrimaryWindow>>,
     main_camera: &Camera,
     main_camera_transform: &GlobalTransform,
-    _layer_camera: &Camera,
+    layer_camera: &Camera,
     layer_camera_transform: &GlobalTransform,
     texture_size: f32,
 ) -> Option<(i32, i32)> {
@@ -58,17 +59,16 @@ pub fn compute_cursor_position_in_world(
 
     // check if the cursor is inside the window and get its position, then transform it back through both cameras
     if let Some(screen_pos) = wnd.cursor_position() {
-        // if let Some(screen_pos) = layer_camera.viewport_to_world(layer_camera_transform, screen_pos)
-        // {
-        if let Some(world_coord) = main_camera.viewport_to_world(main_camera_transform, screen_pos)
-        {
-            let mut ret = ((world_coord.origin.x), (world_coord.origin.y));
-            ret.0 += layer_camera_transform.translation().x / texture_size;
-            ret.1 += layer_camera_transform.translation().y / texture_size;
-            // debug!("Pos {},{}", ret.0, ret.1);
-            return Some(((ret.0 + 0.5) as i32, (ret.1 + 0.5) as i32));
+        if let Some(world_coord) = compute_viewport_to_world(
+            screen_pos,
+            main_camera,
+            main_camera_transform,
+            layer_camera,
+            layer_camera_transform,
+            texture_size,
+        ) {
+            return Some((world_coord.0 as i32, world_coord.1 as i32));
         }
-        // }
     }
     None
 }

@@ -33,6 +33,7 @@ impl GameWorld {
             .set(3, 7, WALLNATURE)
             .set(4, 7, WALLNATURE)
             .set(4, 8, DOOR)
+            .set_message_tile(3, 8, "Collect the key to open the door.".into())
             .set(6, 3, WALL)
             .set(5, 5, LADDER)
             .set(9, 1, COIN)
@@ -48,6 +49,12 @@ impl GameWorld {
             .set(17, 2, LADDER)
             .set(17, 3, LADDER)
             .set(17, 4, LADDER)
+            .set_message_tile(17, 5, "Congratulations, you made it up the ladder!".into())
+            .set_message_tile(
+                14,
+                8,
+                "This sign can only be read for a very short period of time.".into(),
+            )
             .set(16, 5, WALLSPIKESRB)
             .set(17, 8, WALLSPIKESLTB)
             .set(18, 8, WALLSPIKESTB)
