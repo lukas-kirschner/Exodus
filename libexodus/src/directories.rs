@@ -208,7 +208,7 @@ impl GameDirectories {
 }
 #[cfg(test)]
 impl GameDirectories {
-    pub fn Mock(_base_dir: PathBuf, maps_dir: PathBuf, config_dir: PathBuf) -> Self {
+    pub fn mock(_base_dir: PathBuf, maps_dir: PathBuf, config_dir: PathBuf) -> Self {
         GameDirectories {
             _base_dir,
             maps_dir,
@@ -219,14 +219,11 @@ impl GameDirectories {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bincode::ErrorKind;
-    use bytebuffer::ByteBuffer;
-    use strum::{EnumCount, IntoEnumIterator};
     macro_rules! assert_map_path_resolves_to {
         ($name:ident: $basedir:expr, $mapinput:expr, $expected:expr) => {
             #[test]
             fn $name() {
-                let directories = GameDirectories::Mock("".into(), $basedir.into(), "".into());
+                let directories = GameDirectories::mock("".into(), $basedir.into(), "".into());
                 let result = directories.path_from_userinput($mapinput);
                 assert!(result.is_ok());
                 assert_eq!(result.as_ref().unwrap(), &PathBuf::from($expected));
@@ -237,7 +234,7 @@ mod tests {
         ($name:ident: $basedir:expr, $mapinput:expr, $expected:expr) => {
             #[test]
             fn $name() {
-                let directories = GameDirectories::Mock("".into(), $basedir.into(), "".into());
+                let directories = GameDirectories::mock("".into(), $basedir.into(), "".into());
                 let result = directories.path_from_userinput($mapinput);
                 assert!(result.is_ok());
                 assert_eq!(result.as_ref().unwrap(), &PathBuf::from($expected));
@@ -251,7 +248,7 @@ mod tests {
         ($name:ident: $basedir:expr, $mapinput:expr, $offending_character:expr) => {
             #[test]
             fn $name() {
-                let directories = GameDirectories::Mock("".into(), $basedir.into(), "".into());
+                let directories = GameDirectories::mock("".into(), $basedir.into(), "".into());
                 let result = directories.path_from_userinput($mapinput);
                 assert!(result.is_err());
                 assert!(matches!(
@@ -283,7 +280,7 @@ mod tests {
 
     #[test]
     fn test_empty_map() {
-        let directories = GameDirectories::Mock("".into(), "/maps".into(), "".into());
+        let directories = GameDirectories::mock("".into(), "/maps".into(), "".into());
         let result = directories.path_from_userinput("");
         assert!(result.is_err());
         assert!(matches!(

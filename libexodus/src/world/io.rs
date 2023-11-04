@@ -383,7 +383,6 @@ mod tests {
     use super::*;
     use bincode::ErrorKind;
     use bytebuffer::ByteBuffer;
-    use regex::Matches;
     use strum::{EnumCount, IntoEnumIterator};
 
     #[test]

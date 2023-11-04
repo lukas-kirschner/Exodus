@@ -498,7 +498,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(result.is_ok());
         // Check Nodes
         assert_eq!(graph.nodes.len(), 4);
@@ -528,7 +528,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(result.is_ok());
         // Check Nodes
         assert_eq!(graph.nodes.len(), 4);
@@ -767,7 +767,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        match graph.parse(&mut graph_file.as_bytes().clone()) {
+        match graph.parse(&mut graph_file.as_bytes()) {
             Ok(_) => {},
             Err(e) => panic!("{}", e),
         };
@@ -813,7 +813,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(result.is_ok());
         assert_eq!(graph.nodes.len(), 4);
         // Check Edges
@@ -831,7 +831,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(result.is_ok());
         assert_eq!(graph.min_x, -2);
         assert_eq!(graph.max_x, 2);
@@ -850,7 +850,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(matches!(
             result.expect_err("Expected unconnected adjacent nodes to return a Validation Error"),
             GraphParseError::ValidationError {
@@ -868,7 +868,7 @@ mod tests {
         "#
         .to_string();
         let mut graph = Graph::default();
-        let result = graph.parse(&mut graph_file.as_bytes().clone());
+        let result = graph.parse(&mut graph_file.as_bytes());
         assert!(matches!(
             result.expect_err("Expected graphs containing invalid numbers to return a Parse Error"),
             GraphParseError::InvalidInteger {
