@@ -32,8 +32,9 @@ be tested.
 There are currently plenty of graphics glitches and the sprites will probably change before the first release of the
 game is stable.
 Feel free to test the game yourself, but do not expect a satisfying experience.
-Furthermore, the game currently has no objective or goal, you can only try out some debug maps and move around,
-collecting coins.
+You can already try out the campaign mode, although it will get more levels in the future.
+Just click the Campaign button in the main menu and navigate through the campaign trail using the arrow keys.
+There is a playable tutorial in the campaign trail.
 
 ### Controls
 
@@ -42,7 +43,7 @@ collecting coins.
 | Arrow Left/Arrow Right | Move the player left or right |
 | Arrow Up               | Jump up or ascend on a ladder |
 | Arrow Down             | Descend on a ladder           |
-| Q/W                    | Jump left or right            |
+| Q/W                    | Jump two tiles left or right  |
 | Esc                    | Return to the menu screen     |
 
 # Development Documentation
@@ -94,12 +95,14 @@ other nodes.
 
 In the lines following the single hash (#), all edges of the campaign trail must be described.
 
-##### Editing Campaign Mode Maps
+##### Editing or adding Campaign Mode Maps using the built-in Map Editor
 
 To edit campaign mode maps, you can create a link of the assets/maps folder inside your exodus user maps folder,
 e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/share/libexodus/maps/campaign`.
 Exodus will automatically follow the symlink when new maps are searched.
 To save a map as campaign map, simply prefix the map name with `campaign/`.
+
+When creating 
 
 ### Limitations
 

@@ -98,6 +98,7 @@ campaign:
   map:
     tutorial_walking: "Tutorial: Laufen"
     tutorial_jumping: "Tutorial: Springen"
+    tutorial_coins: "Tutorial: Münzen"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."
@@ -108,3 +109,7 @@ campaign:
     tutorial_jumping_q: "Genau so kann man mit der Q-Taste zwei Kacheln hoch und zwei nach links springen."
     tutorial_jumping_spikes: "Immer gut aufpassen, keine Stacheln zu berühren!"
     tutorial_jumping_finish: "Benutze die Sprung-Fähigkeit, um dieses Tutorial zu beenden und mit dem nächsten fortzufahren."
+    tutorial_coins_intro: "Wie hier zu sehen, kann man oft Münzen auf der Karte finden."
+    tutorial_coins_collect: "Versuche immer, alle Münzen einzusammeln, sie könnten später nützlich sein!"
+    tutorial_coins_highscore: "Die Münzen, die nach Beenden eines Levels übrig sind, zählen als Punktzahl im Highscore."
+    tutorial_coins_database: "Jeder Spieler kann einen eigenen Highscore pro Map erspielen."

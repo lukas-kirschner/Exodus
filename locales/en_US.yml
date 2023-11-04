@@ -97,6 +97,7 @@ campaign:
   map:
     tutorial_walking: "Tutorial: Walking"
     tutorial_jumping: "Tutorial: Jumping"
+    tutorial_coins: "Tutorial: Coins"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
@@ -107,3 +108,7 @@ campaign:
     tutorial_jumping_q: "Likewise, by pressing the Q key, you can jump two tiles up and two tiles to the left."
     tutorial_jumping_spikes: "Always take care not to touch any spikes!"
     tutorial_jumping_finish: "Use your new jumping abilities to reach the exit and finish this tutorial."
+    tutorial_coins_intro: "As you probably already noticed, there are coins placed on the map."
+    tutorial_coins_collect: "Always take care to collect those coins, you might need them later!"
+    tutorial_coins_highscore: "The coins you have left when you exit a map are counted towards your highscore."
+    tutorial_coins_database: "Each player can save a unique highscore for each map."
