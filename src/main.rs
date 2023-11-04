@@ -74,6 +74,11 @@ pub struct GameConfig {
     pub config: Config,
     pub file: PathBuf,
 }
+impl GameConfig {
+    pub fn texture_size(&self) -> f32 {
+        self.config.tile_set.texture_size() as f32
+    }
+}
 
 impl FromWorld for GameDirectoriesWrapper {
     fn from_world(_: &mut World) -> Self {

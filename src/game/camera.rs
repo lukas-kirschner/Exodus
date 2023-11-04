@@ -137,7 +137,7 @@ pub fn setup_camera(
             texture: image_handle,
             transform: Transform {
                 // Rescale the world, such that 1 world unit = 1 tile
-                scale: Vec3::splat(1. / (config.config.tile_set.texture_size() as f32)),
+                scale: Vec3::splat(1. / (config.texture_size())),
                 translation: Vec3::new(0., 0., RENDER_PLANE_Z),
                 ..default()
             },

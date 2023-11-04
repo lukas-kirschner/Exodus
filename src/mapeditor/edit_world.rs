@@ -173,7 +173,7 @@ fn mouse_down_handler(
             main_camera_transform,
             layer_camera,
             layer_camera_transform,
-            config.config.tile_set.texture_size() as f32,
+            config.texture_size(),
         ) {
             replace_world_tile_at(
                 Vec2::new(world_x as f32, world_y as f32),
@@ -203,7 +203,7 @@ fn mouse_down_handler(
             main_camera_transform,
             layer_camera,
             layer_camera_transform,
-            config.config.tile_set.texture_size() as f32,
+            config.texture_size(),
         ) {
             if let Some(current_world_tile) = map.world.get(world_x, world_y) {
                 if *current_world_tile != Tile::AIR {
@@ -243,11 +243,11 @@ fn mouse_down_handler_playerspawn(
                 main_camera_transform,
                 layer_camera,
                 layer_camera_transform,
-                config.config.tile_set.texture_size() as f32,
+                config.texture_size(),
             ) {
                 let translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
-                translation.x = world_x as f32 * config.config.tile_set.texture_size() as f32;
-                translation.y = world_y as f32 * config.config.tile_set.texture_size() as f32;
+                translation.x = world_x as f32 * config.texture_size();
+                translation.y = world_y as f32 * config.texture_size();
             }
         }
     }

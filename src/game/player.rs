@@ -101,7 +101,7 @@ fn despawn_dead_player(
     time: Res<Time>,
     mut event_writer: EventWriter<GameOverEvent>,
 ) {
-    let texture_size = config.config.tile_set.texture_size() as f32;
+    let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -138,7 +138,7 @@ pub fn despawn_exited_player(
     mut event_writer: EventWriter<GameOverEvent>,
     scoreboard: Res<Scoreboard>,
 ) {
-    let texture_size = config.config.tile_set.texture_size() as f32;
+    let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -170,8 +170,8 @@ fn door_opened(
     scoreboard: &mut Scoreboard,
 ) -> bool {
     let (target_x_px, target_y_px) = (
-        target_x_coord * config.config.tile_set.texture_size() as i32,
-        target_y_coord * config.config.tile_set.texture_size() as i32,
+        target_x_coord * config.texture_size() as i32,
+        target_y_coord * config.texture_size() as i32,
     );
     if !world
         .get(target_x_coord, target_y_coord)
@@ -232,8 +232,8 @@ pub fn player_movement(
             // Check if the player collides with anything, and remove the movement if that is the case.
             // For Player movements, only the directions from the movements are used -- The target is discarded and calculated from the direction.
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                transform.translation.x / (config.config.tile_set.texture_size() as f32),
-                transform.translation.y / (config.config.tile_set.texture_size() as f32),
+                transform.translation.x / (config.texture_size()),
+                transform.translation.y / (config.texture_size()),
             );
             // Check if the player collides with map boundaries
             if target_x_coord < 0
@@ -275,12 +275,12 @@ pub fn player_movement(
 
         if let Some(movement) = player.peek_movement_queue() {
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                transform.translation.x / (config.config.tile_set.texture_size() as f32),
-                transform.translation.y / (config.config.tile_set.texture_size() as f32),
+                transform.translation.x / (config.texture_size()),
+                transform.translation.y / (config.texture_size()),
             );
             let (target_x_px, target_y_px) = (
-                (target_x_coord * config.config.tile_set.texture_size() as i32) as f32,
-                (target_y_coord * config.config.tile_set.texture_size() as i32) as f32,
+                (target_x_coord * config.texture_size() as i32) as f32,
+                (target_y_coord * config.texture_size() as i32) as f32,
             );
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
@@ -401,17 +401,12 @@ fn player_gravity(
         let player: &mut Player = &mut _player.player;
         // Gravity: If Queue is empty and the tile below the player is non-solid and the block the player stands on is not a ladder, add downward movement
         if player.movement_queue_is_empty() {
-            let current_x_coord =
-                (transform.translation.x / config.config.tile_set.texture_size() as f32) as i32;
-            let current_y_coord =
-                (transform.translation.y / config.config.tile_set.texture_size() as f32) as i32;
+            let current_x_coord = (transform.translation.x / config.texture_size()) as i32;
+            let current_y_coord = (transform.translation.y / config.texture_size()) as i32;
             if let Some(block) = worldwrapper.world.get(current_x_coord, current_y_coord - 1) {
                 if !block.can_collide_from(&FromDirection::FROMNORTH) {
                     player.push_movement_queue(Movement {
-                        velocity: (
-                            0.,
-                            -(PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32)),
-                        ),
+                        velocity: (0., -(PLAYER_SPEED_ * (config.texture_size()))),
                         target: (current_x_coord, current_y_coord - 1),
                         is_manual: false,
                     });
@@ -487,15 +482,11 @@ pub fn keyboard_controls(
         let player: &mut Player = &mut _player.player;
         match player.peek_movement_queue() {
             None => {
-                let vx = PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32);
-                let vy = PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32);
+                let vx = PLAYER_SPEED_ * (config.texture_size());
+                let vy = PLAYER_SPEED_ * (config.texture_size());
                 // Register the key press
-                let cur_x: i32 = (transform.translation.x
-                    / (config.config.tile_set.texture_size() as f32))
-                    as i32;
-                let cur_y: i32 = (transform.translation.y
-                    / (config.config.tile_set.texture_size() as f32))
-                    as i32;
+                let cur_x: i32 = (transform.translation.x / (config.texture_size())) as i32;
+                let cur_y: i32 = (transform.translation.y / (config.texture_size())) as i32;
                 if keyboard_input.just_pressed(KeyCode::Left) {
                     set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {

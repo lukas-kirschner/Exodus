@@ -54,7 +54,7 @@ pub fn destroy_world(mut commands: Commands, q_worldtiles: Query<Entity, With<Wo
     }
 }
 
-/// Spawn a single tile at the given position
+/// Spawn a single tile at the given map position
 pub fn spawn_tile(
     commands: &mut Commands,
     map_texture_atlas: &TilesetManager,

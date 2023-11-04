@@ -18,6 +18,7 @@ impl GameWorld {
             .set(1, 2, PLAYERSPAWN)
             .set(3, 1, SPIKES)
             .set(2, 2, WALL)
+            .set_message_tile(2, 3, "Test Message".to_string())
             .set(3, 3, SPIKESSLOPED)
             .set(4, 3, WALLCOBBLE)
             .set(4, 2, WALLCHISELED)

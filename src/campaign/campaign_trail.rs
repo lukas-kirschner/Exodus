@@ -257,8 +257,8 @@ fn campaign_screen_ui(
 
     // Bottom UI
     let (in_map, scoreboard, map_name) = match campaign_trail.world.get(
-        (player_pos.translation.x / (config.config.tile_set.texture_size() as f32)) as i32,
-        (player_pos.translation.y / (config.config.tile_set.texture_size() as f32)) as i32,
+        (player_pos.translation.x / (config.texture_size())) as i32,
+        (player_pos.translation.y / (config.texture_size())) as i32,
     ) {
         Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) => match interaction {
             InteractionKind::LaunchMap { map_name } => {
@@ -329,8 +329,8 @@ pub fn play_map_keyboard_controls(
     if keyboard_input.just_pressed(KeyCode::Return) {
         let player_pos = player_query.single();
         if let Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction }) = campaign_trail.world.get(
-            (player_pos.translation.x / (config.config.tile_set.texture_size() as f32)) as i32,
-            (player_pos.translation.y / (config.config.tile_set.texture_size() as f32)) as i32,
+            (player_pos.translation.x / (config.texture_size())) as i32,
+            (player_pos.translation.y / (config.texture_size())) as i32,
         ) {
             match interaction {
                 InteractionKind::LaunchMap { map_name } => {
