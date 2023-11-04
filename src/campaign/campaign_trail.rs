@@ -344,7 +344,7 @@ fn campaign_screen_ui(
 }
 
 pub fn play_map_keyboard_controls(
-    keyboard_input: Res<Input<KeyCode>>,
+    mut keyboard_input: ResMut<Input<KeyCode>>,
     player_query: Query<(
         &mut PlayerComponent,
         &Transform,
@@ -361,6 +361,7 @@ pub fn play_map_keyboard_controls(
     mut state: ResMut<NextState<AppState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
+        keyboard_input.reset(KeyCode::Return);
         let Ok((player, player_pos, entity, sprite, handle)) = player_query.get_single() else {
             debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
             state.set(AppState::Playing);
@@ -378,6 +379,7 @@ pub fn play_map_keyboard_controls(
                     let map = campaign_maps.maps.get(map_name).unwrap_or_else(|| {
                         panic!("Could not find map with file name \"{}\"!", map_name)
                     });
+                    debug!("Queueing Map {}", map_name);
                     commands.insert_resource(MapWrapper {
                         world: map.clone(),
                         previous_best: match &highscores
@@ -438,7 +440,6 @@ pub fn player_enter_map_handler(
     let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
-        debug!("a is {}", new_a);
         if (new_a - 0.01) <= 0.0 {
             // The player has fully decayed and can be despawned.
             sprite.color.set_a(0.0);
