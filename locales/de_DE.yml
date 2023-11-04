@@ -94,5 +94,11 @@ game_over_screen:
     lost: Die Karte kann mit dem "Erneut Spielen"-Button neu gestartet werden.
 campaign_screen:
   press_x_to_play: Bitte Enter drücken, um diese Map zu spielen!
+campaign:
   map:
     tutorial_walking: "Tutorial: Laufen"
+  string:
+    tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
+    tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."
+    tutorial_walking_signs: "Läuft die Spielfigur auf ein Schild, wird eine Nachricht angezeigt."
+    tutorial_walking_exit: "Bewege die Spielfigur auf den Ausgang, um mit der nächsten Karte fortzufahren."

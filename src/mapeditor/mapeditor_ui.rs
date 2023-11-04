@@ -327,6 +327,13 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
+                            &Tile::WALLSPIKESLR,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
                             &Tile::WALLSPIKESRTB,
                             &mut selected_tile,
                             player_it,

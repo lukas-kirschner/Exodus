@@ -39,6 +39,7 @@ impl GameWorld {
             .set(9, 1, COIN)
             .set(9, 2, COIN)
             .set(9, 3, COIN)
+            .set_message_tile(10, 1, "Translated: t!(campaign.string.tutorial_walking_exit) |||| t!(campaign.string.tutorial_walking_walking)".to_string())
             .set(12, 1, WALLSPIKESL)
             .set(14, 1, WALLSPIKESR)
             .set(14, 4, WALLSPIKESB)

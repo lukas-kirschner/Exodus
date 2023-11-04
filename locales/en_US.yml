@@ -93,5 +93,11 @@ game_over_screen:
     lost: Click the Replay Button to try again.
 campaign_screen:
   press_x_to_play: Press Enter to play this map!
+campaign:
   map:
     tutorial_walking: "Tutorial: Walking"
+  string:
+    tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
+    tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
+    tutorial_walking_signs: "When the player steps onto a sign, a message is shown, as you probably already noticed."
+    tutorial_walking_exit: "Please advance the player onto the exit tile to finish this map and continue with the tutorial."

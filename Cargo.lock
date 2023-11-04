@@ -1389,6 +1389,7 @@ dependencies = [
  "indoc",
  "libexodus",
  "once_cell",
+ "regex",
  "rust-i18n",
  "strum",
 ]

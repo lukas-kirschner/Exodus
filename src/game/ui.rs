@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use bevy_egui::egui::{Align, Align2, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::Tile;
+use regex::Regex;
 
 // The font has been taken from https://ggbot.itch.io/public-pixel-font (CC0 Public Domain)
 
@@ -186,8 +187,20 @@ fn sign_message_system(
             // messages simultaneously, show all messages concatenated with a " / ".
             .show(egui_ctx.ctx_mut(), |ui| {
             ui.with_layout(Layout::top_down(Align::TOP),|ui| {
-                ui.label(messages_to_show.join(" / "));
+                ui.label(messages_to_show.iter().map(|m| parse_text(m)).collect::<Vec<String>>().join(" / "));
             });
             });
     }
+}
+/// Parse all special text occurrences inside the given text, e.g. Translations
+fn parse_text(text: &str) -> String {
+    let mut ret = text.to_string();
+    let re_translations = Regex::new(r"t!\(([^)]+)\)").unwrap();
+    while let Some(caps) = re_translations.captures(ret.as_str()) {
+        let cap_start = caps.get(1).unwrap().start() - 3;
+        let cap_end = caps.get(1).unwrap().end() + 1;
+        let cap_inner = caps.get(1).unwrap().as_str();
+        ret = format!("{}{}{}", &ret[0..cap_start], t!(cap_inner), &ret[cap_end..]);
+    }
+    ret
 }
