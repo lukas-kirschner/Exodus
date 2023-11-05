@@ -9,7 +9,7 @@ use libexodus::directions::Directions::*;
 use libexodus::directions::FromDirection;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{Tile, TileKind};
+use libexodus::tiles::{Tile, TileKind, EXITING_PLAYER_SPRITE};
 use libexodus::world::GameWorld;
 
 pub struct PlayerPlugin;
@@ -32,6 +32,13 @@ impl Plugin for PlayerPlugin {
             player_movement
                 .run_if(in_state(AppState::Playing))
                 .in_set(AppLabels::PlayerMovement),
+        )
+        .add_systems(
+            Update,
+            player_gravity
+                .in_set(AppLabels::Gravity)
+                .run_if(in_state(AppState::Playing))
+                .after(AppLabels::PlayerMovement),
         )
         .add_systems(
             Update,
@@ -94,7 +101,7 @@ fn despawn_dead_player(
     time: Res<Time>,
     mut event_writer: EventWriter<GameOverEvent>,
 ) {
-    let texture_size = config.config.tile_set.texture_size() as f32;
+    let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -111,16 +118,20 @@ fn despawn_dead_player(
             Vec3::splat(DEAD_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }
+/// Resource that determines what screen to return to when a GameOver event is triggered
+/// or ESC is pressed
+#[derive(Resource)]
+pub struct ReturnTo(pub AppState);
 
 /// Event that is triggered when a game is won or lost
 #[derive(Event)]
-struct GameOverEvent {
-    state: GameOverState,
+pub struct GameOverEvent {
+    pub state: GameOverState,
 }
 
 ///
 /// Handler that takes care of despawning the player after he exited the game through an exit
-fn despawn_exited_player(
+pub fn despawn_exited_player(
     mut commands: Commands,
     mut exited_players: Query<
         (&mut TextureAtlasSprite, &mut Transform, Entity),
@@ -131,7 +142,7 @@ fn despawn_exited_player(
     mut event_writer: EventWriter<GameOverEvent>,
     scoreboard: Res<Scoreboard>,
 ) {
-    let texture_size = config.config.tile_set.texture_size() as f32;
+    let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
         let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
         if new_a <= 0.0 {
@@ -163,8 +174,8 @@ fn door_opened(
     scoreboard: &mut Scoreboard,
 ) -> bool {
     let (target_x_px, target_y_px) = (
-        target_x_coord * config.config.tile_set.texture_size() as i32,
-        target_y_coord * config.config.tile_set.texture_size() as i32,
+        target_x_coord * config.texture_size() as i32,
+        target_y_coord * config.texture_size() as i32,
     );
     if !world
         .get(target_x_coord, target_y_coord)
@@ -225,8 +236,8 @@ pub fn player_movement(
             // Check if the player collides with anything, and remove the movement if that is the case.
             // For Player movements, only the directions from the movements are used -- The target is discarded and calculated from the direction.
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                transform.translation.x / (config.config.tile_set.texture_size() as f32),
-                transform.translation.y / (config.config.tile_set.texture_size() as f32),
+                transform.translation.x / (config.texture_size()),
+                transform.translation.y / (config.texture_size()),
             );
             // Check if the player collides with map boundaries
             if target_x_coord < 0
@@ -268,12 +279,12 @@ pub fn player_movement(
 
         if let Some(movement) = player.peek_movement_queue() {
             let (target_x_coord, target_y_coord) = movement.int_target_from_direction(
-                transform.translation.x / (config.config.tile_set.texture_size() as f32),
-                transform.translation.y / (config.config.tile_set.texture_size() as f32),
+                transform.translation.x / (config.texture_size()),
+                transform.translation.y / (config.texture_size()),
             );
             let (target_x_px, target_y_px) = (
-                (target_x_coord * config.config.tile_set.texture_size() as i32) as f32,
-                (target_y_coord * config.config.tile_set.texture_size() as i32) as f32,
+                (target_x_coord * config.texture_size() as i32) as f32,
+                (target_y_coord * config.texture_size() as i32) as f32,
             );
             let velocity_x = movement.velocity.0;
             let velocity_y = movement.velocity.1;
@@ -345,10 +356,9 @@ pub fn player_movement(
                                     },
                                     layer,
                                 ));
-                                // println!("The player should be dead now, after having a deadly encounter with {:?} at {:?}", block, (target_x, target_y));
                             }
                         },
-                        TileKind::SPECIAL => {},
+                        TileKind::SPECIAL { interaction: _ } => {},
                         TileKind::PLAYERSPAWN => {},
                         TileKind::COIN => {},
                         TileKind::LADDER => {
@@ -362,7 +372,7 @@ pub fn player_movement(
                         TileKind::COLLECTIBLE => {},
                         TileKind::EXIT => {
                             commands.entity(entity).despawn_recursive();
-                            sprite.index = 247; // Player turning their back to the camera
+                            sprite.index = EXITING_PLAYER_SPRITE;
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
                                 SpriteSheetBundle {
@@ -382,20 +392,25 @@ pub fn player_movement(
                 player.pop_movement_queue();
             }
         }
+    }
+}
 
+fn player_gravity(
+    mut player_positions: Query<(&mut PlayerComponent, &Transform), Without<DoorWrapper>>,
+    worldwrapper: ResMut<MapWrapper>,
+    config: Res<GameConfig>,
+) {
+    for (mut _player, transform) in player_positions.iter_mut() {
+        // Peek the player's movement queue
+        let player: &mut Player = &mut _player.player;
         // Gravity: If Queue is empty and the tile below the player is non-solid and the block the player stands on is not a ladder, add downward movement
         if player.movement_queue_is_empty() {
-            let current_x_coord =
-                (transform.translation.x / config.config.tile_set.texture_size() as f32) as i32;
-            let current_y_coord =
-                (transform.translation.y / config.config.tile_set.texture_size() as f32) as i32;
+            let current_x_coord = (transform.translation.x / config.texture_size()) as i32;
+            let current_y_coord = (transform.translation.y / config.texture_size()) as i32;
             if let Some(block) = worldwrapper.world.get(current_x_coord, current_y_coord - 1) {
                 if !block.can_collide_from(&FromDirection::FROMNORTH) {
                     player.push_movement_queue(Movement {
-                        velocity: (
-                            0.,
-                            -(PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32)),
-                        ),
+                        velocity: (0., -(PLAYER_SPEED_ * (config.texture_size()))),
                         target: (current_x_coord, current_y_coord - 1),
                         is_manual: false,
                     });
@@ -446,7 +461,7 @@ fn respawn_player(
     ));
 }
 
-fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
+pub fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
     for entity in players.iter() {
         commands.entity(entity).despawn_recursive();
     }
@@ -471,15 +486,11 @@ pub fn keyboard_controls(
         let player: &mut Player = &mut _player.player;
         match player.peek_movement_queue() {
             None => {
-                let vx = PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32);
-                let vy = PLAYER_SPEED_ * (config.config.tile_set.texture_size() as f32);
+                let vx = PLAYER_SPEED_ * (config.texture_size());
+                let vy = PLAYER_SPEED_ * (config.texture_size());
                 // Register the key press
-                let cur_x: i32 = (transform.translation.x
-                    / (config.config.tile_set.texture_size() as f32))
-                    as i32;
-                let cur_y: i32 = (transform.translation.y
-                    / (config.config.tile_set.texture_size() as f32))
-                    as i32;
+                let cur_x: i32 = (transform.translation.x / (config.texture_size())) as i32;
+                let cur_y: i32 = (transform.translation.y / (config.texture_size())) as i32;
                 if keyboard_input.just_pressed(KeyCode::Left) {
                     set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {

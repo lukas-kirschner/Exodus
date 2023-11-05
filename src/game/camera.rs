@@ -137,7 +137,7 @@ pub fn setup_camera(
             texture: image_handle,
             transform: Transform {
                 // Rescale the world, such that 1 world unit = 1 tile
-                scale: Vec3::splat(1. / (config.config.tile_set.texture_size() as f32)),
+                scale: Vec3::splat(1. / (config.texture_size())),
                 translation: Vec3::new(0., 0., RENDER_PLANE_Z),
                 ..default()
             },
@@ -159,4 +159,49 @@ pub fn destroy_camera(
     commands.entity(layer_camera_entity).despawn_recursive();
     let q_layer_image_entity = q_layer_image.single();
     commands.entity(q_layer_image_entity).despawn_recursive();
+}
+
+/// Compute the given Viewport Coordinates to Bevy World Coordinates
+/// (in Pixels of the world that is rendered onto the layer camera).
+///
+/// This must transform the given coordinates twice (once for transformation from the viewport
+/// to the viewport of the render plane and once for transformation of the rendered viewport
+/// to the actual world).
+pub fn compute_viewport_to_world(
+    screen_pos: Vec2,
+    main_camera: &Camera,
+    main_camera_transform: &GlobalTransform,
+    _layer_camera: &Camera,
+    layer_camera_transform: &GlobalTransform,
+    texture_size: f32,
+) -> Option<(f32, f32)> {
+    if let Some(world_coord) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
+        let mut ret = ((world_coord.origin.x), (world_coord.origin.y));
+        ret.0 += layer_camera_transform.translation().x / texture_size;
+        ret.1 += layer_camera_transform.translation().y / texture_size;
+        return Some((ret.0 + 0.5, ret.1 + 0.5));
+    }
+    None
+}
+/// Convert the given Bevy World Coordinates into Viewport Coordinates,
+/// considering both render layers.
+pub fn compute_world_to_viewport(
+    world_position: &Vec3,
+    main_camera: &Camera,
+    main_camera_transform: &GlobalTransform,
+    _layer_camera: &Camera,
+    layer_camera_transform: &GlobalTransform,
+    texture_size: f32,
+) -> Option<Vec2> {
+    let main_x = ((world_position.x / texture_size) - 0.5)
+        - (layer_camera_transform.translation().x / texture_size);
+    let main_y = ((world_position.y / texture_size) - 0.5)
+        - (layer_camera_transform.translation().y / texture_size);
+    if let Some(screen_player) = main_camera.world_to_viewport(
+        main_camera_transform,
+        (main_x, main_y, world_position.z).into(),
+    ) {
+        return Some(screen_player);
+    }
+    None
 }

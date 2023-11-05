@@ -1,5 +1,5 @@
 use crate::exodus_serializable::ExodusSerializable;
-use crate::tiles::Tile;
+use crate::tiles::{InteractionKind, Tile};
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
 use crate::world::GameWorld;
@@ -32,8 +32,12 @@ pub(crate) const HASH_LENGTH: usize = 32;
 ///
 /// 7. Map Tiles, each row is appended from bottom to top, i.e. starting at (0,0),(1,0),(2,0),...
 ///
+/// 8. All messages in correct order
+///
 /// The cached UUID is used for checksum validation, and will be re-calculated on map load.
 /// If it does not match, the load will fail.
+/// If there is extra data at the end of a map, it will be ignored and discarded when the map
+/// is loaded and saved again.
 
 impl GameWorld {
     /// Load a map from the given file.
@@ -48,6 +52,7 @@ impl GameWorld {
             playerspawn: (0, 0),
             filename: Some(path.to_path_buf()),
             clean: true,
+            messages: vec![],
         };
         ret.parse(&mut buf)?;
         Ok(ret)
@@ -158,6 +163,8 @@ impl ExodusSerializable for GameWorld {
         assert_eq!(map_height, self.height());
 
         // Parse actual map content
+        // The message ID of the current message tile
+        let mut current_message_id = 0usize;
         for y in 0..self.height() {
             for x in 0..self.width() {
                 let mut buf = [0u8; 1];
@@ -167,15 +174,42 @@ impl ExodusSerializable for GameWorld {
                         position: (y * x) + x,
                     }
                 })?;
-                self.set(
-                    x,
-                    y,
-                    Tile::from_bytes(buf[0])
-                        .ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?,
-                );
+                let mut tile = Tile::from_bytes(buf[0])
+                    .ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?;
+                // Assign the current message ID to message tiles
+                if let Tile::MESSAGE { .. } = tile {
+                    tile = Tile::MESSAGE {
+                        message_id: current_message_id,
+                    };
+                    current_message_id += 1;
+                }
+                self.set(x, y, tile);
             }
         }
+        if current_message_id > 0 {
+            self.parse_messages(file, current_message_id)?;
+        }
 
+        Ok(())
+    }
+}
+impl GameWorld {
+    fn parse_messages<T: Read>(
+        &mut self,
+        file: &mut T,
+        expected_len: usize,
+    ) -> Result<(), GameWorldParseError> {
+        let actual_len = bincode::deserialize_from::<&mut T, u32>(file)?;
+        if actual_len != expected_len as u32 {
+            return Err(GameWorldParseError::MissingMessageString {
+                expected_length: expected_len as u32,
+                actual_length: actual_len,
+            });
+        }
+        for _ in 0..actual_len {
+            let message = self.parse_current_version_string(file)?;
+            self.messages.push(message);
+        }
         Ok(())
     }
 }
@@ -199,6 +233,8 @@ impl GameWorld {
         file.read_exact(&mut buf)?;
         Ok(buf)
     }
+    /// Serialize this GameWorld's content. Everything that is serialized here will be considered
+    /// when computing the hash value of the map.
     pub(crate) fn serialize_world_content<T: Write>(
         &self,
         file: &mut T,
@@ -210,10 +246,39 @@ impl GameWorld {
         file.write_all(&height_b)?;
 
         // Write Map Tiles
+        // All message IDs in correct order
+        let mut message_ids: Vec<usize> = vec![];
         for y in 0..self.height() {
             for x in 0..self.width() {
-                file.write_all(&[self.get(x as i32, y as i32).unwrap().to_bytes()])?;
+                let tile = self.get(x as i32, y as i32).unwrap();
+                if let Tile::MESSAGE { message_id } = tile {
+                    message_ids.push(*message_id);
+                }
+                file.write_all(&[tile.to_bytes()])?;
             }
+        }
+        if !message_ids.is_empty() {
+            self.serialize_messages(file, &message_ids)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn serialize_messages<T: Write>(
+        &self,
+        file: &mut T,
+        message_ids: &Vec<usize>,
+    ) -> Result<(), GameWorldParseError> {
+        // Write length as 32-bit unsigned integer
+        let num_messages = bincode::serialize(&(message_ids.len() as u32))?;
+        file.write_all(&num_messages)?;
+
+        // Write all messages
+        for message_id in message_ids {
+            let serialized_message_text =
+                bincode::serialize(match self.get_message(*message_id) {
+                    None => "",
+                    Some(text) => text,
+                })?;
+            file.write_all(&serialized_message_text)?;
         }
         Ok(())
     }
@@ -254,7 +319,12 @@ impl Tile {
             Tile::ARROWLEFT => 0x33,
             Tile::ARROWUP => 0x34,
             Tile::ARROWDOWN => 0x35,
+            Tile::MESSAGE { .. } => 0x36,
             Tile::EXIT => 0x11,
+            Tile::CAMPAIGNTRAILWALKWAY => 0xf0,
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
+            Tile::CAMPAIGNTRAILBORDER => 0xf2,
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => 0xf3,
         }
     }
 
@@ -290,6 +360,19 @@ impl Tile {
             0x33 => Some(Tile::ARROWLEFT),
             0x34 => Some(Tile::ARROWUP),
             0x35 => Some(Tile::ARROWDOWN),
+            0x36 => Some(Tile::MESSAGE { message_id: 0 }),
+            0xf0 => Some(Tile::CAMPAIGNTRAILWALKWAY),
+            0xf1 => Some(Tile::CAMPAIGNTRAILMAPENTRYPOINT {
+                interaction: InteractionKind::LaunchMap {
+                    map_name: String::new(),
+                },
+            }),
+            0xf2 => Some(Tile::CAMPAIGNTRAILBORDER),
+            0xf3 => Some(Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT {
+                interaction: InteractionKind::LaunchMap {
+                    map_name: String::new(),
+                },
+            }),
             _ => None,
         }
     }
@@ -327,7 +410,7 @@ mod tests {
         }
     }
 
-    fn test_write_and_read_map(map: &mut GameWorld) {
+    fn test_write_and_read_map(map: &mut GameWorld) -> GameWorld {
         map.recompute_hash();
         let mut buf = ByteBuffer::new();
         let result = map.serialize(&mut buf);
@@ -349,6 +432,7 @@ mod tests {
         assert_eq!(map.name, result_map.name);
         assert_eq!(map.width(), result_map.width());
         assert_eq!(map.height(), result_map.height());
+        result_map
     }
 
     #[test]
@@ -436,6 +520,58 @@ mod tests {
             .set_author("")
             .set_dirty();
         test_write_and_read_map(&mut reference_map);
+    }
+
+    #[test]
+    fn test_map_hash_differs_for_different_messages() {
+        let mut reference_map = GameWorld::new(2, 2);
+        reference_map.set_message_tile(0, 0, "Hello World".to_string());
+        reference_map.recompute_hash();
+        let mut other_map = GameWorld::new(2, 2);
+        other_map.set_message_tile(0, 0, "Goodbye World".to_string());
+        other_map.recompute_hash();
+        assert_ne!(reference_map.hash, other_map.hash);
+        other_map.set_message(0, "Hello World".to_string()).unwrap();
+        other_map.recompute_hash();
+        assert_eq!(reference_map.hash, other_map.hash);
+    }
+    #[test]
+    fn test_write_and_read_map_with_messages() {
+        let mut reference_map = GameWorld::new(2, 2);
+        reference_map
+            .set_message_tile(0, 0, "Hello World".to_string())
+            .set(1, 0, Tile::WALL)
+            .set(0, 1, Tile::SPIKES)
+            .set_message_tile(1, 1, "Goodbye World".to_string())
+            .set_name("Test Map with strings")
+            .set_author("Debugger");
+        let new_map = test_write_and_read_map(&mut reference_map);
+        assert_eq!(new_map.get_message(0).unwrap(), "Hello World");
+        assert_eq!(new_map.get_message(1).unwrap(), "Goodbye World");
+    }
+    #[test]
+    fn test_write_and_read_map_with_messages_out_of_order() {
+        let mut reference_map = GameWorld::new(2, 2);
+        reference_map
+            .set_message_tile(1, 1, "Hello World".to_string())
+            .set(1, 0, Tile::WALL)
+            .set(0, 1, Tile::SPIKES)
+            .set_message_tile(0, 0, "Goodbye World".to_string())
+            .set_name("Test Map with strings")
+            .set_author("Debugger");
+        let new_map = test_write_and_read_map(&mut reference_map);
+        assert_eq!(reference_map.get_message(0).unwrap(), "Hello World");
+        assert_eq!(reference_map.get_message(1).unwrap(), "Goodbye World");
+        assert_eq!(new_map.get_message(1).unwrap(), "Hello World");
+        assert_eq!(new_map.get_message(0).unwrap(), "Goodbye World");
+        assert!(matches!(
+            new_map.get(0, 0).unwrap(),
+            Tile::MESSAGE { message_id: 0 }
+        ));
+        assert!(matches!(
+            new_map.get(1, 1).unwrap(),
+            Tile::MESSAGE { message_id: 1 }
+        ));
     }
 
     #[test]

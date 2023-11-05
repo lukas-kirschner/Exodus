@@ -2,6 +2,7 @@ use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
+use crate::game::player::ReturnTo;
 use crate::game::tilewrapper::MapWrapper;
 use crate::mapeditor::player_spawn::{
     destroy_player_spawn, init_player_spawn, PlayerSpawnComponent,
@@ -48,8 +49,8 @@ impl Plugin for MapEditorUiPlugin {
 }
 
 #[derive(Resource)]
-struct MapEditorDialogResource {
-    ui_dialog: Box<dyn UIDialog + Send + Sync>,
+pub struct MapEditorDialogResource {
+    pub ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }
 
 /// Create an egui button to select a tile that can currently be placed
@@ -94,6 +95,8 @@ fn mapeditor_ui(
     mut worldwrapper: ResMut<MapWrapper>,
     current_window_size: ResMut<WindowUiOverlayInfo>,
     mut window_size_event_writer: EventWriter<UiSizeChangedEvent>,
+    directories: Res<GameDirectoriesWrapper>,
+    return_to: Res<ReturnTo>,
 ) {
     let player_it = player
         .iter()
@@ -126,7 +129,7 @@ fn mapeditor_ui(
                                         });
                                         state.set(AppState::MapEditorDialog);
                                     } else {
-                                        state.set(AppState::MapSelectionScreen);
+                                        state.set(return_to.0);
                                     }
                                 }
                             });
@@ -150,6 +153,7 @@ fn mapeditor_ui(
                                             worldwrapper.world.get_name(),
                                             worldwrapper.world.get_author(),
                                             &worldwrapper.world.hash_str().as_str()[..16],
+                                            &directories.game_directories,
                                         )),
                                     });
                                     state.set(AppState::MapEditorDialog);
@@ -323,6 +327,13 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
+                            &Tile::WALLSPIKESLR,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
                             &Tile::WALLSPIKESRTB,
                             &mut selected_tile,
                             player_it,
@@ -363,6 +374,15 @@ fn mapeditor_ui(
                             &mut selected_tile,
                             player_it,
                         );
+                        ui.separator();
+
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::MESSAGE { message_id: 0 },
+                            &mut selected_tile,
+                            player_it,
+                        );
                     })
                 });
             });
@@ -377,7 +397,7 @@ fn mapeditor_ui(
         &mut window_size_event_writer,
     );
 }
-
+/// Handle all possible kinds of dialogs that can occur in the Map Editor
 fn mapeditor_dialog(
     mut egui_ctx: EguiContexts,
     egui_textures: Res<EguiButtonTextures>,
@@ -385,6 +405,7 @@ fn mapeditor_dialog(
     mut state: ResMut<NextState<AppState>>,
     mut worldwrapper: ResMut<MapWrapper>,
     directories: Res<GameDirectoriesWrapper>,
+    return_to: Res<ReturnTo>,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
@@ -428,7 +449,30 @@ fn mapeditor_dialog(
             }
             state.set(AppState::MapEditor);
         } else if dialog.ui_dialog.as_unsaved_changes_dialog().is_some() {
-            state.set(AppState::MapSelectionScreen);
+            state.set(return_to.0);
+        } else if let Some(edit_dialog) = dialog.ui_dialog.as_edit_message_dialog() {
+            worldwrapper
+                .world
+                .set_message(
+                    edit_dialog.get_message_id(),
+                    edit_dialog.get_message().to_string(),
+                )
+                .map(|_| {
+                    debug!(
+                        "Successfully set message {} to {}",
+                        edit_dialog.get_message_id(),
+                        edit_dialog.get_message()
+                    );
+                })
+                .unwrap_or_else(|e| {
+                    error!(
+                        "Could not set message {} to {}: {}!",
+                        edit_dialog.get_message_id(),
+                        edit_dialog.get_message(),
+                        e
+                    )
+                });
+            state.set(AppState::MapEditor);
         }
     } else if dialog.ui_dialog.is_cancelled() {
         state.set(AppState::MapEditor);

@@ -172,20 +172,18 @@ impl ExodusSerializable for PlayerHighscoresWrapper {
 
 impl PartialOrd for PlayerHighscoresWrapper {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(
-            match (self.highscore.coins() as i32 - self.highscore.moves() as i32)
-                .cmp(&(other.highscore.coins() as i32 - other.highscore.moves() as i32))
-            {
-                Ordering::Equal => self.timestamp.cmp(&other.timestamp),
-                x => x,
-            },
-        )
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for PlayerHighscoresWrapper {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        match (self.highscore.coins() as i32 - self.highscore.moves() as i32)
+            .cmp(&(other.highscore.coins() as i32 - other.highscore.moves() as i32))
+        {
+            Ordering::Equal => self.timestamp.cmp(&other.timestamp),
+            x => x,
+        }
     }
 }
 

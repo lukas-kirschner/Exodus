@@ -7,13 +7,13 @@ use std::path::PathBuf;
 pub mod camera;
 pub mod constants;
 mod pickup_item;
-mod player;
+pub mod player;
 pub mod scoreboard;
 pub mod tilewrapper;
 mod ui;
 pub(crate) mod world;
 
-use crate::game::player::PlayerPlugin;
+use crate::game::player::{PlayerPlugin, ReturnTo};
 use crate::game::tilewrapper::{reset_score, MapWrapper};
 use crate::game::ui::GameUIPlugin;
 use crate::game::world::WorldPlugin;
@@ -29,7 +29,7 @@ impl Plugin for GamePlugin {
             .add_plugins(PickupItemPlugin)
             .add_systems(
                 Update,
-                back_to_main_menu_controls.run_if(in_state(AppState::Playing)),
+                back_with_esc_controls.run_if(in_state(AppState::Playing)),
             )
             .add_systems(
                 OnEnter(AppState::Playing),
@@ -44,13 +44,12 @@ pub struct HighscoresDatabaseWrapper {
     pub file: PathBuf,
 }
 
-fn back_to_main_menu_controls(
-    mut keys: ResMut<Input<KeyCode>>,
-    current_app_state: ResMut<State<AppState>>,
+fn back_with_esc_controls(
+    keys: ResMut<Input<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
+    return_to: Res<ReturnTo>,
 ) {
-    if *current_app_state == AppState::Playing && keys.just_pressed(KeyCode::Escape) {
-        app_state.set(AppState::MainMenu);
-        keys.reset(KeyCode::Escape);
+    if keys.just_pressed(KeyCode::Escape) {
+        app_state.set(return_to.0);
     }
 }

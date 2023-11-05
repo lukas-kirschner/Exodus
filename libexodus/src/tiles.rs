@@ -4,6 +4,21 @@ use std::fmt;
 use std::fmt::Formatter;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
+pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning heir back to the camera
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum InteractionKind {
+    /// When interacting with this tile, the player may decide to play a map.
+    /// This interaction kind is mainly used for tile-based Campaign Trails
+    LaunchMap { map_name: String },
+}
+impl Default for InteractionKind {
+    fn default() -> Self {
+        InteractionKind::LaunchMap {
+            map_name: "".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TileKind {
     ///
@@ -17,7 +32,7 @@ pub enum TileKind {
     DEADLY { from: Vec<FromDirection> },
     ///
     /// A special tile that the player can interact with
-    SPECIAL,
+    SPECIAL { interaction: InteractionKind },
     ///
     ///
     PLAYERSPAWN,
@@ -106,6 +121,16 @@ pub enum Tile {
     ARROWDOWN,
     /// The map exit
     EXIT,
+    /// A Campaign Trail Connecting Segment between two maps
+    CAMPAIGNTRAILWALKWAY,
+    /// A Campaign Trail Map Entry Point
+    CAMPAIGNTRAILMAPENTRYPOINT { interaction: InteractionKind },
+    /// The border of a campaign trail, invisible but cannot be entered or interacted with
+    CAMPAIGNTRAILBORDER,
+    /// A locked Campaign Trail Map that cannot be played yet
+    CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { interaction: InteractionKind },
+    /// A message tile that shows a message to the player as soon as they interact with it.
+    MESSAGE { message_id: usize },
 }
 
 impl Tile {
@@ -167,7 +192,14 @@ impl Tile {
             Tile::ARROWLEFT => TileKind::COLLECTIBLE,
             Tile::ARROWUP => TileKind::COLLECTIBLE,
             Tile::ARROWDOWN => TileKind::COLLECTIBLE,
+            Tile::MESSAGE { .. } => TileKind::COLLECTIBLE,
             Tile::EXIT => TileKind::EXIT,
+            Tile::CAMPAIGNTRAILWALKWAY => TileKind::LADDER,
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction } => TileKind::SPECIAL {
+                interaction: interaction.clone(),
+            },
+            Tile::CAMPAIGNTRAILBORDER => TileKind::SOLID,
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => TileKind::SOLID,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -202,6 +234,11 @@ impl Tile {
             Tile::ARROWUP => Some(37),
             Tile::ARROWDOWN => Some(34),
             Tile::EXIT => Some(40),
+            Tile::CAMPAIGNTRAILWALKWAY => Some(78),
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => Some(76),
+            Tile::CAMPAIGNTRAILBORDER => None,
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => Some(77),
+            Tile::MESSAGE { .. } => Some(33),
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -209,7 +246,7 @@ impl Tile {
             TileKind::AIR => false,
             TileKind::SOLID => true,
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
-            TileKind::SPECIAL => false,
+            TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
             TileKind::COIN => false,
             TileKind::LADDER => false,
@@ -224,7 +261,7 @@ impl Tile {
             TileKind::AIR => false,
             TileKind::SOLID => false,
             TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
-            TileKind::SPECIAL => false,
+            TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
             TileKind::COIN => false,
             TileKind::LADDER => false,
@@ -268,6 +305,11 @@ impl Tile {
             Tile::ARROWUP => "arrow_up",
             Tile::ARROWDOWN => "arrow_down",
             Tile::EXIT => "exit",
+            Tile::CAMPAIGNTRAILWALKWAY => "campaign_trail_walkway",
+            Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => "campaign_trail_entry_point",
+            Tile::CAMPAIGNTRAILBORDER => "campaign_trail_border",
+            Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => "campaign_trail_locked_entry_point",
+            Tile::MESSAGE { .. } => "message",
         }
     }
 }
@@ -308,6 +350,12 @@ impl fmt::Display for Tile {
                 Tile::ARROWUP => "Arrow Up",
                 Tile::ARROWDOWN => "Arrow Down",
                 Tile::EXIT => "Exit",
+                Tile::CAMPAIGNTRAILWALKWAY => "Campaign Trail Walkway",
+                Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => "Campaign Trail Map Entry Point",
+                Tile::CAMPAIGNTRAILBORDER => "Campaign Trail Border",
+                Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } =>
+                    "Campaign Trail Locked Map Entry Point",
+                Tile::MESSAGE { .. } => "Message",
             }
         )
     }

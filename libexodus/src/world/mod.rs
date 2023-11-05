@@ -1,4 +1,6 @@
 use crate::tiles::{Tile, TileKind};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
 pub mod exampleworlds;
@@ -6,6 +8,15 @@ pub mod hash;
 pub mod io;
 pub mod io_error;
 pub mod presets;
+
+#[derive(Debug)]
+pub struct OutOfBoundsError(usize);
+impl Error for OutOfBoundsError {}
+impl Display for OutOfBoundsError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Index out of bounds: {}", self.0)
+    }
+}
 
 #[derive(Clone)]
 pub struct GameWorld {
@@ -23,6 +34,8 @@ pub struct GameWorld {
     filename: Option<PathBuf>,
     /// If true, this map is clean, i.e., there are no changes that are unsaved
     clean: bool,
+    /// All messages that are stored in this map
+    messages: Vec<String>,
 }
 
 impl Default for GameWorld {
@@ -35,6 +48,7 @@ impl Default for GameWorld {
             playerspawn: (0, 0),
             filename: None,
             clean: true,
+            messages: vec![],
         }
     }
 }
@@ -51,6 +65,7 @@ impl GameWorld {
             hash: [0u8; 32], // Generate a zeroed default hash
             filename: None,
             clean: true,
+            messages: vec![], // No messages
         }
     }
     /// Get the unique ID of this map as hex-string representation
@@ -108,7 +123,7 @@ impl GameWorld {
             TileKind::DEADLY { .. } => {
                 //TODO
             },
-            TileKind::SPECIAL => {
+            TileKind::SPECIAL { interaction: _ } => {
                 //TODO
             },
             TileKind::PLAYERSPAWN => {
@@ -121,6 +136,28 @@ impl GameWorld {
             TileKind::COLLECTIBLE => {},
             TileKind::EXIT => {},
         }
+        self
+    }
+    ///
+    /// Set the tile at the given coordinate to a new message tile showing the given message.
+    /// ```rust
+    /// use libexodus::tiles::Tile;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(2,2);
+    /// assert!(world.get_message(0).is_none());
+    /// world.set_message_tile(1,1,"Hello World".to_string());
+    /// assert_eq!(world.get_message(0).unwrap(), "Hello World");
+    /// assert!(matches!(world.get(1,1).unwrap(), Tile::MESSAGE{message_id: 0}));
+    /// ```
+    pub fn set_message_tile(&mut self, x: usize, y: usize, message: String) -> &mut Self {
+        self.set(
+            x,
+            y,
+            Tile::MESSAGE {
+                message_id: self.messages.len(),
+            },
+        );
+        self.messages.push(message);
         self
     }
     ///
@@ -142,6 +179,38 @@ impl GameWorld {
             return None;
         }
         self.data.get(x as usize)?.get(y as usize)
+    }
+    /// Get the message with the given message ID or None, if it does not exist.
+    pub fn get_message(&self, message_id: usize) -> Option<&str> {
+        if message_id > self.messages.len() {
+            None
+        } else {
+            self.messages.get(message_id).map(|msg| msg.as_str())
+        }
+    }
+
+    /// Set the message with the given message ID to a new value.
+    /// ```rust
+    /// use libexodus::tiles::Tile;
+    /// use libexodus::world::GameWorld;
+    /// let mut world = GameWorld::new(2,2);
+    /// assert!(world.get_message(0).is_none());
+    /// world.set_message_tile(1,1,"Hello World".to_string());
+    /// assert_eq!(world.get_message(0).unwrap(), "Hello World");
+    /// world.set_message(0,"Goodbye World".to_string()).unwrap();
+    /// assert_eq!(world.get_message(0).unwrap(), "Goodbye World");
+    /// ```
+    pub fn set_message(
+        &mut self,
+        message_id: usize,
+        message: String,
+    ) -> Result<(), OutOfBoundsError> {
+        if message_id < self.messages.len() {
+            self.messages[message_id] = message;
+            Ok(())
+        } else {
+            Err(OutOfBoundsError(message_id))
+        }
     }
 
     ///

@@ -28,8 +28,8 @@ pub fn init_player_spawn(
             texture_atlas: tileset.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    (map_player_position_x * config.config.tile_set.texture_size()) as f32,
-                    (map_player_position_y * config.config.tile_set.texture_size()) as f32,
+                    map_player_position_x as f32 * config.texture_size(),
+                    map_player_position_y as f32 * config.texture_size(),
                     PLAYER_Z,
                 ),
                 ..default()

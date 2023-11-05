@@ -1,3 +1,6 @@
+use crate::campaign::campaign_trail::CampaignTrailPlugin;
+use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
+use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
 use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
@@ -19,6 +22,7 @@ use std::path::PathBuf;
 extern crate rust_i18n;
 i18n!("locales");
 
+mod campaign;
 mod dialogs;
 mod game;
 mod mapeditor;
@@ -29,6 +33,7 @@ mod util;
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum AppLabels {
     PlayerMovement,
+    Gravity,
     World,
     ResetScore,
     Player,
@@ -36,19 +41,26 @@ pub enum AppLabels {
     GameUI,
     Camera,
     LoadMaps,
+    /// Prepare data to display to the player, e.g. maps. Executed before all camera systems
+    PrepareData,
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
-    MainMenu,
     MapSelectionScreen,
     CreditsScreen,
     ConfigScreen,
+    CampaignTrailScreen,
     Playing,
     MapEditor,
     MapEditorDialog,
     #[default]
+    /// Loading and processing all textures
     Loading,
+    /// Loading all campaign maps
+    LoadingCampaign,
+    Process,
+    MainMenu,
     GameOverScreen,
 }
 
@@ -61,6 +73,11 @@ pub struct GameDirectoriesWrapper {
 pub struct GameConfig {
     pub config: Config,
     pub file: PathBuf,
+}
+impl GameConfig {
+    pub fn texture_size(&self) -> f32 {
+        self.config.tile_set.texture_size() as f32
+    }
 }
 
 impl FromWorld for GameDirectoriesWrapper {
@@ -78,6 +95,7 @@ pub const LAYER_ID: Layer = 1;
 
 /// Main init method for the game.
 /// This method ensures that all necessary directories actually exist and are writable.
+/// TODO - This needs to be COMPLETELY refactored in order to make this game portable for WebGL and Android
 fn game_init(
     mut commands: Commands,
     directories: Res<GameDirectoriesWrapper>,
@@ -214,6 +232,18 @@ pub(crate) fn get_buildnr() -> String {
         .unwrap_or_default()
 }
 
+#[derive(Resource)]
+/// A struct containing all asset handles that should be waited for before entering the
+/// Process state. These handles are only used for waiting, not for querying
+pub struct AllAssetHandles {
+    pub handles: Vec<HandleUntyped>,
+}
+impl FromWorld for AllAssetHandles {
+    fn from_world(_: &mut World) -> Self {
+        AllAssetHandles { handles: vec![] }
+    }
+}
+
 fn main() {
     let mut window_title: String = format!(
         "{} {}{}",
@@ -235,6 +265,7 @@ fn main() {
         .init_resource::<GameDirectoriesWrapper>()
         .add_event::<UiSizeChangedEvent>()
         .init_resource::<WindowUiOverlayInfo>()
+        .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
         .add_state::<AppState>()
         .insert_resource(Msaa::Sample2)
@@ -263,10 +294,13 @@ fn main() {
                 }),
         )
         .add_systems(Update, resize_notificator)
+        .add_plugins(CampaignTrailAssetPlugin)
+        .add_plugins(MainCampaignLoader)
         .add_plugins(EguiPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(Ui)
         .add_plugins(MapEditorPlugin)
+        .add_plugins(CampaignTrailPlugin)
         .add_plugins(LoadingPlugin)
         .run();
 }

@@ -39,6 +39,10 @@ pub enum GameWorldParseError {
         expected: [u8; 32],
         actual: [u8; 32],
     },
+    MissingMessageString {
+        expected_length: u32,
+        actual_length: u32,
+    },
 }
 
 impl Display for GameWorldParseError {
@@ -55,6 +59,7 @@ impl Display for GameWorldParseError {
             GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error),
             GameWorldParseError::InvalidTile { tile_bytes } => write!(f, "Tile Byte not recognized as valid tile: 0x{:02x}", tile_bytes),
             GameWorldParseError::HashMismatch { expected, actual } => write!(f, "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}", expected, actual),
+            GameWorldParseError::MissingMessageString { expected_length, actual_length } => write!(f, "Missing Message String! Expected number of messages: {} - actual: {}", expected_length, actual_length),
         }
     }
 }
@@ -87,6 +92,7 @@ impl GameWorldParseError {
             GameWorldParseError::UnexpectedEndOfTileData { .. } => 7,
             GameWorldParseError::InvalidTile { .. } => 8,
             GameWorldParseError::HashMismatch { .. } => 9,
+            GameWorldParseError::MissingMessageString { .. } => 10,
         }
     }
 }

@@ -1,5 +1,7 @@
+use crate::game::constants::FONT_SIZE_HIGHSCORE;
 use crate::World;
 use bevy::prelude::*;
+use bevy_egui::egui::{RichText, Ui};
 use libexodus::highscores::highscore::Highscore;
 
 #[derive(Resource, Clone)]
@@ -28,5 +30,37 @@ impl Scoreboard {
 impl From<&Highscore> for Scoreboard {
     fn from(value: &Highscore) -> Self {
         Scoreboard::new(value.coins() as i32, value.moves() as usize, 0usize)
+    }
+}
+/// Create a EGUI Scoreboard Label that shows a previous highscore
+pub fn egui_highscore_label(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
+    match scoreboard {
+        None => {
+            ui.label(
+                RichText::new(t!("map_selection_screen.no_highscore")).size(FONT_SIZE_HIGHSCORE),
+            );
+        },
+        Some(score) => {
+            ui.label(
+                RichText::new(t!("map_selection_screen.highscore_heading"))
+                    .size(FONT_SIZE_HIGHSCORE),
+            );
+            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
+            ui.label(
+                RichText::new(t!(
+                    "map_selection_screen.moves_fmt",
+                    moves = &score.moves.to_string()
+                ))
+                .size(14.),
+            );
+            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
+            ui.label(
+                RichText::new(t!(
+                    "map_selection_screen.coins_fmt",
+                    coins = &score.coins.to_string()
+                ))
+                .size(FONT_SIZE_HIGHSCORE),
+            );
+        },
     }
 }

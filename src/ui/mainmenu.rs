@@ -31,6 +31,15 @@ fn mainmenu_buttons(
                     ui.scope(|ui| {
                         ui.set_height(BUTTON_HEIGHT);
                         ui.centered_and_justified(|ui| {
+                            let campaign_btn = ui.button(t!("main_menu.campaign_screen"));
+                            if campaign_btn.clicked() {
+                                state.set(AppState::CampaignTrailScreen);
+                            }
+                        });
+                    });
+                    ui.scope(|ui| {
+                        ui.set_height(BUTTON_HEIGHT);
+                        ui.centered_and_justified(|ui| {
                             let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
                             if maps_btn.clicked() {
                                 state.set(AppState::MapSelectionScreen);

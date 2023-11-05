@@ -1,3 +1,4 @@
+use crate::game::player::ReturnTo;
 use crate::game::tilewrapper::{GameOverState, MapWrapper};
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
@@ -17,6 +18,7 @@ fn game_over_screen_ui(
     mut state: ResMut<NextState<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
     game_status: Res<GameOverState>,
+    return_to: Res<ReturnTo>,
     config: Res<GameConfig>,
     mut save_state: ResMut<SaveHighscoreState>,
 ) {
@@ -118,7 +120,7 @@ fn game_over_screen_ui(
                     "game_over_screen.back_button_tooltip",
                 );
                 if back_button.clicked() {
-                    state.set(AppState::MapSelectionScreen);
+                    state.set(return_to.0);
                 }
                 let replay_button = image_button(
                     ui,

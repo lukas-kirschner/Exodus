@@ -18,6 +18,7 @@ impl GameWorld {
             .set(1, 2, PLAYERSPAWN)
             .set(3, 1, SPIKES)
             .set(2, 2, WALL)
+            .set_message_tile(2, 3, "Test Message".to_string())
             .set(3, 3, SPIKESSLOPED)
             .set(4, 3, WALLCOBBLE)
             .set(4, 2, WALLCHISELED)
@@ -32,11 +33,13 @@ impl GameWorld {
             .set(3, 7, WALLNATURE)
             .set(4, 7, WALLNATURE)
             .set(4, 8, DOOR)
+            .set_message_tile(3, 8, "Collect the key to open the door.".into())
             .set(6, 3, WALL)
             .set(5, 5, LADDER)
             .set(9, 1, COIN)
             .set(9, 2, COIN)
             .set(9, 3, COIN)
+            .set_message_tile(10, 1, "Translated: t!(campaign.string.tutorial_walking_exit) |||| t!(campaign.string.tutorial_walking_walking)".to_string())
             .set(12, 1, WALLSPIKESL)
             .set(14, 1, WALLSPIKESR)
             .set(14, 4, WALLSPIKESB)
@@ -47,6 +50,12 @@ impl GameWorld {
             .set(17, 2, LADDER)
             .set(17, 3, LADDER)
             .set(17, 4, LADDER)
+            .set_message_tile(17, 5, "Congratulations, you made it up the ladder!".into())
+            .set_message_tile(
+                14,
+                8,
+                "This sign can only be read for a very short period of time.".into(),
+            )
             .set(16, 5, WALLSPIKESRB)
             .set(17, 8, WALLSPIKESLTB)
             .set(18, 8, WALLSPIKESTB)

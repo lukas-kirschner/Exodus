@@ -1,10 +1,10 @@
+use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
-use bevy::log::debug;
+use bevy::log::{debug, warn};
 use bevy_egui::egui::Ui;
-use libexodus::directories::GameDirectories;
-use std::ffi::OsStr;
+use libexodus::directories::{GameDirectories, InvalidMapNameError};
 use std::path::{Path, PathBuf};
 
 #[derive(Eq, PartialEq)]
@@ -35,15 +35,21 @@ pub struct SaveFileDialog {
 
 impl SaveFileDialog {
     /// Instantiate a new SaveFileDialog from the given world
-    pub fn new(filename: Option<&Path>, mapname: &str, mapauthor: &str, uuid: &str) -> Self {
+    pub fn new(
+        filename: Option<&Path>,
+        mapname: &str,
+        mapauthor: &str,
+        uuid: &str,
+        directories: &GameDirectories,
+    ) -> Self {
         SaveFileDialog {
-            file_name: String::from(
-                filename
-                    .map(|p| p.file_name().unwrap_or_else(|| OsStr::new("")))
-                    .unwrap_or_else(|| OsStr::new(""))
-                    .to_str()
-                    .unwrap_or(""),
-            ),
+            file_name: filename
+                .map(|p| directories.relative_map_dir_from_path(p))
+                .unwrap_or(Err(InvalidMapNameError::EmptyName))
+                .unwrap_or_else(|e| {
+                    warn!("Could not resolve map path: {}", e);
+                    "".to_string()
+                }),
             map_title: String::from(mapname),
             map_author: String::from(mapauthor),
             hash: String::from(uuid),
@@ -92,18 +98,22 @@ impl UIDialog for SaveFileDialog {
                         });
                         let save = ui.button(t!("common_buttons.save"));
                         if save.clicked() {
+                            // TODO Support Subfolders like "campaign/map.exm" -> ~/.local/share/.../maps/campaign/map.exm
                             let map_dir = directories.path_from_userinput(self.file_name.as_str());
                             debug!("{:?}", map_dir);
-                            if let Ok(path) = map_dir {
-                                self.file_path = Some(path);
-                                self.state = if self.file_path.as_ref().unwrap().exists() {
-                                    SaveFileDialogState::Overwrite
-                                } else {
-                                    SaveFileDialogState::Done
-                                };
-                            } else {
-                                self.error_text = map_dir.unwrap_err().to_string();
-                                self.state = SaveFileDialogState::Error;
+                            match map_dir {
+                                Ok(path) => {
+                                    self.file_path = Some(path);
+                                    self.state = if self.file_path.as_ref().unwrap().exists() {
+                                        SaveFileDialogState::Overwrite
+                                    } else {
+                                        SaveFileDialogState::Done
+                                    };
+                                },
+                                Err(err) => {
+                                    self.error_text = err.to_string();
+                                    self.state = SaveFileDialogState::Error;
+                                },
                             }
                         }
                     });
@@ -193,6 +203,10 @@ impl UIDialog for SaveFileDialog {
     }
 
     fn as_unsaved_changes_dialog(&mut self) -> Option<&mut UnsavedChangesDialog> {
+        None
+    }
+
+    fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog> {
         None
     }
 }
