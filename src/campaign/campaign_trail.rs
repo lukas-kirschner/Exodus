@@ -1,3 +1,4 @@
+use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
 use crate::campaign::campaign_maps::CampaignMaps;
 use crate::game::constants::{
     EXITED_PLAYER_ASCEND_SPEED, EXITED_PLAYER_DECAY_SPEED, EXITED_PLAYER_ZOOM_SPEED,
@@ -13,8 +14,7 @@ use crate::game::constants::{
 /// Especially the movement, camera and tile placement functions are exactly the same, except in the
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
-    despawn_exited_player, despawn_players, keyboard_controls, player_movement, setup_player,
-    ExitingPlayerComponent, PlayerComponent, ReturnTo,
+    despawn_players, keyboard_controls, player_movement, setup_player, PlayerComponent, ReturnTo,
 };
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -91,18 +91,6 @@ impl Plugin for CampaignTrailPlugin {
             player_movement
                 .run_if(in_state(AppState::CampaignTrailScreen))
                 .in_set(AppLabels::PlayerMovement),
-        )
-        .add_systems(
-            Update,
-            player_enter_map_handler
-                .run_if(in_state(AppState::CampaignTrailScreen))
-                .in_set(AppLabels::PlayerMovement),
-        )
-        .add_systems(
-            Update,
-            despawn_exited_player
-                .run_if(in_state(AppState::CampaignTrailScreen))
-                .in_set(AppLabels::GameOverTrigger),
         )
         .add_systems(OnExit(AppState::CampaignTrailScreen), despawn_players);
     }
@@ -414,43 +402,18 @@ pub fn play_map_keyboard_controls(
                             transform: *player_pos,
                             ..default()
                         },
-                        ExitingPlayerComponent {
-                            player: player.player.clone(),
-                        },
+                        AnimatedActionSprite::from_ascend_and_zoom(
+                            EXITED_PLAYER_DECAY_SPEED,
+                            EXITED_PLAYER_ASCEND_SPEED,
+                            EXITED_PLAYER_ZOOM_SPEED,
+                            AnimatedSpriteAction::StateChange {
+                                state: AppState::Playing,
+                            },
+                        ),
                         layer,
                     ));
                 },
             }
         };
-    }
-}
-
-/// Handler that takes care of animating an entering player and entering a map when the
-/// player-enter animation has finished
-pub fn player_enter_map_handler(
-    mut commands: Commands,
-    mut exited_players: Query<
-        (&mut TextureAtlasSprite, &mut Transform, Entity),
-        With<ExitingPlayerComponent>,
-    >,
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut state: ResMut<NextState<AppState>>,
-) {
-    let texture_size = config.texture_size();
-    for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
-        let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
-        if (new_a - 0.01) <= 0.0 {
-            // The player has fully decayed and can be despawned.
-            sprite.color.set_a(0.0);
-            commands.entity(entity).despawn_recursive();
-            debug!("Entering Campaign Map");
-            state.set(AppState::Playing);
-            return;
-        }
-        sprite.color.set_a(new_a);
-        transform.translation.y += EXITED_PLAYER_ASCEND_SPEED * texture_size * time.delta_seconds();
-        transform.scale +=
-            Vec3::splat(EXITED_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
     }
 }
