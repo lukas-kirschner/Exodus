@@ -397,7 +397,7 @@ pub fn play_map_keyboard_controls(
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
                         SpriteSheetBundle {
-                            sprite: sprite.clone(),
+                            sprite: exit_sprite,
                             texture_atlas: handle.clone(),
                             transform: *player_pos,
                             ..default()
