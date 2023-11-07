@@ -10,6 +10,10 @@ impl Plugin for AnimatedActionSpritePlugin {
             animated_action_sprite_handler
                 .run_if(resource_exists::<GameConfig>())
                 .in_set(AppLabels::PlayerMovement),
+        )
+        .add_systems(
+            OnEnter(AppState::Playing),
+            despawn_and_discard_all_animated_action_tiles,
         );
     }
 }
@@ -157,5 +161,15 @@ fn animated_action_sprite_handler(
         transform.rotation.y += animated_sprite.rotation().y * texture_size * time.delta_seconds();
         transform.rotation.z += animated_sprite.rotation().z * texture_size * time.delta_seconds();
         transform.rotation.w += animated_sprite.rotation().w * texture_size * time.delta_seconds();
+    }
+}
+
+fn despawn_and_discard_all_animated_action_tiles(
+    mut commands: Commands,
+    animated_sprites: Query<Entity, With<AnimatedActionSprite>>,
+) {
+    for entity in animated_sprites.iter() {
+        debug!("Despawning leftover animated entity {:?}", &entity);
+        commands.entity(entity).despawn_recursive();
     }
 }
