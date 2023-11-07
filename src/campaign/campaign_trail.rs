@@ -350,7 +350,7 @@ pub fn play_map_keyboard_controls(
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
         keyboard_input.reset(KeyCode::Return);
-        let Ok((player, player_pos, entity, sprite, handle)) = player_query.get_single() else {
+        let Ok((_player, player_pos, entity, sprite, handle)) = player_query.get_single() else {
             debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
             state.set(AppState::Playing);
             return;

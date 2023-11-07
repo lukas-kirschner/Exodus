@@ -1,3 +1,4 @@
+use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
 use crate::game::constants::{
     COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
     PICKUP_ITEM_ZOOM_SPEED,
@@ -5,35 +6,13 @@ use crate::game::constants::{
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::util::dist_2d;
-use crate::{AppLabels, AppState, GameConfig};
+use crate::{AppLabels, AppState};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{Tile, TileKind};
 
 #[derive(Component)]
 pub struct PickupItem;
-
-/// Handler that takes care of animating and despawning the picked up item.
-pub fn pickup_item_animation(
-    mut commands: Commands,
-    mut dead_players: Query<(&mut TextureAtlasSprite, &mut Transform, Entity), With<PickupItem>>,
-    config: Res<GameConfig>,
-    time: Res<Time>,
-) {
-    for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
-        let new_a: f32 = sprite.color.a() - (PICKUP_ITEM_DECAY_SPEED * time.delta_seconds());
-        if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned
-            commands.entity(entity).despawn_recursive();
-            return;
-        }
-        sprite.color.set_a(new_a);
-        transform.translation.y +=
-            PICKUP_ITEM_ASCEND_SPEED * config.texture_size() * time.delta_seconds();
-        transform.scale +=
-            Vec3::splat(PICKUP_ITEM_ZOOM_SPEED * config.texture_size() * time.delta_seconds());
-    }
-}
 
 pub struct PickupItemPlugin;
 
@@ -45,8 +24,7 @@ impl Plugin for PickupItemPlugin {
             .add_systems(Update,setup_collectible_event::<KeyWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
             .add_systems(Update,setup_collectible_event::<CollectibleWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
             // Event Handlers
-            .add_systems(Update,collectible_collected_event.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_systems(Update,pickup_item_animation.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement));
+            .add_systems(Update,collectible_collected_event.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement));
     }
 }
 
@@ -98,7 +76,7 @@ struct CollectibleCollectedEvent {
     action: CollectibleAction,
     collectible: Entity,
 }
-
+/// Set up a Collectible Event for the given Collectible type.
 fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
     mut commands: Commands,
     coin_query: Query<(Entity, &Transform, &WrapperType)>,
@@ -118,10 +96,14 @@ fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
                     collectible: coin_entity,
                 });
                 // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
-                commands
-                    .entity(coin_entity)
-                    .remove::<WrapperType>()
-                    .insert(PickupItem);
+                commands.entity(coin_entity).remove::<WrapperType>().insert(
+                    AnimatedActionSprite::from_ascend_and_zoom(
+                        PICKUP_ITEM_DECAY_SPEED,
+                        PICKUP_ITEM_ASCEND_SPEED,
+                        PICKUP_ITEM_ZOOM_SPEED,
+                        AnimatedSpriteAction::None,
+                    ),
+                );
             }
         }
     }

@@ -265,7 +265,7 @@ pub fn player_movement(
                                     AnimatedActionSprite::from_ascend_and_zoom(
                                         DEAD_PLAYER_DECAY_SPEED,
                                         DEAD_PLAYER_ASCEND_SPEED,
-                                        DEAD_PLAYER_ZOOM_SPEED.into(),
+                                        DEAD_PLAYER_ZOOM_SPEED,
                                         AnimatedSpriteAction::GameOverTrigger {
                                             state: GameOverState::Lost,
                                         },

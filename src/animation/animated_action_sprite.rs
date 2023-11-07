@@ -81,18 +81,18 @@ impl AnimatedActionSprite {
             action_after_despawn,
         )
     }
-    pub fn from_translation(
-        delta_alpha: f32,
-        delta_translation: Vec3,
-        action_after_despawn: AnimatedSpriteAction,
-    ) -> Self {
-        AnimatedActionSprite::from_translation_scale(
-            delta_alpha,
-            delta_translation,
-            (0.0, 0.0, 0.0).into(),
-            action_after_despawn,
-        )
-    }
+    // pub fn from_translation(
+    //     delta_alpha: f32,
+    //     delta_translation: Vec3,
+    //     action_after_despawn: AnimatedSpriteAction,
+    // ) -> Self {
+    //     AnimatedActionSprite::from_translation_scale(
+    //         delta_alpha,
+    //         delta_translation,
+    //         (0.0, 0.0, 0.0).into(),
+    //         action_after_despawn,
+    //     )
+    // }
     pub fn from_ascend_and_zoom(
         delta_alpha: f32,
         ascend_speed: f32,
@@ -128,7 +128,7 @@ fn animated_action_sprite_handler(
             // The player has fully decayed and can be despawned.
             sprite.color.set_a(0.0);
             commands.entity(entity).despawn_recursive();
-            match &animated_sprite.action_after_despawn {
+            match animated_sprite.action() {
                 AnimatedSpriteAction::StateChange { state } => {
                     debug!(
                         "Entering state {:?}, triggered by AnimatedActionSprite",

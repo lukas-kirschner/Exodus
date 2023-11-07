@@ -39,4 +39,4 @@ pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
 /// The speed a pickup item resizes
 pub const PICKUP_ITEM_ZOOM_SPEED: f32 = 0.01;
 /// The speed a pickup item fades out
-pub const PICKUP_ITEM_DECAY_SPEED: f32 = 3.5;
+pub const PICKUP_ITEM_DECAY_SPEED: f32 = -3.5;
