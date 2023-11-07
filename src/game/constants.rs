@@ -23,13 +23,13 @@ pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
 /// The speed a dead player zooms while ascending
 pub const DEAD_PLAYER_ZOOM_SPEED: f32 = 0.1;
 /// The speed a dead player decays
-pub const DEAD_PLAYER_DECAY_SPEED: f32 = 2.0;
+pub const DEAD_PLAYER_DECAY_SPEED: f32 = -2.0;
 /// The speed a player who exited the game ascends at
 pub const EXITED_PLAYER_ASCEND_SPEED: f32 = 0.01;
 /// The speed a player zooms while exiting
 pub const EXITED_PLAYER_ZOOM_SPEED: f32 = -0.1;
 /// The speed a player decays while exiting
-pub const EXITED_PLAYER_DECAY_SPEED: f32 = 2.0;
+pub const EXITED_PLAYER_DECAY_SPEED: f32 = -2.0;
 /// The button size for the map editor
 pub const MAPEDITOR_BUTTON_SIZE: f32 = 38.;
 /// The button size for square buttons in the menu screen
@@ -39,4 +39,4 @@ pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
 /// The speed a pickup item resizes
 pub const PICKUP_ITEM_ZOOM_SPEED: f32 = 0.01;
 /// The speed a pickup item fades out
-pub const PICKUP_ITEM_DECAY_SPEED: f32 = 3.5;
+pub const PICKUP_ITEM_DECAY_SPEED: f32 = -3.5;

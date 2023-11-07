@@ -1,6 +1,7 @@
+use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
 use crate::game::constants::*;
-use crate::game::scoreboard::Scoreboard;
-use crate::game::tilewrapper::{GameOverState, MapWrapper};
+use crate::game::scoreboard::{GameOverEvent, GameOverState, Scoreboard};
+use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::DoorWrapper;
 use crate::{AppLabels, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
@@ -40,18 +41,6 @@ impl Plugin for PlayerPlugin {
                 .run_if(in_state(AppState::Playing))
                 .after(AppLabels::PlayerMovement),
         )
-        .add_systems(
-            Update,
-            despawn_dead_player
-                .run_if(in_state(AppState::Playing))
-                .in_set(AppLabels::GameOverTrigger),
-        )
-        .add_systems(
-            Update,
-            despawn_exited_player
-                .run_if(in_state(AppState::Playing))
-                .in_set(AppLabels::GameOverTrigger),
-        )
         .add_systems(OnExit(AppState::Playing), despawn_players)
         .add_systems(
             Update,
@@ -68,16 +57,6 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
-#[derive(Component)]
-pub struct DeadPlayerComponent {
-    pub player: Player,
-}
-
-#[derive(Component)]
-pub struct ExitingPlayerComponent {
-    pub player: Player,
-}
-
 fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, right: bool) {
     if right && !player.is_facing_right() {
         player.set_face_right(true);
@@ -89,78 +68,10 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, ri
     }
 }
 
-///
-/// Handler that takes care of despawning the dead player and respawning the game world, resetting all counters and objects.
-fn despawn_dead_player(
-    mut commands: Commands,
-    mut dead_players: Query<
-        (&mut TextureAtlasSprite, &mut Transform, Entity),
-        With<DeadPlayerComponent>,
-    >,
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut event_writer: EventWriter<GameOverEvent>,
-) {
-    let texture_size = config.texture_size();
-    for (mut sprite, mut transform, entity) in dead_players.iter_mut() {
-        let new_a: f32 = sprite.color.a() - (DEAD_PLAYER_DECAY_SPEED * time.delta_seconds());
-        if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned.
-            commands.entity(entity).despawn_recursive();
-            event_writer.send(GameOverEvent {
-                state: GameOverState::Lost,
-            });
-            return;
-        }
-        sprite.color.set_a(new_a);
-        transform.translation.y += DEAD_PLAYER_ASCEND_SPEED * texture_size * time.delta_seconds();
-        transform.scale +=
-            Vec3::splat(DEAD_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
-    }
-}
 /// Resource that determines what screen to return to when a GameOver event is triggered
 /// or ESC is pressed
 #[derive(Resource)]
 pub struct ReturnTo(pub AppState);
-
-/// Event that is triggered when a game is won or lost
-#[derive(Event)]
-pub struct GameOverEvent {
-    pub state: GameOverState,
-}
-
-///
-/// Handler that takes care of despawning the player after he exited the game through an exit
-pub fn despawn_exited_player(
-    mut commands: Commands,
-    mut exited_players: Query<
-        (&mut TextureAtlasSprite, &mut Transform, Entity),
-        With<ExitingPlayerComponent>,
-    >,
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut event_writer: EventWriter<GameOverEvent>,
-    scoreboard: Res<Scoreboard>,
-) {
-    let texture_size = config.texture_size();
-    for (mut sprite, mut transform, entity) in exited_players.iter_mut() {
-        let new_a: f32 = sprite.color.a() - (EXITED_PLAYER_DECAY_SPEED * time.delta_seconds());
-        if new_a <= 0.0 {
-            // The player has fully decayed and can be despawned.
-            commands.entity(entity).despawn_recursive();
-            event_writer.send(GameOverEvent {
-                state: GameOverState::Won {
-                    score: (*scoreboard).clone(),
-                },
-            });
-            return;
-        }
-        sprite.color.set_a(new_a);
-        transform.translation.y += EXITED_PLAYER_ASCEND_SPEED * texture_size * time.delta_seconds();
-        transform.scale +=
-            Vec3::splat(EXITED_PLAYER_ZOOM_SPEED * texture_size * time.delta_seconds());
-    }
-}
 
 /// Open the door at the new player position and return true if the door has been opened.
 /// Fail, if the player does not have enough keys
@@ -351,9 +262,14 @@ pub fn player_movement(
                                         },
                                         ..Default::default()
                                     },
-                                    DeadPlayerComponent {
-                                        player: player.clone(),
-                                    },
+                                    AnimatedActionSprite::from_ascend_and_zoom(
+                                        DEAD_PLAYER_DECAY_SPEED,
+                                        DEAD_PLAYER_ASCEND_SPEED,
+                                        DEAD_PLAYER_ZOOM_SPEED,
+                                        AnimatedSpriteAction::GameOverTrigger {
+                                            state: GameOverState::Lost,
+                                        },
+                                    ),
                                     layer,
                                 ));
                             }
@@ -381,9 +297,16 @@ pub fn player_movement(
                                     transform: *transform,
                                     ..default()
                                 },
-                                ExitingPlayerComponent {
-                                    player: player.clone(),
-                                },
+                                AnimatedActionSprite::from_ascend_and_zoom(
+                                    EXITED_PLAYER_DECAY_SPEED,
+                                    EXITED_PLAYER_ASCEND_SPEED,
+                                    EXITED_PLAYER_ZOOM_SPEED,
+                                    AnimatedSpriteAction::GameOverTrigger {
+                                        state: GameOverState::Won {
+                                            score: (*scoreboard).clone(),
+                                        },
+                                    },
+                                ),
                                 layer,
                             ));
                         },

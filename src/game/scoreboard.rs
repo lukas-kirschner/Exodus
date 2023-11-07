@@ -4,7 +4,22 @@ use bevy::prelude::*;
 use bevy_egui::egui::{RichText, Ui};
 use libexodus::highscores::highscore::Highscore;
 
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Debug)]
+pub enum GameOverState {
+    /// The game was lost, i.e., the player died losing all lives without reaching the exit
+    Lost,
+    /// The player won the game with the given scoreboard
+    Won { score: Scoreboard },
+    // /// The player won the game as part of the campaign
+    // WON_CAMPAIGN { score: Scoreboard },
+}
+
+/// Event that is triggered when a game is won or lost
+#[derive(Event)]
+pub struct GameOverEvent {
+    pub state: GameOverState,
+}
+#[derive(Resource, Clone, Debug)]
 pub struct Scoreboard {
     pub coins: i32,
     pub moves: usize,

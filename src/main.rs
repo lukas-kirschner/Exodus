@@ -1,3 +1,4 @@
+use crate::animation::AnimationPlugin;
 use crate::campaign::campaign_trail::CampaignTrailPlugin;
 use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
 use crate::campaign::MainCampaignLoader;
@@ -22,6 +23,7 @@ use std::path::PathBuf;
 extern crate rust_i18n;
 i18n!("locales");
 
+mod animation;
 mod campaign;
 mod dialogs;
 mod game;
@@ -301,6 +303,7 @@ fn main() {
         .add_plugins(Ui)
         .add_plugins(MapEditorPlugin)
         .add_plugins(CampaignTrailPlugin)
+        .add_plugins(AnimationPlugin)
         .add_plugins(LoadingPlugin)
         .run();
 }
