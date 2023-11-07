@@ -17,13 +17,9 @@ impl Plugin for EditWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            mouse_down_handler
-                .run_if(in_state(AppState::MapEditor))
-                .in_set(MapeditorSystems::GameBoardMouseHandlers),
-        )
-        .add_systems(
-            Update,
-            mouse_down_handler_playerspawn
+            // This ordering of function calls needs to be kept intact, else the player spawn placement will NOT work anymore!!!
+            (mouse_down_handler, mouse_down_handler_playerspawn)
+                .chain()
                 .run_if(in_state(AppState::MapEditor))
                 .in_set(MapeditorSystems::GameBoardMouseHandlers),
         );
@@ -31,7 +27,7 @@ impl Plugin for EditWorldPlugin {
 }
 
 /// Delete the first tile with the given position from the view.
-fn delete_tile_at(
+fn view_delete_tile_at(
     pos: &Vec2,
     commands: &mut Commands,
     tile_entity_query: &Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
@@ -98,11 +94,11 @@ fn replace_world_tile_at(
         match *new_tile {
             Tile::AIR => {
                 // If a tile is replaced with air, it should just be deleted from the view:
-                delete_tile_at(&pos, commands, tile_entity_query, atlas);
+                view_delete_tile_at(&pos, commands, tile_entity_query, atlas);
             },
             Tile::PLAYERSPAWN => {
                 // Delete the tile at the given position. This action does not do anything if the current tile is Air, so we skip that check
-                delete_tile_at(&pos, commands, tile_entity_query, atlas);
+                view_delete_tile_at(&pos, commands, tile_entity_query, atlas);
             },
             _ => {
                 if *current_world_tile == Tile::AIR || *current_world_tile == Tile::PLAYERSPAWN {
@@ -233,18 +229,22 @@ fn mouse_down_handler_playerspawn(
     mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
     config: Res<GameConfig>,
 ) {
-    if current_tile.tile == Tile::PLAYERSPAWN {
+    if current_tile.tile == Tile::PLAYERSPAWN && buttons.just_pressed(MouseButton::Left) {
         let (layer_camera, layer_camera_transform) = q_layer_camera.single();
         let (main_camera, main_camera_transform) = q_main_camera.single();
-        if buttons.just_pressed(MouseButton::Left) {
-            if let Some((world_x, world_y)) = compute_cursor_position_in_world(
-                &wnds,
-                main_camera,
-                main_camera_transform,
-                layer_camera,
-                layer_camera_transform,
-                config.texture_size(),
-            ) {
+        if let Some((world_x, world_y)) = compute_cursor_position_in_world(
+            &wnds,
+            main_camera,
+            main_camera_transform,
+            layer_camera,
+            layer_camera_transform,
+            config.texture_size(),
+        ) {
+            if world_x > 0
+                && world_x < _map.world.width() as i32
+                && world_y > 0
+                && world_y < _map.world.height() as i32
+            {
                 let translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
                 translation.x = world_x as f32 * config.texture_size();
                 translation.y = world_y as f32 * config.texture_size();

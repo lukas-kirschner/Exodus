@@ -113,11 +113,11 @@ impl GameWorld {
         self.author = new_name.to_string();
         self
     }
-    ///
     /// Set the tile at the given coordinate to the given value.
+    /// If the tile to be set is a player spawn, the old player spawn will be deleted automatically
+    /// (replaced by an Air tile).
     pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
-        self.data[x][y] = tile;
-        match &self.data[x][y].kind() {
+        match &tile.kind() {
             TileKind::AIR => {},
             TileKind::SOLID => {},
             TileKind::DEADLY { .. } => {
@@ -127,6 +127,16 @@ impl GameWorld {
                 //TODO
             },
             TileKind::PLAYERSPAWN => {
+                // Replace the old player spawn with air
+                let (px, py) = self.playerspawn;
+                if self
+                    .get(px as i32, py as i32)
+                    .map(|t| matches!(t.kind(), TileKind::PLAYERSPAWN))
+                    .unwrap_or(false)
+                {
+                    self.set(px, py, Tile::AIR);
+                }
+                // Set the new player spawn
                 self.playerspawn = (x, y);
             },
             TileKind::COIN => {},
@@ -136,6 +146,7 @@ impl GameWorld {
             TileKind::COLLECTIBLE => {},
             TileKind::EXIT => {},
         }
+        self.data[x][y] = tile;
         self
     }
     ///
@@ -260,7 +271,7 @@ impl GameWorld {
             0
         }
     }
-
+    /// Get the unique player spawn of this map
     pub fn player_spawn(&self) -> (usize, usize) {
         self.playerspawn
     }
