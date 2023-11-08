@@ -46,16 +46,18 @@ common_buttons:
 tile:
   air: Luft
   wall: Mauer
-  wallnature: Mauer
-  wallcobble: Mauer
-  wallsmooth: Mauer
-  wallchiseled: Mauer
+  wallnature: Natur-Mauer
+  wallcobble: Pflasterstein
+  wallsmooth: Geflieste Mauer
+  wallchiseled: Behauene Mauer
   playerspawn: Spawn
   door: Tür
   opendoor: Geöffnete Tür
   coin: Münze
   key: Schlüssel
   ladder: Leiter
+  ladderslope: Leiter mit Falltür
+  laddernature: Leiter mit Falltür
   spikes: Stachel
   spikes_alt: Stachel
   spikes_sloped: Stachel mit Stufe
@@ -63,12 +65,17 @@ tile:
   spikes_wall_r: Mauer mit Stachel rechts
   spikes_wall_lr: Mauer mit Stachel seitlich
   spikes_wall_b: Mauer mit Stachel unten
+  spikes_wall_t: Mauer mit Stachel oben
   spikes_wall_lb: Mauerecke mit Stacheln links
   spikes_wall_rb: Mauerecke mit Stacheln rechts
   spikes_wall_tb: Mauer mit Stacheln oben/unten
+  spikes_wall_lt: Mauer mit Stacheln oben/links
+  spikes_wall_rt: Mauer mit Stacheln oben/rechts
   spikes_wall_rltb: Mauerstück mit Stacheln
   spikes_wall_rtb: Mauerendstück mit Stacheln rechts
   spikes_wall_ltb: Mauerendstück mit Stacheln links
+  spikes_wall_rlt: Mauerendstück mit Stacheln oben
+  spikes_wall_rlb: Mauerendstück mit Stacheln unten
   arrow_right: Pfeil nach rechts
   arrow_left: Pfeil nach links
   arrow_up: Pfeil nach oben
@@ -99,6 +106,7 @@ campaign:
     tutorial_walking: "Tutorial: Laufen"
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
+    tutorial_doors: "Tutorial: Türen"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."
@@ -113,3 +121,7 @@ campaign:
     tutorial_coins_collect: "Versuche immer, alle Münzen einzusammeln, sie könnten später nützlich sein!"
     tutorial_coins_highscore: "Die Münzen, die nach Beenden eines Levels übrig sind, zählen als Punktzahl im Highscore."
     tutorial_coins_database: "Jeder Spieler kann einen eigenen Highscore pro Map erspielen."
+    tutorial_doors_intro: "Leitern können betreten werden, indem man die Pfeil nach oben/unten-Tasten benutzt."
+    tutorial_doors_keys: "Schlüssel können in der Welt genau wie Münzen gesammelt werden, zählen aber nicht zur Punktzahl."
+    tutorial_doors_doors: "Es gibt verschlossene Türen auf der Karte, welche mit einem Schlüssel geöffnet werden können."
+    tutorial_doors_all_keys: "Sei vorsichtig und achte darauf, immer genug Schlüssel zu sammeln, um das Ziel zu erreichen!"
