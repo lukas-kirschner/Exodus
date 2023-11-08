@@ -45,16 +45,18 @@ common_buttons:
 tile:
   air: Air
   wall: Wall
-  wallnature: Wall
-  wallcobble: Wall
-  wallsmooth: Wall
-  wallchiseled: Wall
+  wallnature: Nature Wall
+  wallcobble: Cobblestone Wall
+  wallsmooth: Smooth Wall
+  wallchiseled: Chiseled Wall
   playerspawn: Player Spawn
   door: Door
   opendoor: Open Door
   coin: Coin
   key: Key
   ladder: Ladder
+  ladderslope: Ladder with trapdoor
+  laddernature: Ladder with nature trapdoor
   spikes: Spikes
   spikes_alt: Spikes
   spikes_sloped: Sloped Spikes

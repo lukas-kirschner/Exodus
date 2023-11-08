@@ -85,6 +85,10 @@ pub enum Tile {
     KEY,
     /// A ladder
     LADDER,
+    /// A decorated ladder with a Nature-Themed slope
+    LADDERNATURE,
+    /// A decorated ladder with a Wall-Themed slope
+    LADDERSLOPE,
     /// Spikes that sit on the ground and point up
     SPIKES,
     /// Spikes that sit on the ground and point up, alternative texture
@@ -156,6 +160,8 @@ impl Tile {
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
+            Tile::LADDERNATURE => TileKind::LADDER,
+            Tile::LADDERSLOPE => TileKind::LADDER,
             Tile::SPIKES => TileKind::DEADLY {
                 from: vec![FROMNORTH, FROMSOUTH, FROMEAST, FROMWEST],
             },
@@ -238,6 +244,8 @@ impl Tile {
             Tile::PLAYERSPAWN => None,
             Tile::COIN => Some(217),
             Tile::LADDER => Some(220),
+            Tile::LADDERNATURE => Some(226),
+            Tile::LADDERSLOPE => Some(225),
             Tile::SPIKES => Some(227),
             Tile::SPIKESALT => Some(228),
             Tile::SPIKESSLOPED => Some(250),
@@ -317,6 +325,8 @@ impl Tile {
             Tile::COIN => "coin",
             Tile::KEY => "key",
             Tile::LADDER => "ladder",
+            Tile::LADDERNATURE => "laddernature",
+            Tile::LADDERSLOPE => "ladderslope",
             Tile::SPIKES => "spikes",
             Tile::SPIKESALT => "spikes_alt",
             Tile::SPIKESSLOPED => "spikes_sloped",
@@ -364,6 +374,8 @@ impl fmt::Display for Tile {
                 Tile::PLAYERSPAWN => "Player Spawn",
                 Tile::COIN => "Coin",
                 Tile::LADDER => "Ladder",
+                Tile::LADDERNATURE => "Ladder with Nature Slope",
+                Tile::LADDERSLOPE => "Ladder with Slope",
                 Tile::SPIKES => "Spikes",
                 Tile::SPIKESALT => "Spikes (Alt Texture)",
                 Tile::SPIKESSLOPED => "Sloped Spikes",

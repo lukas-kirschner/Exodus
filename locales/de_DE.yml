@@ -46,16 +46,18 @@ common_buttons:
 tile:
   air: Luft
   wall: Mauer
-  wallnature: Mauer
-  wallcobble: Mauer
-  wallsmooth: Mauer
-  wallchiseled: Mauer
+  wallnature: Natur-Mauer
+  wallcobble: Pflasterstein
+  wallsmooth: Geflieste Mauer
+  wallchiseled: Behauene Mauer
   playerspawn: Spawn
   door: Tür
   opendoor: Geöffnete Tür
   coin: Münze
   key: Schlüssel
   ladder: Leiter
+  ladderslope: Leiter mit Falltür
+  laddernature: Leiter mit Falltür
   spikes: Stachel
   spikes_alt: Stachel
   spikes_sloped: Stachel mit Stufe
