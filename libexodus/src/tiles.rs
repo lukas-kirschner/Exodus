@@ -89,27 +89,37 @@ pub enum Tile {
     SPIKES,
     /// Spikes that sit on the ground and point up, alternative texture
     SPIKESALT,
-    /// Spikes that sit on a slope and point up, only deadly if touched from above.
+    /// Spikes placed on a slope and point up, only deadly if touched from above.
     SPIKESSLOPED,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing up. Only deadly if approached from above.
+    WALLSPIKEST,
+    /// Spikes placed on a wall, pointing to the left. Only deadly if approached from the left.
     WALLSPIKESL,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the right. Only deadly if approached from the right.
     WALLSPIKESR,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the left and right. Only deadly if approached from the left or right.
     WALLSPIKESLR,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the bottom. Only deadly if approached from below.
     WALLSPIKESB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the left and bottom. Only deadly if approached from the left or from below.
     WALLSPIKESLB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the right and bottom. Only deadly if approached from the right or from below.
     WALLSPIKESRB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the top and bottom. Only deadly if approached from above or from below.
     WALLSPIKESTB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the top and left. Only deadly if approached from above or from the left.
+    WALLSPIKESLT,
+    /// Spikes placed on a wall, pointing to the top and right. Only deadly if approached from above or from the right.
+    WALLSPIKESRT,
+    /// Spikes placed on a wall, pointing to all directions. Deadly if approached from any direction.
     WALLSPIKESRLTB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the top, right and bottom. Not deadly if approached from the left.
     WALLSPIKESRTB,
-    /// Spikes that sit on a wall and are only deadly if the player comes from the direction the spikes face to
+    /// Spikes placed on a wall, pointing to the right, left and bottom. Not deadly if approached from the top.
+    WALLSPIKESRLB,
+    /// Spikes placed on a wall, pointing to the top, right and left. Not deadly if approached from below.
+    WALLSPIKESRLT,
+    /// Spikes placed on a wall, pointing to the top, left and bottom. Not deadly if approached from the right.
     WALLSPIKESLTB,
     /// An arrow that points to the right
     ARROWRIGHT,
@@ -158,11 +168,20 @@ impl Tile {
             Tile::WALLSPIKESL => TileKind::DEADLY {
                 from: vec![FROMWEST],
             },
+            Tile::WALLSPIKEST => TileKind::DEADLY {
+                from: vec![FROMNORTH],
+            },
             Tile::WALLSPIKESR => TileKind::DEADLY {
                 from: vec![FROMEAST],
             },
             Tile::WALLSPIKESLR => TileKind::DEADLY {
                 from: vec![FROMEAST, FROMWEST],
+            },
+            Tile::WALLSPIKESLT => TileKind::DEADLY {
+                from: vec![FROMWEST, FROMNORTH],
+            },
+            Tile::WALLSPIKESRT => TileKind::DEADLY {
+                from: vec![FROMEAST, FROMNORTH],
             },
             Tile::WALLSPIKESB => TileKind::DEADLY {
                 from: vec![FROMSOUTH],
@@ -184,6 +203,12 @@ impl Tile {
             },
             Tile::WALLSPIKESLTB => TileKind::DEADLY {
                 from: vec![FROMNORTH, FROMSOUTH, FROMWEST],
+            },
+            Tile::WALLSPIKESRLB => TileKind::DEADLY {
+                from: vec![FROMSOUTH, FROMEAST, FROMWEST],
+            },
+            Tile::WALLSPIKESRLT => TileKind::DEADLY {
+                from: vec![FROMNORTH, FROMEAST, FROMWEST],
             },
             Tile::DOOR => TileKind::DOOR,
             Tile::KEY => TileKind::KEY,
@@ -218,13 +243,18 @@ impl Tile {
             Tile::SPIKESSLOPED => Some(250),
             Tile::WALLSPIKESL => Some(244),
             Tile::WALLSPIKESR => Some(242),
+            Tile::WALLSPIKEST => Some(231),
             Tile::WALLSPIKESLR => Some(243),
             Tile::WALLSPIKESB => Some(233),
             Tile::WALLSPIKESLB => Some(232),
+            Tile::WALLSPIKESRT => Some(230),
             Tile::WALLSPIKESRB => Some(234),
+            Tile::WALLSPIKESLT => Some(216),
             Tile::WALLSPIKESTB => Some(238),
             Tile::WALLSPIKESRLTB => Some(254),
             Tile::WALLSPIKESLTB => Some(237),
+            Tile::WALLSPIKESRLB => Some(236),
+            Tile::WALLSPIKESRLT => Some(235),
             Tile::WALLSPIKESRTB => Some(239),
             Tile::DOOR => Some(200),
             Tile::KEY => Some(201),
@@ -300,6 +330,11 @@ impl Tile {
             Tile::WALLSPIKESRLTB => "spikes_wall_rltb",
             Tile::WALLSPIKESRTB => "spikes_wall_rtb",
             Tile::WALLSPIKESLTB => "spikes_wall_ltb",
+            Tile::WALLSPIKEST => "spikes_wall_t",
+            Tile::WALLSPIKESLT => "spikes_wall_lt",
+            Tile::WALLSPIKESRT => "spikes_wall_rt",
+            Tile::WALLSPIKESRLB => "spikes_wall_rlb",
+            Tile::WALLSPIKESRLT => "spikes_wall_rlt",
             Tile::ARROWRIGHT => "arrow_right",
             Tile::ARROWLEFT => "arrow_left",
             Tile::ARROWUP => "arrow_up",
@@ -342,6 +377,11 @@ impl fmt::Display for Tile {
                 Tile::WALLSPIKESRLTB => "RLTB Wall Spikes",
                 Tile::WALLSPIKESRTB => "RTB Wall Spikes",
                 Tile::WALLSPIKESLTB => "LTB Wall Spikes",
+                Tile::WALLSPIKEST => "T Wall Spikes",
+                Tile::WALLSPIKESLT => "LT Wall Spikes",
+                Tile::WALLSPIKESRT => "RT Wall Spikes",
+                Tile::WALLSPIKESRLB => "RLB Wall Spikes",
+                Tile::WALLSPIKESRLT => "RLT Wall Spikes",
                 Tile::DOOR => "Door",
                 Tile::OPENDOOR => "Open Door",
                 Tile::KEY => "Key",

@@ -263,6 +263,15 @@ fn mapeditor_ui(
                             &mut selected_tile,
                             player_it,
                         );
+                        ui.separator();
+
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::MESSAGE { message_id: 0 },
+                            &mut selected_tile,
+                            player_it,
+                        );
                     });
                 });
                 ui.scope(|ui| {
@@ -271,6 +280,13 @@ fn mapeditor_ui(
                             ui,
                             egui_textures.borrow(),
                             &Tile::SPIKESSLOPED,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::WALLSPIKEST,
                             &mut selected_tile,
                             player_it,
                         );
@@ -320,6 +336,20 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
+                            &Tile::WALLSPIKESLT,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::WALLSPIKESRT,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
                             &Tile::WALLSPIKESLTB,
                             &mut selected_tile,
                             player_it,
@@ -327,7 +357,7 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
-                            &Tile::WALLSPIKESLR,
+                            &Tile::WALLSPIKESTB,
                             &mut selected_tile,
                             player_it,
                         );
@@ -335,6 +365,20 @@ fn mapeditor_ui(
                             ui,
                             egui_textures.borrow(),
                             &Tile::WALLSPIKESRTB,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::WALLSPIKESRLB,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::WALLSPIKESRLT,
                             &mut selected_tile,
                             player_it,
                         );
@@ -371,15 +415,6 @@ fn mapeditor_ui(
                             ui,
                             egui_textures.borrow(),
                             &Tile::ARROWUP,
-                            &mut selected_tile,
-                            player_it,
-                        );
-                        ui.separator();
-
-                        tile_kind_selector_button_for(
-                            ui,
-                            egui_textures.borrow(),
-                            &Tile::MESSAGE { message_id: 0 },
                             &mut selected_tile,
                             player_it,
                         );

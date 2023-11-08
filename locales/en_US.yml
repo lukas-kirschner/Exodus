@@ -62,12 +62,17 @@ tile:
   spikes_wall_r: R Wall Spikes
   spikes_wall_lr: LR Wall Spikes
   spikes_wall_b: B Wall Spikes
+  spikes_wall_t: T Wall Spikes
   spikes_wall_lb: LB Wall Spikes
   spikes_wall_rb: RB Wall Spikes
   spikes_wall_tb: TB Wall Spikes
+  spikes_wall_lt: LT Wall Spikes
+  spikes_wall_rt: RT Wall Spikes
   spikes_wall_rltb: RLTB Wall Spikes
   spikes_wall_rtb: RTB Wall Spikes
   spikes_wall_ltb: LTB Wall Spikes
+  spikes_wall_rlt: RLT Wall Spikes
+  spikes_wall_rlb: RLB Wall Spikes
   arrow_right: Right Arrow
   arrow_left: Left Arrow
   arrow_up: Up Arrow
