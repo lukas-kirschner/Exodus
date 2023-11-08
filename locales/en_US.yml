@@ -105,6 +105,7 @@ campaign:
     tutorial_walking: "Tutorial: Walking"
     tutorial_jumping: "Tutorial: Jumping"
     tutorial_coins: "Tutorial: Coins"
+    tutorial_doors: "Tutorial: Doors"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
@@ -119,3 +120,7 @@ campaign:
     tutorial_coins_collect: "Always take care to collect those coins, you might need them later!"
     tutorial_coins_highscore: "The coins you have left when you exit a map are counted towards your highscore."
     tutorial_coins_database: "Each player can save a unique highscore for each map."
+    tutorial_doors_intro: "Ladders may be climbed by pressing the up or down key while standing on them."
+    tutorial_doors_keys: "You can collect keys the same way as you collect coins on a map. Keys do not count to your high score."
+    tutorial_doors_doors: "There are closed doors on the map which may be opened using a key by simply walking through."
+    tutorial_doors_all_keys: "Always take care to collect enough keys to reach the exit of a map!"

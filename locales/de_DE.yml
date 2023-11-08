@@ -106,6 +106,7 @@ campaign:
     tutorial_walking: "Tutorial: Laufen"
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
+    tutorial_doors: "Tutorial: Türen"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."
@@ -120,3 +121,7 @@ campaign:
     tutorial_coins_collect: "Versuche immer, alle Münzen einzusammeln, sie könnten später nützlich sein!"
     tutorial_coins_highscore: "Die Münzen, die nach Beenden eines Levels übrig sind, zählen als Punktzahl im Highscore."
     tutorial_coins_database: "Jeder Spieler kann einen eigenen Highscore pro Map erspielen."
+    tutorial_doors_intro: "Leitern können betreten werden, indem man die Pfeil nach oben/unten-Tasten benutzt."
+    tutorial_doors_keys: "Schlüssel können in der Welt genau wie Münzen gesammelt werden, zählen aber nicht zur Punktzahl."
+    tutorial_doors_doors: "Es gibt verschlossene Türen auf der Karte, welche mit einem Schlüssel geöffnet werden können."
+    tutorial_doors_all_keys: "Sei vorsichtig und achte darauf, immer genug Schlüssel zu sammeln, um das Ziel zu erreichen!"
