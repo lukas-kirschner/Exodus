@@ -1,5 +1,6 @@
 use crate::exodus_serializable::ExodusSerializable;
 use crate::tiles::{InteractionKind, Tile};
+use crate::tilesets::Tileset;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
 use crate::world::GameWorld;
@@ -53,6 +54,7 @@ impl GameWorld {
             filename: Some(path.to_path_buf()),
             clean: true,
             messages: vec![],
+            forced_tileset: None,
         };
         ret.parse(&mut buf)?;
         Ok(ret)
@@ -94,6 +96,9 @@ impl ExodusSerializable for GameWorld {
 
         self.serialize_world_content(file)?;
 
+        // Write forced tileset. The tileset should not be considered when
+        // calculating the hash of a map.
+        self.serialize_tileset(file)?;
         Ok(())
     }
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
@@ -188,6 +193,7 @@ impl ExodusSerializable for GameWorld {
             }
         }
         self.parse_messages(file, current_message_id)?;
+        self.parse_tileset(file)?;
 
         Ok(())
     }
@@ -208,6 +214,23 @@ impl GameWorld {
         for _ in 0..actual_len {
             let message = self.parse_current_version_string(file)?;
             self.messages.push(message);
+        }
+        Ok(())
+    }
+    fn parse_tileset<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
+        let mut opt = [0u8; 1];
+        file.read_exact(&mut opt)?;
+        if opt[0] == 0x00 {
+            self.forced_tileset = None;
+        } else {
+            let mut tileset_buf = [0u8; 1];
+            file.read_exact(&mut tileset_buf)?;
+            let Some(tileset) = Tileset::from_bytes(tileset_buf[0]) else {
+                return Err(GameWorldParseError::InvalidTileset {
+                    tileset_bytes: tileset_buf[0],
+                });
+            };
+            self.forced_tileset = Some(tileset);
         }
         Ok(())
     }
@@ -277,6 +300,20 @@ impl GameWorld {
                 })?;
             file.write_all(&serialized_message_text)?;
         }
+        Ok(())
+    }
+    /// Serialize the forced tileset of this map
+    pub(crate) fn serialize_tileset<T: Write>(
+        &self,
+        file: &mut T,
+    ) -> Result<(), GameWorldParseError> {
+        if let Some(tileset) = &self.forced_tileset {
+            let buf = [0x01u8, tileset.to_bytes()];
+            file.write_all(&buf)?;
+        } else {
+            let buf = [0u8; 1];
+            file.write_all(&buf)?;
+        };
         Ok(())
     }
 }
@@ -495,7 +532,6 @@ mod tests {
             );
         }
     }
-
     fn test_write_and_read_map(map: &mut GameWorld) -> GameWorld {
         map.recompute_hash();
         let mut buf = ByteBuffer::new();
@@ -518,6 +554,7 @@ mod tests {
         assert_eq!(map.name, result_map.name);
         assert_eq!(map.width(), result_map.width());
         assert_eq!(map.height(), result_map.height());
+        assert_eq!(map.forced_tileset(), result_map.forced_tileset());
         result_map
     }
 
@@ -603,6 +640,7 @@ mod tests {
             .set(0, 1, Tile::AIR)
             .set_name("")
             .set_author("John Doe")
+            .set_forced_tileset(Some(Tileset::Classic))
             .set_clean();
         test_write_and_read_map(&mut reference_map);
     }

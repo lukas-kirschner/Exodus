@@ -1,4 +1,5 @@
 use crate::tiles::{Tile, TileKind};
+use crate::tilesets::Tileset;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
@@ -36,6 +37,8 @@ pub struct GameWorld {
     clean: bool,
     /// All messages that are stored in this map
     messages: Vec<String>,
+    /// All messages that are stored in this map
+    forced_tileset: Option<Tileset>,
 }
 
 impl Default for GameWorld {
@@ -49,6 +52,7 @@ impl Default for GameWorld {
             filename: None,
             clean: true,
             messages: vec![],
+            forced_tileset: None,
         }
     }
 }
@@ -65,7 +69,8 @@ impl GameWorld {
             hash: [0u8; 32], // Generate a zeroed default hash
             filename: None,
             clean: true,
-            messages: vec![], // No messages
+            messages: vec![],     // No messages
+            forced_tileset: None, // Do not force a tile set
         }
     }
     /// Get the unique ID of this map as hex-string representation
@@ -83,6 +88,10 @@ impl GameWorld {
     /// Get the name of this world
     pub fn get_name(&self) -> &str {
         self.name.as_str()
+    }
+    /// If the map has a forced tileset, return the tileset. Else, return none
+    pub fn forced_tileset(&self) -> Option<Tileset> {
+        self.forced_tileset
     }
     /// Get the last set file name for this map, or None if it has been created new
     pub fn get_filename(&self) -> Option<&Path> {
@@ -113,6 +122,11 @@ impl GameWorld {
         self.author = new_name.to_string();
         self
     }
+    /// Set the forced tileset of this world
+    pub fn set_forced_tileset(&mut self, tileset: Option<Tileset>) -> &mut Self {
+        self.forced_tileset = tileset;
+        self
+    }
     /// Set the tile at the given coordinate to the given value.
     /// If the tile to be set is a player spawn, the old player spawn will be deleted automatically
     /// (replaced by an Air tile).
@@ -120,12 +134,8 @@ impl GameWorld {
         match &tile.kind() {
             TileKind::AIR => {},
             TileKind::SOLID => {},
-            TileKind::DEADLY { .. } => {
-                //TODO
-            },
-            TileKind::SPECIAL { interaction: _ } => {
-                //TODO
-            },
+            TileKind::DEADLY { from: _ } => {},
+            TileKind::SPECIAL { interaction: _ } => {},
             TileKind::PLAYERSPAWN => {
                 // Replace the old player spawn with air
                 let (px, py) = self.playerspawn;

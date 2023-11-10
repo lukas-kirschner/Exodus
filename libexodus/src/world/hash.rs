@@ -42,6 +42,7 @@ impl GameWorld {
 #[cfg(test)]
 mod tests {
     use crate::tiles::Tile;
+    use crate::tilesets::Tileset::Classic;
     use crate::world::hash::RecomputeHashResult;
     use crate::world::GameWorld;
 
@@ -85,6 +86,22 @@ mod tests {
             },
         };
         assert_hashes_are_equal(&map.hash, &new_hash);
+    }
+    #[test]
+    fn test_map_hash_stays_same_for_different_tileset() {
+        let mut map = GameWorld::exampleworld();
+        let mut same_map = GameWorld::exampleworld();
+        map.recompute_hash();
+        same_map.recompute_hash();
+        let new_hash = map.hash.clone();
+        assert_hashes_are_equal(&map.hash, &same_map.hash);
+        same_map.forced_tileset = Some(Classic);
+        assert_ne!(map.forced_tileset, same_map.forced_tileset);
+        assert!(matches!(
+            same_map.recompute_hash(),
+            RecomputeHashResult::SAME
+        ));
+        assert_hashes_are_equal(&map.hash, &same_map.hash);
     }
 
     #[test]

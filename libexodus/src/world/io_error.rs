@@ -35,6 +35,9 @@ pub enum GameWorldParseError {
     InvalidTile {
         tile_bytes: u8,
     },
+    InvalidTileset {
+        tileset_bytes: u8,
+    },
     HashMismatch {
         expected: [u8; 32],
         actual: [u8; 32],
@@ -58,6 +61,7 @@ impl Display for GameWorldParseError {
             GameWorldParseError::InvalidMapHeight { max_height, actual_height } => write!(f, "Invalid Map Height: {} (Max allowed height: {})", actual_height, max_height),
             GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error),
             GameWorldParseError::InvalidTile { tile_bytes } => write!(f, "Tile Byte not recognized as valid tile: 0x{:02x}", tile_bytes),
+            GameWorldParseError::InvalidTileset { tileset_bytes } => write!(f, "Tileset Byte not recognized as valid tileset: 0x{:02x}", tileset_bytes),
             GameWorldParseError::HashMismatch { expected, actual } => write!(f, "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}", expected, actual),
             GameWorldParseError::MissingMessageString { expected_length, actual_length } => write!(f, "Missing Message String! Expected number of messages: {} - actual: {}", expected_length, actual_length),
         }
@@ -93,6 +97,7 @@ impl GameWorldParseError {
             GameWorldParseError::InvalidTile { .. } => 8,
             GameWorldParseError::HashMismatch { .. } => 9,
             GameWorldParseError::MissingMessageString { .. } => 10,
+            GameWorldParseError::InvalidTileset { .. } => 11,
         }
     }
 }
