@@ -83,6 +83,7 @@ fn door_opened(
     config: &GameConfig,
     world: &mut GameWorld,
     scoreboard: &mut Scoreboard,
+    atlas_handle: &TilesetManager,
 ) -> bool {
     let (target_x_px, target_y_px) = (
         target_x_coord * config.texture_size() as i32,
@@ -109,6 +110,25 @@ fn door_opened(
                 );
                 texture_atlas_sprite.index = Tile::OPENDOOR.atlas_index().unwrap();
                 scoreboard.keys -= 1;
+                // Spawn a "Key Used" Animation:
+                commands.spawn((
+                    SpriteSheetBundle {
+                        sprite: TextureAtlasSprite::new(Tile::KEY.atlas_index().unwrap()),
+                        texture_atlas: atlas_handle.current_handle(),
+                        transform: Transform {
+                            translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z).into(),
+                            ..default()
+                        },
+                        ..Default::default()
+                    },
+                    AnimatedActionSprite::from_ascend_and_zoom(
+                        KEY_OPEN_ANIMATION_DECAY_SPEED,
+                        KEY_OPEN_ANIMATION_ASCEND_SPEED,
+                        KEY_OPEN_ANIMATION_ZOOM_SPEED,
+                        AnimatedSpriteAction::None,
+                    ), // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
+                    RenderLayers::layer(LAYER_ID),
+                ));
                 return true;
             }
         }
@@ -137,6 +157,7 @@ pub fn player_movement(
     mut worldwrapper: ResMut<MapWrapper>,
     config: Res<GameConfig>,
     time: Res<Time>,
+    atlas_handle: Res<TilesetManager>,
 ) {
     for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
         // Peek the player's movement queue
@@ -171,6 +192,7 @@ pub fn player_movement(
                         &config,
                         &mut worldwrapper.world,
                         &mut scoreboard,
+                        atlas_handle.as_ref(),
                     ) {
                         debug!(
                             "Dropped movement {:?} to {},{} because a collision was detected.",

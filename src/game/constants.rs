@@ -40,3 +40,9 @@ pub const PICKUP_ITEM_ASCEND_SPEED: f32 = 7.0;
 pub const PICKUP_ITEM_ZOOM_SPEED: f32 = 0.01;
 /// The speed a pickup item fades out
 pub const PICKUP_ITEM_DECAY_SPEED: f32 = -3.5;
+/// The ascend speed of a key in the "Door Open" Animation
+pub const KEY_OPEN_ANIMATION_ASCEND_SPEED: f32 = 7.0;
+/// The zoom speed of a key in the "Door Open" Animation
+pub const KEY_OPEN_ANIMATION_ZOOM_SPEED: f32 = 0.1;
+/// The decay speed of a key in the "Door Open" Animation
+pub const KEY_OPEN_ANIMATION_DECAY_SPEED: f32 = -3.5;
