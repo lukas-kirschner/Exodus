@@ -1,7 +1,7 @@
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
-use crate::{AppState, GameConfig, TilesetManager};
+use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
 use bevy_egui::{egui, EguiContexts};
@@ -85,7 +85,7 @@ fn config_screen_ui(
         });
 }
 
-fn save_and_apply_config(res_config: Res<GameConfig>, mut res_tileset: ResMut<TilesetManager>) {
+fn save_and_apply_config(res_config: Res<GameConfig>) {
     res_config
         .config
         .save_to_file(res_config.file.as_path())

@@ -65,7 +65,7 @@ impl SaveFileDialog {
             file_path: None,
             error_text: "".to_string(),
             force_texturepack: forced_textures.is_some(),
-            texturepack: forced_textures.unwrap_or(Tileset::default()),
+            texturepack: forced_textures.unwrap_or_default(),
         }
     }
     /// Resolve the file name and return the full path
