@@ -34,6 +34,7 @@ map_editor:
     save_dialog_map_name: Name
     save_dialog_map_hash: Prüfsumme
     save_dialog_overwrite: Soll die Karte überschrieben werden?
+    save_dialog_override_texture_pack: "Erzwungenes Texturpaket:"
     edit_message_dialog_title: Nachricht bearbeiten
   buttons:
     currently_selected: momentan gewählt

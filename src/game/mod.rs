@@ -50,6 +50,13 @@ impl Plugin for GamePlugin {
                 },
                 load_texture_pack.in_set(AppLabels::PrepareData),
             )
+            .add_systems(
+                OnTransition {
+                    from: AppState::MapSelectionScreen,
+                    to: AppState::MapEditor,
+                },
+                load_texture_pack.in_set(AppLabels::PrepareData),
+            )
             .add_systems(OnExit(AppState::Playing), load_texture_pack_from_config)
             .add_systems(
                 OnExit(AppState::ConfigScreen),
@@ -72,7 +79,7 @@ fn load_texture_pack(
         res_tileset.current_tileset = map_texture_pack;
     } else {
         info!(
-            "There was no map-specific texture pack inside the map. Keeping {}.",
+            "There was no map-specific texture pack configured inside the map. Keeping {}.",
             &res_config.config.tile_set
         );
         res_tileset.current_tileset = res_config.config.tile_set;

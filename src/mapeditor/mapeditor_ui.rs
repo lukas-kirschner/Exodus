@@ -154,6 +154,7 @@ fn mapeditor_ui(
                                             worldwrapper.world.get_author(),
                                             &worldwrapper.world.hash_str().as_str()[..16],
                                             &directories.game_directories,
+                                            worldwrapper.world.forced_tileset(),
                                         )),
                                     });
                                     state.set(AppState::MapEditorDialog);
@@ -466,11 +467,14 @@ fn mapeditor_dialog(
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {
-            if let Some(upd_fname) = save_dialog.get_filename() {
-                worldwrapper.world.set_filename(upd_fname);
+            if let Some(updated_filename) = save_dialog.get_filename() {
+                worldwrapper.world.set_filename(updated_filename);
             }
             worldwrapper.world.set_name(save_dialog.get_map_title());
             worldwrapper.world.set_author(save_dialog.get_map_author());
+            worldwrapper
+                .world
+                .set_forced_tileset(save_dialog.get_forced_tileset());
             if worldwrapper.world.get_filename().is_some() {
                 let result = worldwrapper
                     .world

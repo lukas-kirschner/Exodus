@@ -33,6 +33,7 @@ map_editor:
     save_dialog_map_name: Map Name
     save_dialog_map_hash: Map Hash
     save_dialog_overwrite: Do you want to overwrite the map?
+    save_dialog_override_texture_pack: "Force the use of a specific texture pack:"
     edit_message_dialog_title: Edit Message
   buttons:
     currently_selected: currently selected
