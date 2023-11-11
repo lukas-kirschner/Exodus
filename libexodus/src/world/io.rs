@@ -1,5 +1,6 @@
 use crate::exodus_serializable::ExodusSerializable;
 use crate::tiles::{InteractionKind, Tile};
+use crate::tilesets::Tileset;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
 use crate::world::GameWorld;
@@ -53,6 +54,7 @@ impl GameWorld {
             filename: Some(path.to_path_buf()),
             clean: true,
             messages: vec![],
+            forced_tileset: None,
         };
         ret.parse(&mut buf)?;
         Ok(ret)
@@ -72,7 +74,7 @@ impl GameWorld {
 
 /// Implementation for Serializer
 impl ExodusSerializable for GameWorld {
-    const CURRENT_VERSION: u8 = 0x01;
+    const CURRENT_VERSION: u8 = 0x02;
     type ParseError = GameWorldParseError;
     fn serialize<T: Write>(&self, file: &mut T) -> Result<(), GameWorldParseError> {
         // Write magic bytes
@@ -94,6 +96,9 @@ impl ExodusSerializable for GameWorld {
 
         self.serialize_world_content(file)?;
 
+        // Write forced tileset. The tileset should not be considered when
+        // calculating the hash of a map.
+        self.serialize_tileset(file)?;
         Ok(())
     }
     fn parse<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
@@ -111,6 +116,7 @@ impl ExodusSerializable for GameWorld {
         let mut buf: [u8; 1] = [0; 1];
         file.read_exact(&mut buf)?;
         match buf[0] {
+            0x01 => self.parse_v1(file),
             Self::CURRENT_VERSION => self.parse_current_version(file),
             // Add older versions here
             _ => {
@@ -186,9 +192,8 @@ impl ExodusSerializable for GameWorld {
                 self.set(x, y, tile);
             }
         }
-        if current_message_id > 0 {
-            self.parse_messages(file, current_message_id)?;
-        }
+        self.parse_messages(file, current_message_id)?;
+        self.parse_tileset(file)?;
 
         Ok(())
     }
@@ -209,6 +214,23 @@ impl GameWorld {
         for _ in 0..actual_len {
             let message = self.parse_current_version_string(file)?;
             self.messages.push(message);
+        }
+        Ok(())
+    }
+    fn parse_tileset<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
+        let mut opt = [0u8; 1];
+        file.read_exact(&mut opt)?;
+        if opt[0] == 0x00 {
+            self.forced_tileset = None;
+        } else {
+            let mut tileset_buf = [0u8; 1];
+            file.read_exact(&mut tileset_buf)?;
+            let Some(tileset) = Tileset::from_bytes(tileset_buf[0]) else {
+                return Err(GameWorldParseError::InvalidTileset {
+                    tileset_bytes: tileset_buf[0],
+                });
+            };
+            self.forced_tileset = Some(tileset);
         }
         Ok(())
     }
@@ -257,9 +279,7 @@ impl GameWorld {
                 file.write_all(&[tile.to_bytes()])?;
             }
         }
-        if !message_ids.is_empty() {
-            self.serialize_messages(file, &message_ids)?;
-        }
+        self.serialize_messages(file, &message_ids)?;
         Ok(())
     }
     pub(crate) fn serialize_messages<T: Write>(
@@ -280,6 +300,88 @@ impl GameWorld {
                 })?;
             file.write_all(&serialized_message_text)?;
         }
+        Ok(())
+    }
+    /// Serialize the forced tileset of this map
+    pub(crate) fn serialize_tileset<T: Write>(
+        &self,
+        file: &mut T,
+    ) -> Result<(), GameWorldParseError> {
+        if let Some(tileset) = &self.forced_tileset {
+            let buf = [0x01u8, tileset.to_bytes()];
+            file.write_all(&buf)?;
+        } else {
+            let buf = [0u8; 1];
+            file.write_all(&buf)?;
+        };
+        Ok(())
+    }
+}
+/// Implementations for parsing v0x01 map files.
+/// The code duplication is intentional here because we want to keep perfect
+/// backwards-compatibility with older map formats while supporting frequent
+/// changes of the current map format version.
+impl GameWorld {
+    /// Parse a map with version 0x01.
+    fn parse_v1<T: Read>(&mut self, file: &mut T) -> Result<(), GameWorldParseError> {
+        // Parse Map Name
+        let name = self.parse_current_version_string(file)?;
+        self.set_name(name.as_str());
+
+        // Parse Map Author
+        let author = self.parse_current_version_string(file)?;
+        self.set_author(author.as_str());
+
+        let hash = self.parse_current_version_uuid(file)?;
+        self.hash = hash;
+
+        // Parse Map Width and Map Height
+        let map_width: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
+        let map_height: usize = bincode::deserialize_from::<&mut T, usize>(file)?;
+        if map_width > MAX_MAP_WIDTH {
+            return Err(GameWorldParseError::InvalidMapWidth {
+                max_width: MAX_MAP_WIDTH,
+                actual_width: map_width,
+            });
+        }
+        if map_height > MAX_MAP_HEIGHT {
+            return Err(GameWorldParseError::InvalidMapHeight {
+                max_height: MAX_MAP_HEIGHT,
+                actual_height: map_height,
+            });
+        }
+        self.data = vec![vec![Tile::AIR; map_height]; map_width];
+        assert_eq!(map_width, self.width());
+        assert_eq!(map_height, self.height());
+
+        // Parse actual map content
+        // The message ID of the current message tile
+        let mut current_message_id = 0usize;
+        for y in 0..self.height() {
+            for x in 0..self.width() {
+                let mut buf = [0u8; 1];
+                file.read_exact(&mut buf).map_err(|e| {
+                    GameWorldParseError::UnexpectedEndOfTileData {
+                        io_error: e,
+                        position: (y * x) + x,
+                    }
+                })?;
+                let mut tile = Tile::from_bytes(buf[0])
+                    .ok_or(GameWorldParseError::InvalidTile { tile_bytes: buf[0] })?;
+                // Assign the current message ID to message tiles
+                if let Tile::MESSAGE { .. } = tile {
+                    tile = Tile::MESSAGE {
+                        message_id: current_message_id,
+                    };
+                    current_message_id += 1;
+                }
+                self.set(x, y, tile);
+            }
+        }
+        if current_message_id > 0 {
+            self.parse_messages(file, current_message_id)?;
+        }
+
         Ok(())
     }
 }
@@ -397,7 +499,14 @@ mod tests {
     use super::*;
     use bincode::ErrorKind;
     use bytebuffer::ByteBuffer;
+    use std::path::PathBuf;
     use strum::{EnumCount, IntoEnumIterator};
+
+    fn get_test_data_folder() -> PathBuf {
+        let mut ret = PathBuf::from(env!("PROJECTDIR"));
+        ret.push("testdata");
+        ret
+    }
 
     #[test]
     fn test_bidirectional_serialization_for_tiles() {
@@ -423,7 +532,6 @@ mod tests {
             );
         }
     }
-
     fn test_write_and_read_map(map: &mut GameWorld) -> GameWorld {
         map.recompute_hash();
         let mut buf = ByteBuffer::new();
@@ -446,7 +554,21 @@ mod tests {
         assert_eq!(map.name, result_map.name);
         assert_eq!(map.width(), result_map.width());
         assert_eq!(map.height(), result_map.height());
+        assert_eq!(map.forced_tileset(), result_map.forced_tileset());
         result_map
+    }
+
+    #[test]
+    /// Regression Test that tests loading a V0x01 map correctly from disk.
+    fn test_read_v1_map() {
+        let mut file = get_test_data_folder();
+        file.push("testmap_v0x01.exm");
+        println!("World file {}", &file.as_path().to_str().unwrap());
+        let world = GameWorld::load_from_file(file.as_path()).unwrap();
+        assert_eq!(24usize, world.width());
+        assert_eq!(10usize, world.height());
+        assert_eq!("Debugger", world.get_author());
+        assert_eq!("Example World", world.get_name());
     }
 
     #[test]
@@ -518,6 +640,7 @@ mod tests {
             .set(0, 1, Tile::AIR)
             .set_name("")
             .set_author("John Doe")
+            .set_forced_tileset(Some(Tileset::Classic))
             .set_clean();
         test_write_and_read_map(&mut reference_map);
     }

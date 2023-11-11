@@ -1,5 +1,5 @@
 use crate::game::pickup_item::PickupItemPlugin;
-use crate::{AppLabels, AppState};
+use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use std::path::PathBuf;
@@ -17,6 +17,7 @@ use crate::game::player::{PlayerPlugin, ReturnTo};
 use crate::game::tilewrapper::{reset_score, MapWrapper};
 use crate::game::ui::GameUIPlugin;
 use crate::game::world::WorldPlugin;
+use crate::textures::tileset_manager::TilesetManager;
 
 pub struct GamePlugin;
 
@@ -34,8 +35,67 @@ impl Plugin for GamePlugin {
             .add_systems(
                 OnEnter(AppState::Playing),
                 reset_score.in_set(AppLabels::ResetScore),
+            )
+            .add_systems(
+                OnTransition {
+                    from: AppState::MapSelectionScreen,
+                    to: AppState::Playing,
+                },
+                load_texture_pack.in_set(AppLabels::PrepareData),
+            )
+            .add_systems(
+                OnTransition {
+                    from: AppState::CampaignTrailScreen,
+                    to: AppState::Playing,
+                },
+                load_texture_pack.in_set(AppLabels::PrepareData),
+            )
+            .add_systems(
+                OnTransition {
+                    from: AppState::MapSelectionScreen,
+                    to: AppState::MapEditor,
+                },
+                load_texture_pack.in_set(AppLabels::PrepareData),
+            )
+            .add_systems(OnExit(AppState::Playing), load_texture_pack_from_config)
+            .add_systems(
+                OnExit(AppState::ConfigScreen),
+                load_texture_pack_from_config.in_set(AppLabels::PrepareData),
             );
     }
+}
+
+/// Set the loaded texture pack to the map-specific texture pack, if there is a forced texture pack set in the map
+fn load_texture_pack(
+    res_config: Res<GameConfig>,
+    mut res_tileset: ResMut<TilesetManager>,
+    mapwrapper: Res<MapWrapper>,
+) {
+    if let Some(map_texture_pack) = mapwrapper.world.forced_tileset() {
+        info!(
+            "Found a map-specific texture pack: {}. Setting the texture pack",
+            map_texture_pack
+        );
+        res_tileset.current_tileset = map_texture_pack;
+    } else {
+        info!(
+            "There was no map-specific texture pack configured inside the map. Keeping {}.",
+            &res_config.config.tile_set
+        );
+        res_tileset.current_tileset = res_config.config.tile_set;
+    }
+}
+
+/// Set the loaded texture pack to the texture pack set in the config
+fn load_texture_pack_from_config(
+    res_config: Res<GameConfig>,
+    mut res_tileset: ResMut<TilesetManager>,
+) {
+    info!(
+        "Re-setting texture pack to {}.",
+        &res_config.config.tile_set
+    );
+    res_tileset.current_tileset = res_config.config.tile_set;
 }
 
 #[derive(Resource)]

@@ -3,9 +3,12 @@ use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
 use bevy::log::{debug, warn};
+use bevy_egui::egui;
 use bevy_egui::egui::Ui;
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
+use libexodus::tilesets::Tileset;
 use std::path::{Path, PathBuf};
+use strum::IntoEnumIterator;
 
 #[derive(Eq, PartialEq)]
 enum SaveFileDialogState {
@@ -31,6 +34,10 @@ pub struct SaveFileDialog {
     file_path: Option<PathBuf>,
     /// Error text that is shown when an error occurs
     error_text: String,
+    /// Whether or not to force the user to use a certain texture pack
+    force_texturepack: bool,
+    /// The texture pack the player is forced to use
+    texturepack: Tileset,
 }
 
 impl SaveFileDialog {
@@ -41,6 +48,7 @@ impl SaveFileDialog {
         mapauthor: &str,
         uuid: &str,
         directories: &GameDirectories,
+        forced_textures: Option<Tileset>,
     ) -> Self {
         SaveFileDialog {
             file_name: filename
@@ -56,6 +64,8 @@ impl SaveFileDialog {
             state: SaveFileDialogState::Choosing,
             file_path: None,
             error_text: "".to_string(),
+            force_texturepack: forced_textures.is_some(),
+            texturepack: forced_textures.unwrap_or_default(),
         }
     }
     /// Resolve the file name and return the full path
@@ -67,6 +77,13 @@ impl SaveFileDialog {
     }
     pub fn get_map_author(&self) -> &str {
         self.map_author.as_str()
+    }
+    pub fn get_forced_tileset(&self) -> Option<Tileset> {
+        if self.force_texturepack {
+            Some(self.texturepack)
+        } else {
+            None
+        }
     }
 }
 
@@ -139,6 +156,30 @@ impl UIDialog for SaveFileDialog {
                             .on_hover_text(t!("map_editor.dialog.save_dialog_map_author_tooltip"))
                     });
                 });
+                ui.separator();
+                ui.checkbox(
+                    &mut self.force_texturepack,
+                    format!(
+                        "{}:",
+                        t!("map_editor.dialog.save_dialog_override_texture_pack")
+                    ),
+                );
+                ui.add_enabled_ui(self.force_texturepack, |ui| {
+                    let selected_tileset = self.texturepack.to_string();
+                    egui::ComboBox::from_id_source("forced_tileset")
+                        .selected_text(selected_tileset)
+                        .show_ui(ui, |ui| {
+                            ui.set_width(row_width);
+                            for tileset in Tileset::iter() {
+                                ui.selectable_value(
+                                    &mut self.texturepack,
+                                    tileset,
+                                    &tileset.to_string(),
+                                );
+                            }
+                        });
+                });
+                ui.separator();
                 ui.scope(|ui| {
                     ui.set_width(row_width);
                     ui.horizontal(|ui| {

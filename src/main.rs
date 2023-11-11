@@ -43,7 +43,8 @@ pub enum AppLabels {
     GameUI,
     Camera,
     LoadMaps,
-    /// Prepare data to display to the player, e.g. maps. Executed before all camera systems
+    /// Prepare data to display to the player, e.g. maps and textures.
+    /// Executed before all camera systems and world set-up.
     PrepareData,
 }
 
