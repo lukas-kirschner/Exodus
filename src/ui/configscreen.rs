@@ -106,5 +106,6 @@ fn save_and_apply_config(res_config: Res<GameConfig>, mut res_tileset: ResMut<Ti
     // Set Locale
     rust_i18n::set_locale(res_config.config.game_language.locale());
     // Set Tile Set
-    res_tileset.current_tileset = res_config.config.tile_set;
+    // res_tileset.current_tileset = res_config.config.tile_set;
+    // This is actually done in a different schedule now.
 }

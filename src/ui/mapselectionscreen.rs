@@ -3,6 +3,7 @@ use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
+use crate::textures::tileset_manager::TilesetManager;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
