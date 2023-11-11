@@ -13,7 +13,6 @@ members = [
 [dependencies]
 indoc = "2.0.4"
 libexodus = { path = "libexodus" }
-bevy_egui = { version = "0.21.0", default-features = false }
 strum = "0.25.0"
 once_cell = "1.16.0"
 rust-i18n = "2.2.1"
@@ -27,11 +26,8 @@ load_path = "locales"
 # Bevy Debloating - see https://bevy-cheatbook.github.io/setup/bevy-config.html
 [dependencies.bevy]
 version = "0.11.3"
-# Disable the default features if there are any that you do not want
 default-features = false
 features = [
-    # These are the default features:
-    # (re-enable whichever you like)
 
     # Bevy functionality:
     "bevy_asset", # Assets management
@@ -88,6 +84,14 @@ features = [
     #    "trace_tracy",  # Tracing using `tracy`
     #    "trace_chrome", # Tracing using the Chrome format
     #    "wgpu_trace",   # WGPU/rendering tracing
+]
+
+# Only include the features of bevy_egui that we actually need:
+[dependencies.bevy_egui]
+version = "0.21.0"
+default-features = false
+features = [
+    "default_fonts" # Include the default fonts
 ]
 
 

@@ -3,7 +3,7 @@ use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
 use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
-use bevy_egui::egui::Frame;
+use bevy_egui::egui::{Align, Frame, Layout, TextStyle, Ui};
 use bevy_egui::{egui, EguiContexts};
 
 /// Set up the UI for the Main Menu
@@ -20,62 +20,57 @@ fn mainmenu_buttons(
     mut state: ResMut<NextState<AppState>>,
     mut exit: EventWriter<AppExit>,
 ) {
+    let num_buttons = 5f32;
     ui.scope(|ui| {
-        // Scope for the buttons
-        ui.horizontal(|ui| {
-            // Left-Align Buttons
+        ui.set_height(num_buttons * BUTTON_HEIGHT);
+        ui.set_width(400.0);
+        ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
             ui.scope(|ui| {
-                // Button Width
-                ui.set_width(400.0);
-                ui.vertical_centered_justified(|ui| {
-                    ui.scope(|ui| {
-                        ui.set_height(BUTTON_HEIGHT);
-                        ui.centered_and_justified(|ui| {
-                            let campaign_btn = ui.button(t!("main_menu.campaign_screen"));
-                            if campaign_btn.clicked() {
-                                state.set(AppState::CampaignTrailScreen);
-                            }
-                        });
-                    });
-                    ui.scope(|ui| {
-                        ui.set_height(BUTTON_HEIGHT);
-                        ui.centered_and_justified(|ui| {
-                            let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
-                            if maps_btn.clicked() {
-                                state.set(AppState::MapSelectionScreen);
-                            }
-                        });
-                    });
-                    ui.scope(|ui| {
-                        ui.set_height(BUTTON_HEIGHT);
-                        ui.centered_and_justified(|ui| {
-                            let credits_btn = ui.button(t!("main_menu.credits_screen"));
-                            if credits_btn.clicked() {
-                                state.set(AppState::CreditsScreen);
-                            }
-                        });
-                    });
-                    ui.scope(|ui| {
-                        ui.set_height(BUTTON_HEIGHT);
-                        ui.centered_and_justified(|ui| {
-                            let config_btn = ui.button(t!("main_menu.config_screen"));
-                            if config_btn.clicked() {
-                                state.set(AppState::ConfigScreen);
-                            }
-                        });
-                    });
-                    ui.scope(|ui| {
-                        ui.set_height(BUTTON_HEIGHT);
-                        ui.centered_and_justified(|ui| {
-                            let quit_btn = ui.button(t!("main_menu.quit"));
-                            if quit_btn.clicked() {
-                                exit.send(AppExit);
-                            }
-                        });
-                    });
+                ui.set_height(BUTTON_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let campaign_btn = ui.button(t!("main_menu.campaign_screen"));
+                    if campaign_btn.clicked() {
+                        state.set(AppState::CampaignTrailScreen);
+                    }
                 });
             });
-        });
+            ui.scope(|ui| {
+                ui.set_height(BUTTON_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let maps_btn = ui.button(t!("main_menu.map_selection_screen"));
+                    if maps_btn.clicked() {
+                        state.set(AppState::MapSelectionScreen);
+                    }
+                });
+            });
+            ui.scope(|ui| {
+                ui.set_height(BUTTON_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let credits_btn = ui.button(t!("main_menu.credits_screen"));
+                    if credits_btn.clicked() {
+                        state.set(AppState::CreditsScreen);
+                    }
+                });
+            });
+            ui.scope(|ui| {
+                ui.set_height(BUTTON_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let config_btn = ui.button(t!("main_menu.config_screen"));
+                    if config_btn.clicked() {
+                        state.set(AppState::ConfigScreen);
+                    }
+                });
+            });
+            ui.scope(|ui| {
+                ui.set_height(BUTTON_HEIGHT);
+                ui.centered_and_justified(|ui| {
+                    let quit_btn = ui.button(t!("main_menu.quit"));
+                    if quit_btn.clicked() {
+                        exit.send(AppExit);
+                    }
+                });
+            });
+        })
     });
 }
 
@@ -88,22 +83,33 @@ fn mainmenu_ui(
     egui::CentralPanel::default()
         .frame(Frame::none())
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.centered_and_justified(|ui| {
+            ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                // Left-Justify everything
                 ui.scope(|ui| {
-                    ui.horizontal(|ui| {
-                        // Left-Justify everything
-                        ui.scope(|ui| {
-                            // Margin Left
-                            ui.set_width(UIMARGIN)
-                        });
-                        ui.heading(
-                            format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
-                                .as_str(),
+                    // Margin Left
+                    ui.set_width(UIMARGIN)
+                });
+                ui.scope(|ui| {
+                    ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
+                        ui.label(
+                            egui::RichText::new(
+                                format!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+                                    .as_str(),
+                            )
+                            .text_style(TextStyle::Name("MainMenuGameTitle".into())),
                         );
-                        ui.separator();
-                        mainmenu_buttons(ui, state, exit);
+                        if cfg!(debug_assertions) {
+                            ui.label(
+                                egui::RichText::new(
+                                    format!("Debug Build {}", env!("GIT_SHORTHASH")).as_str(),
+                                )
+                                .text_style(TextStyle::Small),
+                            );
+                        }
                     });
                 });
+                ui.separator();
+                mainmenu_buttons(ui, state, exit);
             });
         });
 }
