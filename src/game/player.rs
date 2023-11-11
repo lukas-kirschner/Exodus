@@ -116,7 +116,8 @@ fn door_opened(
                         sprite: TextureAtlasSprite::new(Tile::KEY.atlas_index().unwrap()),
                         texture_atlas: atlas_handle.current_handle(),
                         transform: Transform {
-                            translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z).into(),
+                            translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z - 0.1)
+                                .into(),
                             ..default()
                         },
                         ..Default::default()

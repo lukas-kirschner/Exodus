@@ -1,7 +1,7 @@
 use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
 use crate::game::constants::{
     COLLECTIBLE_PICKUP_DISTANCE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
-    PICKUP_ITEM_ZOOM_SPEED,
+    PICKUP_ITEM_ZOOM_SPEED, PLAYER_Z,
 };
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
@@ -79,15 +79,15 @@ struct CollectibleCollectedEvent {
 /// Set up a Collectible Event for the given Collectible type.
 fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
     mut commands: Commands,
-    coin_query: Query<(Entity, &Transform, &WrapperType)>,
-    players: Query<(&PlayerComponent, &Transform, Entity)>,
+    mut coin_query: Query<(Entity, &mut Transform, &WrapperType)>,
+    players: Query<(&PlayerComponent, &Transform, Entity), Without<WrapperType>>,
     mut ev_collectible_collected: EventWriter<CollectibleCollectedEvent>,
 ) {
     for (_player, player_trans, player_entity) in players.iter() {
         let player_pos: Vec3 = player_trans.translation;
-        for (coin_entity, coin_trans, coin) in coin_query.iter() {
-            let coin_pos: Vec3 = coin_trans.translation;
-            let dist = dist_2d(&player_pos, &coin_pos);
+        for (coin_entity, mut coin_trans, coin) in coin_query.iter_mut() {
+            let coin_pos: &mut Vec3 = &mut coin_trans.translation;
+            let dist = dist_2d(&player_pos, coin_pos);
             if dist <= COLLECTIBLE_PICKUP_DISTANCE {
                 // Fire event
                 ev_collectible_collected.send(CollectibleCollectedEvent {
@@ -95,6 +95,9 @@ fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
                     action: coin.get_action(),
                     collectible: coin_entity,
                 });
+                // Set the z position of the animation to the z position of the player, such that
+                // animations will be rendered behind the player, but above solid tiles:
+                coin_pos.z = PLAYER_Z - 0.1;
                 // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
                 commands.entity(coin_entity).remove::<WrapperType>().insert(
                     AnimatedActionSprite::from_ascend_and_zoom(
