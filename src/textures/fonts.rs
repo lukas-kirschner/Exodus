@@ -1,4 +1,3 @@
-use bevy_egui::egui::FontDefinitions;
 use bevy_egui::egui::FontFamily::{Monospace, Proportional};
 use bevy_egui::egui::FontId;
 use bevy_egui::{egui, EguiContexts};

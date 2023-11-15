@@ -1,9 +1,9 @@
 use crate::textures::egui_textures::atlas_to_egui_textures;
-use crate::ui::{BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::{BUTTON_HEIGHT, UIMAINMENUMARGIN};
 use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Frame, Layout, TextStyle, Ui};
+use bevy_egui::egui::{Align, Frame, Layout, TextStyle};
 use bevy_egui::{egui, EguiContexts};
 
 /// Set up the UI for the Main Menu
@@ -85,11 +85,13 @@ fn mainmenu_ui(
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 // Left-Justify everything
+                // Margin Left
+                ui.add_space(UIMAINMENUMARGIN);
                 ui.scope(|ui| {
-                    // Margin Left
-                    ui.set_width(UIMARGIN)
-                });
-                ui.scope(|ui| {
+                    // Set the approximate height and width to center the text vertically.
+                    // This is a limitation of any immediate-mode GUI framework (egui)
+                    ui.set_height(128.0);
+                    // ui.set_width(300.0);
                     ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
                         ui.label(
                             egui::RichText::new(
@@ -108,6 +110,7 @@ fn mainmenu_ui(
                         }
                     });
                 });
+                ui.add_space(UIMAINMENUMARGIN);
                 ui.separator();
                 mainmenu_buttons(ui, state, exit);
             });
