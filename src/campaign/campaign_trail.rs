@@ -308,7 +308,7 @@ fn campaign_screen_ui(
                 });
                 ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
                     if in_map {
-                        egui_highscore_label(ui, &scoreboard);
+                        egui_highscore_label(ui, &scoreboard, &egui_textures);
                     }
                 });
                 ui.with_layout(Layout::right_to_left(Align::Min), |ui| {

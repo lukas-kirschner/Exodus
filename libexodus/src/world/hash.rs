@@ -93,7 +93,6 @@ mod tests {
         let mut same_map = GameWorld::exampleworld();
         map.recompute_hash();
         same_map.recompute_hash();
-        let new_hash = map.hash.clone();
         assert_hashes_are_equal(&map.hash, &same_map.hash);
         same_map.forced_tileset = Some(Classic);
         assert_ne!(map.forced_tileset, same_map.forced_tileset);

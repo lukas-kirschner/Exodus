@@ -18,12 +18,15 @@ mod mapselectionscreen;
 pub mod uicontrols;
 
 /// The height of the bottom info panel in the campaign screen
-pub const CAMPAIGN_MAPINFO_HEIGHT: f32 = 2. * MENU_SQUARE_BUTTON_SIZE;
+pub const CAMPAIGN_MAPINFO_HEIGHT: f32 = 1.75 * MENU_SQUARE_BUTTON_SIZE;
 
 /// The button height of main menu buttons
 pub const BUTTON_HEIGHT: f32 = MENU_SQUARE_BUTTON_SIZE;
 /// The margin of UI elements that must not touch each other
 pub const UIMARGIN: f32 = 4.0;
+
+/// The margin of the Main Menu Text
+pub const UIMAINMENUMARGIN: f32 = 16.0;
 /// Big Margins to use as outer margins for boxes and sub-windows
 pub const UIBIGMARGIN: f32 = 50.0;
 /// The default width of a centered UI panel

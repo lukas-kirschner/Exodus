@@ -191,28 +191,39 @@ fn map_selection_screen_ui(
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
             .show(ui, |ui| {
-                ui.vertical(|ui| {
-                    for (i, map) in maps.maps.iter().enumerate() {
-                        ui.scope(|ui| {
-                            ui.set_height(BUTTON_HEIGHT * 2.);
-                            ui.set_width(ui.available_width());
-                            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-                                    buttons(ui, &egui_textures, &mut commands, i);
-                                });
-                                ui.with_layout(egui::Layout::top_down(Align::Min), |ui| {
-                                    ui.set_max_size(ui.available_size());
-                                    ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
-                                        labels_row1(ui, &map.world);
+                ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                    egui::Grid::new("maps_grid")
+                        .striped(true)
+                        .num_columns(1)
+                        .show(ui, |ui| {
+                            for (i, map) in maps.maps.iter().enumerate() {
+                                ui.scope(|ui| {
+                                    ui.set_height(BUTTON_HEIGHT * 1.);
+                                    ui.set_width(ui.available_width());
+                                    ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
+                                        buttons(ui, &egui_textures, &mut commands, i);
+                                        ui.scope(|ui| {
+                                            ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
+                                            ui.style_mut().spacing.indent = 0.0;
+                                            ui.set_max_size(ui.available_size());
+                                            ui.with_layout(
+                                                egui::Layout::top_down(Align::LEFT),
+                                                |ui| {
+                                                    labels_name_author(ui, &map.world);
+                                                    ui.add_space(UIMARGIN);
+                                                    egui_highscore_label(
+                                                        ui,
+                                                        &map.previous_best,
+                                                        &egui_textures,
+                                                    );
+                                                },
+                                            );
+                                        });
                                     });
-                                    ui.scope(|ui| ui.set_height(UIMARGIN));
-                                    ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
-                                        egui_highscore_label(ui, &map.previous_best);
-                                    });
                                 });
-                            });
+                                ui.end_row();
+                            }
                         });
-                    }
                 });
             });
     });
@@ -224,39 +235,57 @@ fn buttons(
     commands: &mut Commands,
     map_index: usize,
 ) {
-    let play_btn = image_button(
-        ui,
-        egui_textures,
-        &UITiles::PLAYBUTTON,
-        "map_selection_screen.play_map",
-    );
-    if play_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Play { map_index });
-    }
-    let edit_btn = image_button(
-        ui,
-        egui_textures,
-        &UITiles::EDITBUTTON,
-        "map_selection_screen.edit_map",
-    );
-    if edit_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
-    }
-    let delete_btn = image_button(
-        ui,
-        egui_textures,
-        &UITiles::DELETEBUTTON,
-        "map_selection_screen.delete_map",
-    );
-    if delete_btn.clicked() {
-        commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
-    }
+    ui.scope(|ui| {
+        ui.set_width(3. * BUTTON_HEIGHT);
+        ui.set_height(BUTTON_HEIGHT);
+        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+            let play_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::PLAYBUTTON,
+                "map_selection_screen.play_map",
+            );
+            if play_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Play { map_index });
+            }
+            let edit_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::EDITBUTTON,
+                "map_selection_screen.edit_map",
+            );
+            if edit_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
+            }
+            let delete_btn = image_button(
+                ui,
+                egui_textures,
+                &UITiles::DELETEBUTTON,
+                "map_selection_screen.delete_map",
+            );
+            if delete_btn.clicked() {
+                commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
+            }
+        });
+    });
 }
 
-fn labels_row1(ui: &mut Ui, world: &GameWorld) {
-    ui.label(world.get_name());
-    ui.label(" ");
-    ui.label(world.get_author());
+fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
+    ui.with_layout(egui::Layout::left_to_right(Align::TOP), |ui| {
+        ui.label(
+            egui::RichText::new(world.get_name())
+                .text_style(egui::TextStyle::Name("MapTitle".into())),
+        );
+        ui.add_space(UIMARGIN);
+        ui.vertical(|ui| {
+            ui.add_space(4.);
+            ui.label(
+                egui::RichText::new(world.get_author())
+                    .text_style(egui::TextStyle::Name("MapAuthor".into()))
+                    .italics(),
+            );
+        });
+    });
 }
 
 pub struct MapSelectionScreenPlugin;

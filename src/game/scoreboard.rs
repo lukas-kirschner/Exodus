@@ -1,8 +1,12 @@
-use crate::game::constants::FONT_SIZE_HIGHSCORE;
+use crate::textures::egui_textures::EguiButtonTextures;
+use crate::ui::UIMARGIN;
 use crate::World;
 use bevy::prelude::*;
-use bevy_egui::egui::{RichText, Ui};
+use bevy_egui::egui;
+use bevy_egui::egui::{Align, Layout, RichText, Ui};
 use libexodus::highscores::highscore::Highscore;
+use libexodus::player::Player;
+use libexodus::tiles::Tile;
 
 #[derive(Resource, Clone, Debug)]
 pub enum GameOverState {
@@ -48,34 +52,51 @@ impl From<&Highscore> for Scoreboard {
     }
 }
 /// Create a EGUI Scoreboard Label that shows a previous highscore
-pub fn egui_highscore_label(ui: &mut Ui, scoreboard: &Option<Scoreboard>) {
-    match scoreboard {
-        None => {
-            ui.label(
-                RichText::new(t!("map_selection_screen.no_highscore")).size(FONT_SIZE_HIGHSCORE),
-            );
-        },
-        Some(score) => {
-            ui.label(
-                RichText::new(t!("map_selection_screen.highscore_heading"))
-                    .size(FONT_SIZE_HIGHSCORE),
-            );
-            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
-            ui.label(
-                RichText::new(t!(
-                    "map_selection_screen.moves_fmt",
-                    moves = &score.moves.to_string()
-                ))
-                .size(14.),
-            );
-            ui.label(RichText::new(" ").size(FONT_SIZE_HIGHSCORE));
-            ui.label(
-                RichText::new(t!(
-                    "map_selection_screen.coins_fmt",
-                    coins = &score.coins.to_string()
-                ))
-                .size(FONT_SIZE_HIGHSCORE),
-            );
-        },
-    }
+pub fn egui_highscore_label(
+    ui: &mut Ui,
+    scoreboard: &Option<Scoreboard>,
+    textures: &EguiButtonTextures,
+) {
+    ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+        ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
+        ui.style_mut().spacing.indent = 0.0;
+        match scoreboard {
+            None => {
+                ui.label(
+                    RichText::new(t!("map_selection_screen.no_highscore"))
+                        .text_style(egui::TextStyle::Name("Highscore".into())),
+                );
+            },
+            Some(score) => {
+                let h = ui
+                    .label(
+                        RichText::new(t!("map_selection_screen.highscore_heading"))
+                            .text_style(egui::TextStyle::Name("Highscore".into())),
+                    )
+                    .rect
+                    .height();
+                ui.add_space(UIMARGIN);
+                ui.image(textures.textures[&Player::atlas_index_right()].0, (h, h));
+                ui.label(
+                    RichText::new(t!(
+                        "map_selection_screen.moves_fmt",
+                        moves = &score.moves.to_string()
+                    ))
+                    .text_style(egui::TextStyle::Name("Highscore".into())),
+                );
+                ui.add_space(UIMARGIN);
+                ui.image(
+                    textures.textures[&Tile::COIN.atlas_index().unwrap()].0,
+                    (h, h),
+                );
+                ui.label(
+                    RichText::new(t!(
+                        "map_selection_screen.coins_fmt",
+                        coins = &score.coins.to_string()
+                    ))
+                    .text_style(egui::TextStyle::Name("Highscore".into())),
+                );
+            },
+        }
+    });
 }

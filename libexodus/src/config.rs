@@ -19,11 +19,11 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            /// The configured UI language
+            // The configured UI language
             game_language: Language::default(),
-            /// The tile set to display in the UI
+            // The tile set to display in the UI
             tile_set: Tileset::TinyPlatformQuestTiles,
-            /// The identification of the playing player
+            // The identification of the playing player
             player_id: String::default(),
         }
     }
