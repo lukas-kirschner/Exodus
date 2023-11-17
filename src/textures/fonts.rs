@@ -20,6 +20,16 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
             egui::TextStyle::Name("Highscore".into()),
             FontId::new(14.0, Proportional),
         ),
+        (
+            // Style for Map Titles
+            egui::TextStyle::Name("MapTitle".into()),
+            FontId::new(22.0, Proportional),
+        ),
+        (
+            // Style for Map Authors
+            egui::TextStyle::Name("MapAuthor".into()),
+            FontId::new(18.0, Proportional),
+        ),
         (egui::TextStyle::Body, FontId::new(18.0, Proportional)),
         (egui::TextStyle::Monospace, FontId::new(16.0, Monospace)),
         (egui::TextStyle::Button, FontId::new(20.0, Proportional)),
