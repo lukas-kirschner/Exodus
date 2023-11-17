@@ -20,6 +20,10 @@ map_selection_screen:
   no_highscore: Noch kein Highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+game_ui:
+  coins: Münzen
+  moves: Züge
+  keys: Schlüssel
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren

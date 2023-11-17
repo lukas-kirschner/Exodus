@@ -278,7 +278,7 @@ fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
         );
         ui.add_space(UIMARGIN);
         ui.vertical(|ui| {
-            ui.add_space(5.);
+            ui.add_space(4.);
             ui.label(
                 egui::RichText::new(world.get_author())
                     .text_style(egui::TextStyle::Name("MapAuthor".into()))

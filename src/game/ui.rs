@@ -2,12 +2,14 @@ use crate::game::camera::{compute_world_to_viewport, LayerCamera, MainCamera};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Align2, Layout};
 use bevy_egui::{egui, EguiContexts};
+use libexodus::player::Player;
 use libexodus::tiles::Tile;
 use regex::Regex;
 
@@ -35,22 +37,34 @@ fn game_ui_system(
     scoreboard: Res<Scoreboard>,
     current_size: ResMut<WindowUiOverlayInfo>,
     mut event_writer: EventWriter<UiSizeChangedEvent>,
+    textures: Res<EguiButtonTextures>,
 ) {
     let bot_panel =
         egui::TopBottomPanel::bottom("")
             .resizable(false)
             .show(egui_ctx.ctx_mut(), |ui| {
                 ui.vertical(|ui| {
+                    ui.add_space(UIMARGIN / 2.);
                     ui.scope(|ui| {
-                        ui.set_height(UIMARGIN / 2.);
-                    });
-                    ui.scope(|ui| {
-                        ui.horizontal(|ui| {
-                            ui.label(format!("Coins: {}", scoreboard.coins));
+                        ui.set_height(16.);
+                        ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+                            let h = ui.label(t!("game_ui.moves")).rect.height();
+                            ui.image(textures.textures[&Player::atlas_index_right()].0, (h, h));
+                            ui.label(format!("{}", scoreboard.moves));
                             ui.separator();
-                            ui.label(format!("Moves: {}", scoreboard.moves));
+                            ui.label(t!("game_ui.coins"));
+                            ui.image(
+                                textures.textures[&Tile::COIN.atlas_index().unwrap()].0,
+                                (h, h),
+                            );
+                            ui.label(format!("{}", scoreboard.coins));
                             ui.separator();
-                            ui.label(format!("Keys: {}", scoreboard.keys));
+                            ui.label(t!("game_ui.keys"));
+                            ui.image(
+                                textures.textures[&Tile::KEY.atlas_index().unwrap()].0,
+                                (h, h),
+                            );
+                            ui.label(format!("{}", scoreboard.keys));
                         });
                     });
                     ui.scope(|ui| {

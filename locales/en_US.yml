@@ -19,6 +19,10 @@ map_selection_screen:
   no_highscore: No highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+game_ui:
+  coins: Coins
+  moves: Moves
+  keys: Keys
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen
