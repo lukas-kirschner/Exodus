@@ -18,8 +18,8 @@ map_selection_screen:
   delete_map: Karte löschen
   highscore_heading: "Bester Highscore:"
   no_highscore: Noch kein Highscore
-  moves_fmt: "Moves: %{moves}"
-  coins_fmt: "Coins: %{coins}"
+  moves_fmt: "%{moves}"
+  coins_fmt: "%{coins}"
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren

@@ -7,12 +7,18 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
     style.text_styles = [
         (egui::TextStyle::Heading, FontId::new(30.0, Proportional)),
         (
+            // The huge title text shown in the main menu
             egui::TextStyle::Name("MainMenuGameTitle".into()),
             FontId::new(50.0, Proportional),
         ),
         (
             egui::TextStyle::Name("Context".into()),
             FontId::new(23.0, Proportional),
+        ),
+        (
+            // Style for Highscores
+            egui::TextStyle::Name("Highscore".into()),
+            FontId::new(14.0, Proportional),
         ),
         (egui::TextStyle::Body, FontId::new(18.0, Proportional)),
         (egui::TextStyle::Monospace, FontId::new(16.0, Monospace)),

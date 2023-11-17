@@ -207,7 +207,11 @@ fn map_selection_screen_ui(
                                     });
                                     ui.scope(|ui| ui.set_height(UIMARGIN));
                                     ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
-                                        egui_highscore_label(ui, &map.previous_best);
+                                        egui_highscore_label(
+                                            ui,
+                                            &map.previous_best,
+                                            &egui_textures,
+                                        );
                                     });
                                 });
                             });

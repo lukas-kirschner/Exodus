@@ -14,10 +14,6 @@ pub const MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX: usize = 43;
 pub const PLAYER_SPEED_: f32 = 4.0;
 /// The pickup distance for coins
 pub const COLLECTIBLE_PICKUP_DISTANCE: f32 = 0.1;
-/// The UI Font Size for main UI elements
-pub const _UI_FONT_SIZE: f32 = 30.;
-/// The Font Size for small subtitles like the Highscore Record on the Map Selection Screen
-pub const FONT_SIZE_HIGHSCORE: f32 = 14.;
 /// The speed a dead player ascends to heaven at
 pub const DEAD_PLAYER_ASCEND_SPEED: f32 = 3.0;
 /// The speed a dead player zooms while ascending
