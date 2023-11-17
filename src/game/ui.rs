@@ -7,6 +7,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Align2, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::player::Player;
@@ -49,21 +50,24 @@ fn game_ui_system(
                         ui.set_height(16.);
                         ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                             let h = ui.label(t!("game_ui.moves")).rect.height();
-                            ui.image(textures.textures[&Player::atlas_index_right()].0, (h, h));
+                            ui.image(SizedTexture::new(
+                                textures.textures[&Player::atlas_index_right()].0,
+                                (h, h),
+                            ));
                             ui.label(format!("{}", scoreboard.moves));
                             ui.separator();
                             ui.label(t!("game_ui.coins"));
-                            ui.image(
+                            ui.image(SizedTexture::new(
                                 textures.textures[&Tile::COIN.atlas_index().unwrap()].0,
                                 (h, h),
-                            );
+                            ));
                             ui.label(format!("{}", scoreboard.coins));
                             ui.separator();
                             ui.label(t!("game_ui.keys"));
-                            ui.image(
+                            ui.image(SizedTexture::new(
                                 textures.textures[&Tile::KEY.atlas_index().unwrap()].0,
                                 (h, h),
-                            );
+                            ));
                             ui.label(format!("{}", scoreboard.keys));
                         });
                     });
