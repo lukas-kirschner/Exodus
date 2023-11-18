@@ -13,6 +13,7 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::Ui;
 use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::{Tile, UITiles};
@@ -66,11 +67,11 @@ fn tile_kind_selector_button_for(
             if let Some(atlas_index) = tile.atlas_index() {
                 let (id, size, uv) = egui_textures.textures.get(&atlas_index)
                     .unwrap_or_else(|| panic!("Textures for {:?} were not loaded as Egui textures!", tile));
-                ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
+                ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(SizedTexture::new(*id, *size)).uv(*uv))
             } else if *tile == Tile::PLAYERSPAWN {
                     let (id, size, uv) = egui_textures.textures.get(&player.player.atlas_index())
                         .expect("The Player Texture was not found in the Egui textures!");
-                    ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(*id, *size).uv(*uv))
+                    ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::ImageButton::new(SizedTexture::new(*id, *size)).uv(*uv))
             } else {
                 ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
             }

@@ -3,6 +3,7 @@ use crate::ui::UIMARGIN;
 use crate::World;
 use bevy::prelude::*;
 use bevy_egui::egui;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Layout, RichText, Ui};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::player::Player;
@@ -76,7 +77,10 @@ pub fn egui_highscore_label(
                     .rect
                     .height();
                 ui.add_space(UIMARGIN);
-                ui.image(textures.textures[&Player::atlas_index_right()].0, (h, h));
+                ui.image(SizedTexture::new(
+                    textures.textures[&Player::atlas_index_right()].0,
+                    (h, h),
+                ));
                 ui.label(
                     RichText::new(t!(
                         "map_selection_screen.moves_fmt",
@@ -85,10 +89,10 @@ pub fn egui_highscore_label(
                     .text_style(egui::TextStyle::Name("Highscore".into())),
                 );
                 ui.add_space(UIMARGIN);
-                ui.image(
+                ui.image(SizedTexture::new(
                     textures.textures[&Tile::COIN.atlas_index().unwrap()].0,
                     (h, h),
-                );
+                ));
                 ui.label(
                     RichText::new(t!(
                         "map_selection_screen.coins_fmt",

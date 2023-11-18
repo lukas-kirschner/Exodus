@@ -547,7 +547,7 @@ fn game_over_event_listener(
     mut state: ResMut<NextState<AppState>>,
     mut commands: Commands,
 ) {
-    if let Some(event) = reader.iter().next() {
+    if let Some(event) = reader.read().next() {
         commands.insert_resource(event.state.clone());
         state.set(AppState::GameOverScreen);
     }

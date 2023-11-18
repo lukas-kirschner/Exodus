@@ -8,6 +8,7 @@ use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
 use crate::WindowUiOverlayInfo;
 use bevy::prelude::*;
 use bevy_egui::egui;
+use bevy_egui::egui::load::SizedTexture;
 use libexodus::tiles::UITiles;
 
 mod configscreen;
@@ -71,7 +72,7 @@ pub(crate) fn image_button(
         .unwrap_or_else(|| panic!("Textures for Edit Button were not loaded as Egui textures!"));
     ui.add_sized(
         [MENU_SQUARE_BUTTON_SIZE, MENU_SQUARE_BUTTON_SIZE],
-        egui::ImageButton::new(*id, *size).uv(*uv),
+        egui::ImageButton::new(SizedTexture::new(*id, *size)).uv(*uv),
     )
     .on_hover_text(t!(translationkey))
 }

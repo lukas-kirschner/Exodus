@@ -8,6 +8,7 @@ use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
 use crate::textures::Textures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
+use bevy::asset::LoadedFolder;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::render::view::Layer;
@@ -221,7 +222,7 @@ fn resize_notificator(
     let Ok(_) = window.get_single() else {
         return;
     };
-    for _ in resize_event.iter() {
+    for _ in resize_event.read() {
         // event_window = commands.entity(e.window);
         // if event_window == primary {
         ev_camera_writer.send(UiSizeChangedEvent);
@@ -239,11 +240,15 @@ pub(crate) fn get_buildnr() -> String {
 /// A struct containing all asset handles that should be waited for before entering the
 /// Process state. These handles are only used for waiting, not for querying
 pub struct AllAssetHandles {
-    pub handles: Vec<HandleUntyped>,
+    pub handles: Vec<Handle<LoadedFolder>>,
+    pub file_handles: Vec<UntypedHandle>,
 }
 impl FromWorld for AllAssetHandles {
     fn from_world(_: &mut World) -> Self {
-        AllAssetHandles { handles: vec![] }
+        AllAssetHandles {
+            handles: vec![],
+            file_handles: vec![],
+        }
     }
 }
 

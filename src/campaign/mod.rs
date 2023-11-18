@@ -35,7 +35,7 @@ fn load_main_campaign(
 ) {
     debug!("Loading Main Campaign Trail Asset from {}", "campaign.tgf");
     let handle = asset_server.load("campaign.tgf");
-    all_assets.handles.push(handle.clone_untyped());
+    all_assets.file_handles.push(handle.clone().untyped());
     commands
         .spawn(MainCampaign { handle })
         .insert(MainCampaignTrail);
@@ -52,7 +52,7 @@ fn insert_main_campaign(
 ) {
     for (entity, asset) in &main_asset {
         match asset_server.get_load_state(&asset.handle) {
-            LoadState::Loaded => {
+            Some(LoadState::Loaded) => {
                 let graph = assets.remove(&asset.handle).expect(
                     "The Campaign Trail was removed from the asset manager before loading!",
                 );
@@ -68,10 +68,10 @@ fn insert_main_campaign(
                 // TODO Change this to support multiple campaign trails:
                 state.set(AppState::MainMenu);
             },
-            LoadState::Failed => panic!(
+            Some(LoadState::Failed) => panic!(
                 "Failed to load the Campaign Trail from {}",
                 asset_server
-                    .get_handle_path(&asset.handle)
+                    .get_path(&asset.handle)
                     .expect("Could not get path from handle!")
                     .path()
                     .to_str()

@@ -1,7 +1,6 @@
 use crate::campaign::campaign_map_asset_loader::*;
-use crate::textures::load_asset_folder_or_panic;
 use crate::{AllAssetHandles, AppState};
-use bevy::asset::LoadState;
+use bevy::asset::{LoadedFolder, RecursiveDependencyLoadState};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use libexodus::world::GameWorld;
@@ -24,11 +23,13 @@ pub struct CampaignMaps {
 #[derive(Resource)]
 /// A struct containing all loaded handles from the maps folder
 pub struct CampaignMapHandles {
-    pub handles: Vec<HandleUntyped>,
+    pub handles: Handle<LoadedFolder>,
 }
 impl FromWorld for CampaignMapHandles {
     fn from_world(_: &mut World) -> Self {
-        CampaignMapHandles { handles: vec![] }
+        CampaignMapHandles {
+            handles: Default::default(),
+        }
     }
 }
 /// Queue loading all map files in the AssetServer and add handles to both the AllAssetHandles
@@ -39,21 +40,22 @@ fn load_maps(
     asset_server: Res<AssetServer>,
     mut all_assets: ResMut<AllAssetHandles>,
 ) {
-    map_handles.handles = load_asset_folder_or_panic(&asset_server, "maps");
-    all_assets.handles.append(&mut map_handles.handles.clone());
+    map_handles.handles = asset_server.load_folder("maps");
+    all_assets.handles.push(map_handles.handles.clone());
 }
 fn generate_campaign_maps_resource(
     mut assets: ResMut<Assets<CampaignMapAsset>>,
+    folder_assets: ResMut<Assets<LoadedFolder>>,
     map_handles: ResMut<CampaignMapHandles>,
     mut maps: ResMut<CampaignMaps>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
-    match asset_server.get_group_load_state(map_handles.handles.iter().map(|handle| handle.id())) {
-        LoadState::Loaded => {
-            for handle in &map_handles.handles {
+    match asset_server.get_recursive_dependency_load_state(map_handles.handles.id()) {
+        Some(RecursiveDependencyLoadState::Loaded) => {
+            for handle in &folder_assets.get(&map_handles.handles).unwrap().handles {
                 let map = assets
-                    .remove(handle)
+                    .remove(handle.clone().typed())
                     .expect("Error removing a map asset from asset manager!")
                     .0;
                 let name = map
@@ -69,7 +71,7 @@ fn generate_campaign_maps_resource(
             }
             commands.remove_resource::<CampaignMapHandles>();
         },
-        LoadState::Failed => panic!("Failed to load the campaign maps!"),
+        Some(RecursiveDependencyLoadState::Failed) => panic!("Failed to load the campaign maps!"),
         _ => {},
     }
 }
