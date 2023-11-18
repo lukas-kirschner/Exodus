@@ -117,7 +117,7 @@ fn collectible_collected_event(
     mut ev_collectible_collected: EventReader<CollectibleCollectedEvent>,
     mut scoreboard: ResMut<Scoreboard>,
 ) {
-    for ev in ev_collectible_collected.iter() {
+    for ev in ev_collectible_collected.read() {
         let _player: Entity = ev.player;
         let _collectible: Entity = ev.collectible;
         match ev.action {

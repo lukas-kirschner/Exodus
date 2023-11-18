@@ -35,7 +35,7 @@ pub fn handle_ui_resize(
     let Ok(primary) = window.get_single() else {
         return;
     };
-    for _ in event.iter() {
+    for _ in event.read() {
         let (mut main_camera_transform, mut main_camera_projection) =
             main_camera_query.single_mut();
         let mut layer_camera_transform = layer_camera_query.single_mut();

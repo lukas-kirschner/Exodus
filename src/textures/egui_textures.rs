@@ -108,11 +108,11 @@ fn convert(
     assets: &mut Assets<Image>,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
     let rect: Rect = texture_atlas.textures[*atlas_index];
-    let (mut handle, size) = scale_texture(&rect, assets, texture_handle);
+    let (handle, size) = scale_texture(&rect, assets, texture_handle);
     let uv: egui::Rect = egui::Rect::from_min_max(Pos2::new(0., 0.), Pos2::new(1., 1.));
     let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
-    handle.make_strong(assets);
+    // handle.make_strong(assets); //TODO Memory leak?
     let tex: TextureId = egui_ctx.add_image(handle);
     (tex, rect_vec2, uv)
 }

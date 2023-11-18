@@ -1,7 +1,7 @@
+use bevy::asset::LoadedFolder;
 use bevy::prelude::*;
 use libexodus::tilesets::Tileset;
 use std::collections::HashMap;
-use std::path::Path;
 
 #[derive(Resource)]
 /// A struct that contains the handles for all tile sets and information about the current tile set
@@ -51,29 +51,13 @@ pub fn file_name_for_tileset(tileset: &Tileset) -> &str {
 #[derive(Resource)]
 /// A struct containing all loaded handles from the tilesets folder
 pub struct RpgSpriteHandles {
-    pub handles: Vec<HandleUntyped>,
+    pub handles: Handle<LoadedFolder>,
 }
 
 impl FromWorld for RpgSpriteHandles {
     fn from_world(_: &mut World) -> Self {
-        RpgSpriteHandles { handles: vec![] }
-    }
-}
-
-pub(crate) fn find_handle_with_path(
-    path: &Path,
-    asset_server: &AssetServer,
-    handles: &[HandleUntyped],
-) -> Handle<Image> {
-    for handle in handles {
-        let p = asset_server.get_handle_path(handle.clone()).unwrap();
-        let asset_path = p.path();
-        if asset_path.ends_with(path) {
-            return handle.typed_weak();
+        RpgSpriteHandles {
+            handles: Default::default(),
         }
     }
-    panic!(
-        "The file {} was requested as texture pack, but not loaded!",
-        path.to_str().unwrap()
-    );
 }

@@ -1,17 +1,19 @@
-use bevy::asset::{AddAsset, AssetLoader, BoxedFuture, LoadContext, LoadedAsset};
+use bevy::asset::io::Reader;
+use bevy::asset::AsyncReadExt;
+use bevy::asset::{AssetLoader, BoxedFuture, LoadContext};
 use bevy::prelude::*;
-use libexodus::campaign::graph::Graph;
+use libexodus::campaign::graph::{Graph, GraphParseError};
 use libexodus::exodus_serializable::ExodusSerializable;
 
 pub struct CampaignTrailAssetPlugin;
 impl Plugin for CampaignTrailAssetPlugin {
     fn build(&self, app: &mut App) {
-        app.add_asset::<CampaignTrailAsset>()
-            .init_asset_loader::<CampaignTrailLoader>();
+        app.init_asset::<CampaignTrailAsset>()
+            .register_asset_loader(CampaignTrailLoader);
     }
 }
 
-#[derive(Debug, TypeUuid, TypePath)]
+#[derive(Debug, TypeUuid, TypePath, Asset)]
 #[uuid = "b1cec786-f177-4067-91b7-dc05dc869eb0"]
 pub(crate) struct CampaignTrailAsset(pub Graph);
 use bevy::reflect::{TypePath, TypeUuid};
@@ -20,21 +22,25 @@ use bevy::reflect::{TypePath, TypeUuid};
 pub(crate) struct CampaignTrailLoader;
 
 impl AssetLoader for CampaignTrailLoader {
+    type Asset = CampaignTrailAsset;
+    type Settings = ();
+    type Error = GraphParseError;
+
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
-        load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
+        _load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
             let mut graph = Graph::default();
             // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
             #[allow(noop_method_call)]
-            graph
-                .parse(&mut bytes.clone())
-                .map_err(|e| bevy::asset::Error::msg(e.to_string()))?;
+            graph.parse(&mut bytes.as_slice().clone())?;
             let asset = CampaignTrailAsset(graph);
-            load_context.set_default_asset(LoadedAsset::new(asset));
-            Ok(())
+            Ok(asset)
         })
     }
 

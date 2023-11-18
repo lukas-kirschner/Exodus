@@ -112,7 +112,7 @@ pub enum GraphParseError {
     InvalidInteger { error: ParseIntError },
     ValidationError { error: GraphValidationError },
 }
-
+impl std::error::Error for GraphParseError {}
 #[derive(Debug)]
 #[repr(u8)]
 /// An error that might be thrown in a Graph Validator
