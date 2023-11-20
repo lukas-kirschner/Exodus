@@ -1,6 +1,6 @@
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
+use crate::ui::{BUTTON_HEIGHT, UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
@@ -48,9 +48,9 @@ fn config_screen_ui(
                             ui.label(format!("{}:", t!("config_screen.language_label")));
                             let selected_lang = res_config.config.game_language.to_string();
                             egui::ComboBox::from_id_source("lang_box")
+                                .width(UIPANELCBWIDTH)
                                 .selected_text(selected_lang)
                                 .show_ui(ui, |ui| {
-                                    ui.set_width(400.);
                                     for lang in Language::iter() {
                                         ui.selectable_value(
                                             &mut res_config.config.game_language,
@@ -58,14 +58,16 @@ fn config_screen_ui(
                                             &lang.to_string(),
                                         );
                                     }
-                                });
+                                })
+                                .response
+                                .on_hover_text(t!("config_screen.language_tooltip"));
                             ui.separator();
                             ui.label(format!("{}:", t!("config_screen.tileset_label")));
                             let selected_tileset = res_config.config.tile_set.to_string();
                             egui::ComboBox::from_id_source("tile_set_box")
+                                .width(UIPANELCBWIDTH)
                                 .selected_text(selected_tileset)
                                 .show_ui(ui, |ui| {
-                                    ui.set_width(UIPANELWIDTH - UIBIGMARGIN - UIBIGMARGIN);
                                     for tileset in Tileset::iter() {
                                         ui.selectable_value(
                                             &mut res_config.config.tile_set,
@@ -73,11 +75,16 @@ fn config_screen_ui(
                                             &tileset.to_string(),
                                         );
                                     }
-                                });
+                                })
+                                .response
+                                .on_hover_text(t!("config_screen.tileset_tooltip"));
                             ui.separator();
                             ui.label(format!("{}:", t!("config_screen.player_name_label")));
-                            ui.text_edit_singleline(&mut res_config.config.player_id)
-                                .on_hover_text(t!("config_screen.player_name_tooltip"));
+                            ui.scope(|ui| {
+                                ui.set_width(UIPANELCBWIDTH);
+                                ui.text_edit_singleline(&mut res_config.config.player_id)
+                                    .on_hover_text(t!("config_screen.player_name_tooltip"));
+                            });
                         });
                     });
                 });

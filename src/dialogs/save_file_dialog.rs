@@ -2,6 +2,7 @@ use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
+use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
 use bevy_egui::egui;
 use bevy_egui::egui::Ui;
@@ -98,14 +99,13 @@ impl UIDialog for SaveFileDialog {
         _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
         directories: &GameDirectories,
     ) {
-        let row_width = 500.; // TODO hard-coded numbers
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::Choosing, |ui| {
                 // File Name and Save Button
                 ui.scope(|ui| {
                     ui.horizontal(|ui| {
                         ui.scope(|ui| {
-                            ui.set_width(row_width);
+                            ui.set_width(UIPANELCBWIDTH);
                             ui.centered_and_justified(|ui| {
                                 ui.text_edit_singleline(&mut self.file_name)
                                     .on_hover_text(t!(
@@ -138,7 +138,7 @@ impl UIDialog for SaveFileDialog {
                 // Map Properties
                 ui.separator();
                 ui.scope(|ui| {
-                    ui.set_width(row_width);
+                    ui.set_width(UIPANELCBWIDTH);
                     ui.horizontal(|ui| {
                         ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_name")));
                         ui.text_edit_singleline(&mut self.map_title)
@@ -146,7 +146,7 @@ impl UIDialog for SaveFileDialog {
                     });
                 });
                 ui.scope(|ui| {
-                    ui.set_width(row_width);
+                    ui.set_width(UIPANELCBWIDTH);
                     ui.horizontal(|ui| {
                         ui.label(format!(
                             "{}:",
@@ -168,8 +168,8 @@ impl UIDialog for SaveFileDialog {
                     let selected_tileset = self.texturepack.to_string();
                     egui::ComboBox::from_id_source("forced_tileset")
                         .selected_text(selected_tileset)
+                        .width(UIPANELCBWIDTH)
                         .show_ui(ui, |ui| {
-                            ui.set_width(row_width);
                             for tileset in Tileset::iter() {
                                 ui.selectable_value(
                                     &mut self.texturepack,
@@ -181,7 +181,7 @@ impl UIDialog for SaveFileDialog {
                 });
                 ui.separator();
                 ui.scope(|ui| {
-                    ui.set_width(row_width);
+                    ui.set_width(UIPANELCBWIDTH);
                     ui.horizontal(|ui| {
                         ui.label(format!("{}:", t!("map_editor.dialog.save_dialog_map_hash")));
                         ui.label(self.hash.as_str());

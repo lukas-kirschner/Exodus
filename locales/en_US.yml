@@ -8,9 +8,11 @@ navbar:
   back_button_tooltip: Back
 config_screen:
   language_label: Language
+  language_tooltip: Set the written language used all throughout the game.
   tileset_label: Tile Set
+  tileset_tooltip: Set the default tileset that will be used for all game UI textures and the game world itself. This will not affect campaign maps that force the use of a specific texture pack.
   player_name_label: Player Name
-  player_name_tooltip: Player Name that will be stored in the high score database. If left blank, no high scores will be saved.
+  player_name_tooltip: Set the player name that will be stored in the high score database. If left blank, no high scores will be saved. Highscores are always saved per player.
 map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
