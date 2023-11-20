@@ -3,7 +3,7 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{BUTTON_HEIGHT, UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
-use bevy_egui::egui::Frame;
+use bevy_egui::egui::{Align, Frame, Layout, Style};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
@@ -36,16 +36,16 @@ fn config_screen_ui(
     egui::CentralPanel::default()
         .frame(Frame::none())
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal_centered(|ui| {
-                ui.vertical_centered(|ui| {
-                    ui.scope(|ui| {
-                        ui.set_width(UIPANELWIDTH);
-                        ui.vertical_centered_justified(|ui| {
-                            ui.set_width(UIPANELWIDTH - UIBIGMARGIN);
-                            ui.scope(|ui| {
-                                ui.set_height(UIMARGIN);
-                            });
-                            ui.label(format!("{}:", t!("config_screen.language_label")));
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.group(|ui| {
+                    ui.set_width(UIPANELWIDTH);
+                    ui.set_height(ui.available_height());
+                    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                        ui.set_width(UIPANELWIDTH - UIBIGMARGIN);
+                        ui.add_space(UIMARGIN);
+                        ui.label(format!("{}:", t!("config_screen.language_label")));
+                        ui.scope(|ui| {
+                            ui.set_width(UIPANELCBWIDTH);
                             let selected_lang = res_config.config.game_language.to_string();
                             egui::ComboBox::from_id_source("lang_box")
                                 .width(UIPANELCBWIDTH)
@@ -61,8 +61,12 @@ fn config_screen_ui(
                                 })
                                 .response
                                 .on_hover_text(t!("config_screen.language_tooltip"));
-                            ui.separator();
-                            ui.label(format!("{}:", t!("config_screen.tileset_label")));
+                        });
+                        ui.separator();
+                        ui.add_space(UIMARGIN);
+                        ui.label(format!("{}:", t!("config_screen.tileset_label")));
+                        ui.scope(|ui| {
+                            ui.set_width(UIPANELCBWIDTH);
                             let selected_tileset = res_config.config.tile_set.to_string();
                             egui::ComboBox::from_id_source("tile_set_box")
                                 .width(UIPANELCBWIDTH)
@@ -78,13 +82,14 @@ fn config_screen_ui(
                                 })
                                 .response
                                 .on_hover_text(t!("config_screen.tileset_tooltip"));
-                            ui.separator();
-                            ui.label(format!("{}:", t!("config_screen.player_name_label")));
-                            ui.scope(|ui| {
-                                ui.set_width(UIPANELCBWIDTH);
-                                ui.text_edit_singleline(&mut res_config.config.player_id)
-                                    .on_hover_text(t!("config_screen.player_name_tooltip"));
-                            });
+                        });
+                        ui.separator();
+                        ui.add_space(UIMARGIN);
+                        ui.label(format!("{}:", t!("config_screen.player_name_label")));
+                        ui.scope(|ui| {
+                            ui.set_width(UIPANELCBWIDTH);
+                            ui.text_edit_singleline(&mut res_config.config.player_id)
+                                .on_hover_text(t!("config_screen.player_name_tooltip"));
                         });
                     });
                 });
@@ -112,7 +117,5 @@ fn save_and_apply_config(res_config: Res<GameConfig>) {
         .unwrap_or(());
     // Set Locale
     rust_i18n::set_locale(res_config.config.game_language.locale());
-    // Set Tile Set
-    // res_tileset.current_tileset = res_config.config.tile_set;
-    // This is actually done in a different schedule now.
+    // The tile set is reset in game/mod.rs.
 }
