@@ -185,7 +185,7 @@ fn map_selection_screen_ui(
     maps: Res<Maps>,
 ) {
     add_navbar(
-        &mut egui_ctx,
+        egui_ctx.ctx_mut(),
         &mut state,
         &egui_textures,
         &t!("map_selection_screen.title"),

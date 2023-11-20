@@ -46,7 +46,7 @@ fn credits_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
 ) {
     add_navbar(
-        &mut egui_ctx,
+        egui_ctx.ctx_mut(),
         &mut state,
         &egui_textures,
         &t!("credits_screen.title"),

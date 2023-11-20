@@ -1,9 +1,9 @@
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::{BUTTON_HEIGHT, UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
+use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Frame, Layout, Style};
+use bevy_egui::egui::{Align, Frame, Layout};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
@@ -32,7 +32,7 @@ fn config_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
 ) {
     add_navbar(
-        &mut egui_ctx,
+        egui_ctx.ctx_mut(),
         &mut state,
         &egui_textures,
         &t!("config_screen.title"),

@@ -3,8 +3,8 @@ use crate::ui::{image_button, BUTTON_HEIGHT};
 use crate::AppState;
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
+use bevy_egui::egui;
 use bevy_egui::egui::{Align, InnerResponse, TextStyle};
-use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::UITiles;
 
 #[derive(Resource, PartialEq, Copy, Clone, Debug)]
@@ -38,15 +38,19 @@ pub fn menu_esc_control(
 }
 
 pub fn add_navbar(
-    egui_ctx: &mut EguiContexts,
+    ctx: &mut egui::Context,
     state: &mut NextState<AppState>,
     egui_textures: &EguiButtonTextures,
     title: &str,
 ) -> InnerResponse<()> {
-    egui::TopBottomPanel::top("navbar").show(egui_ctx.ctx_mut(), |ui| {
+    egui::TopBottomPanel::top("navbar").show(ctx, |ui| {
         ui.set_height(BUTTON_HEIGHT);
         ui.with_layout(egui::Layout::right_to_left(Align::BOTTOM), |ui| {
-            ui.label(egui::RichText::new(title).text_style(TextStyle::Heading));
+            ui.label(
+                egui::RichText::new(title)
+                    .text_style(TextStyle::Heading)
+                    .color(ui.visuals().weak_text_color()),
+            );
             ui.add_space(ui.available_width() - BUTTON_HEIGHT);
             ui.scope(|ui| {
                 ui.set_width(BUTTON_HEIGHT);

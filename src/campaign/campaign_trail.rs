@@ -267,7 +267,7 @@ fn campaign_screen_ui(
 ) {
     if let Ok(player_pos) = player_query.get_single() {
         let navbar_response = add_navbar(
-            &mut egui_ctx,
+            egui_ctx.ctx_mut(),
             &mut state,
             &egui_textures,
             &t!("campaign_screen.title"),

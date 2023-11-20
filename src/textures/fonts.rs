@@ -1,4 +1,4 @@
-use bevy_egui::egui::{Context, FontData, FontFamily, FontId};
+use bevy_egui::egui::{Context, FontData, FontFamily, FontId, Visuals};
 use bevy_egui::{egui, EguiContexts};
 use font_kit::family_name::FamilyName;
 use font_kit::properties::{Properties, Style, Weight};
@@ -163,4 +163,7 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
     ]
     .into();
     ctx.ctx_mut().set_style(style);
+    let mut visuals = Visuals::dark();
+    visuals.striped = true;
+    ctx.ctx_mut().set_visuals(visuals);
 }
