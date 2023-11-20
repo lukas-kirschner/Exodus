@@ -19,7 +19,7 @@ mod mapselectionscreen;
 pub mod uicontrols;
 
 /// The height of the bottom info panel in the campaign screen
-pub const CAMPAIGN_MAPINFO_HEIGHT: f32 = 1.75 * MENU_SQUARE_BUTTON_SIZE;
+pub const CAMPAIGN_MAPINFO_HEIGHT: f32 = 2.0 * MENU_SQUARE_BUTTON_SIZE;
 
 /// The button height of main menu buttons
 pub const BUTTON_HEIGHT: f32 = MENU_SQUARE_BUTTON_SIZE;
