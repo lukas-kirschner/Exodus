@@ -7,6 +7,7 @@ main_menu:
 navbar:
   back_button_tooltip: Back
 config_screen:
+  title: Game Configuration
   language_label: Language
   language_tooltip: Set the written language used all throughout the game.
   tileset_label: Tile Set
@@ -14,6 +15,7 @@ config_screen:
   player_name_label: Player Name
   player_name_tooltip: Set the player name that will be stored in the high score database. If left blank, no high scores will be saved. Highscores are always saved per player.
 map_selection_screen:
+  title: Select a map
   play_map: Play Map
   edit_map: Edit Map
   delete_map: Delete map
@@ -21,6 +23,8 @@ map_selection_screen:
   no_highscore: No highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+credits_screen:
+  title: Credits
 game_ui:
   coins: Coins
   moves: Moves
@@ -107,6 +111,7 @@ game_over_screen:
     lost: Click the Replay Button to try again.
 campaign_screen:
   press_x_to_play: Press Enter to play this map!
+  title: Campaign Trail
 campaign:
   map:
     tutorial_walking: "Tutorial: Walking"

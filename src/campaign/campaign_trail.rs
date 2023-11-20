@@ -266,7 +266,12 @@ fn campaign_screen_ui(
     config: Res<GameConfig>,
 ) {
     if let Ok(player_pos) = player_query.get_single() {
-        let navbar_response = add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+        let navbar_response = add_navbar(
+            &mut egui_ctx,
+            &mut state,
+            &egui_textures,
+            &t!("campaign_screen.title"),
+        );
         let ui_top_height = navbar_response.response.rect.height();
 
         // Bottom UI

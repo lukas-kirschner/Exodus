@@ -31,7 +31,12 @@ fn config_screen_ui(
     mut res_config: ResMut<GameConfig>,
     egui_textures: Res<EguiButtonTextures>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+    add_navbar(
+        &mut egui_ctx,
+        &mut state,
+        &egui_textures,
+        &t!("config_screen.title"),
+    );
 
     egui::CentralPanel::default()
         .frame(Frame::none())

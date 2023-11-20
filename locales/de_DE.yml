@@ -8,6 +8,7 @@ main_menu:
 navbar:
   back_button_tooltip: Zurück
 config_screen:
+  title: Einstellungen
   language_label: Sprache
   language_tooltip: Die Sprache, welche überall im Spiel verwendet wird.
   tileset_label: Texturpaket
@@ -15,6 +16,7 @@ config_screen:
   player_name_label: Spielername
   player_name_tooltip: Name des Spielers, der in den Highscores gespeichert wird. Leer lassen, um Highscores zu deaktivieren. Highscores werden immer für den jeweiligen Spieler gespeichert.
 map_selection_screen:
+  title: Karte auswählen
   play_map: Karte spielen
   edit_map: Karte bearbeiten
   delete_map: Karte löschen
@@ -22,6 +24,8 @@ map_selection_screen:
   no_highscore: Noch kein Highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+credits_screen:
+  title: Über
 game_ui:
   coins: Münzen
   moves: Züge
@@ -108,6 +112,7 @@ game_over_screen:
     lost: Die Karte kann mit dem "Erneut Spielen"-Button neu gestartet werden.
 campaign_screen:
   press_x_to_play: Bitte Enter drücken, um diese Map zu spielen!
+  title: Kampagnenmodus
 campaign:
   map:
     tutorial_walking: "Tutorial: Laufen"

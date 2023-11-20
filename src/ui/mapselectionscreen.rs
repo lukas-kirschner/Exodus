@@ -184,7 +184,12 @@ fn map_selection_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+    add_navbar(
+        &mut egui_ctx,
+        &mut state,
+        &egui_textures,
+        &t!("map_selection_screen.title"),
+    );
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         egui::ScrollArea::new([false, true])

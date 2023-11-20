@@ -45,7 +45,12 @@ fn credits_screen_ui(
     mut state: ResMut<NextState<AppState>>,
     egui_textures: Res<EguiButtonTextures>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+    add_navbar(
+        &mut egui_ctx,
+        &mut state,
+        &egui_textures,
+        &t!("credits_screen.title"),
+    );
 
     egui::CentralPanel::default()
         .frame(Frame::none())
