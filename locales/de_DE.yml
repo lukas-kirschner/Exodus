@@ -119,6 +119,13 @@ campaign:
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
     tutorial_doors: "Tutorial: Türen"
+    space_exodus_the_quest_begins: "The Quest Begins"
+    space_exodus_the_dungeon: "The Dungeon"
+    space_exodus_camouflage: "Camouflage"
+    space_exodus_teleportation: "Teleportation"
+    space_exodus_control: "Control"
+    space_exodus_mist: "Mist"
+    space_exodus_the_ladder: "The Ladder"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."

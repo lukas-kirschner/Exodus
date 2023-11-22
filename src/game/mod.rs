@@ -50,6 +50,13 @@ impl Plugin for GamePlugin {
                 },
                 load_texture_pack.in_set(AppLabels::PrepareData),
             )
+            .add_systems(
+                OnTransition {
+                    from: AppState::GameOverScreen,
+                    to: AppState::Playing,
+                },
+                load_texture_pack.in_set(AppLabels::PrepareData),
+            )
             .add_systems(OnExit(AppState::Playing), load_texture_pack_from_config)
             .add_systems(
                 OnExit(AppState::ConfigScreen),

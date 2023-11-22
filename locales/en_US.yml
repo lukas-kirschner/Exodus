@@ -118,6 +118,13 @@ campaign:
     tutorial_jumping: "Tutorial: Jumping"
     tutorial_coins: "Tutorial: Coins"
     tutorial_doors: "Tutorial: Doors"
+    space_exodus_the_quest_begins: "The Quest Begins"
+    space_exodus_the_dungeon: "The Dungeon"
+    space_exodus_camouflage: "Camouflage"
+    space_exodus_teleportation: "Teleportation"
+    space_exodus_control: "Control"
+    space_exodus_mist: "Mist"
+    space_exodus_the_ladder: "The Ladder"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
