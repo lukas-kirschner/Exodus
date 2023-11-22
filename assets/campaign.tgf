@@ -14,7 +14,10 @@
 56 space_exodus_mist.exm -4 -5
 57 space_exodus_the_ladder.exm -6 -5
 
-70 march_2000_.exm -1 -2
+70 march_2000_jungle_puzzle_1.exm -1 -2
+71 march_2000_jungle_puzzle_2.exm -3 -2
+
+90 february_2000_.exm 1 -2
 #
 0 10 tutorial
 10 11
@@ -23,6 +26,7 @@
 13 14
 
 0 50 Classic Campaign
+
 50 51 Space Exodus
 51 52
 52 53
@@ -30,4 +34,8 @@
 54 55
 55 56
 56 57
+
 50 70 March 2000
+70 71
+
+50 90 February 2000

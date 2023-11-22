@@ -11,6 +11,7 @@ The original EPOC game can be downloaded under the following links:
 | Psion Revo                                                                     | Psion 5mx                                                         |
 |--------------------------------------------------------------------------------|-------------------------------------------------------------------|
 | [Download](https://archive.org/details/tucows_55899_Space_Exodus_Revo_version) | [Download](https://archive.org/details/tucows_45515_Space_Exodus) |
+| [Old Version 2.01](http://www.psion-user-club.at/d_game3.html)                 |                                                                   |
 
 ## Compilation Instructions
 
@@ -102,7 +103,7 @@ e.g. by typing `ln -s /absolute/path/to/exodus/assets/maps /home/${USER}/.local/
 Exodus will automatically follow the symlink when new maps are searched.
 To save a map as campaign map, simply prefix the map name with `campaign/`.
 
-When creating 
+When creating
 
 ### Limitations
 
@@ -140,6 +141,6 @@ The map itself holds the message data in a vector of strings that can be assigne
 
 There are some text fragments that are interpreted to show special text in the game UI:
 
-| Text                    | Meaning/Example                                   |
-|-------------------------|---------------------------------------------------|
-| `t!(text)`              | Translate `text` in the global translation table  |
+| Text       | Meaning/Example                                  |
+|------------|--------------------------------------------------|
+| `t!(text)` | Translate `text` in the global translation table |

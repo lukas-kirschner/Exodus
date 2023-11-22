@@ -61,6 +61,8 @@ tile:
   wallcobble: Pflasterstein
   wallsmooth: Geflieste Mauer
   wallchiseled: Behauene Mauer
+  pillar: Säule
+  slope: Vorsprung
   playerspawn: Spawn
   door: Tür
   opendoor: Geöffnete Tür

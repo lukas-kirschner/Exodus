@@ -73,6 +73,10 @@ pub enum Tile {
     WALLSMOOTH,
     /// An alternative Wall with a "chiseled" texture
     WALLCHISELED,
+    /// A solid slope
+    SLOPE,
+    /// A solid pillar
+    PILLAR,
     /// The position where the player spawns
     PLAYERSPAWN,
     /// A door that can be opened with a key
@@ -157,6 +161,8 @@ impl Tile {
             Tile::WALLCOBBLE => TileKind::SOLID,
             Tile::WALLSMOOTH => TileKind::SOLID,
             Tile::WALLCHISELED => TileKind::SOLID,
+            Tile::SLOPE => TileKind::SOLID,
+            Tile::PILLAR => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
@@ -241,6 +247,8 @@ impl Tile {
             Tile::WALLCOBBLE => Some(123),
             Tile::WALLSMOOTH => Some(57),
             Tile::WALLCHISELED => Some(52),
+            Tile::SLOPE => Some(140),
+            Tile::PILLAR => Some(29),
             Tile::PLAYERSPAWN => None,
             Tile::COIN => Some(217),
             Tile::LADDER => Some(220),
@@ -319,6 +327,8 @@ impl Tile {
             Tile::WALLCOBBLE => "wallcobble",
             Tile::WALLSMOOTH => "wallsmooth",
             Tile::WALLCHISELED => "wallchiseled",
+            Tile::SLOPE => "slope",
+            Tile::PILLAR => "pillar",
             Tile::PLAYERSPAWN => "playerspawn",
             Tile::DOOR => "door",
             Tile::OPENDOOR => "opendoor",
@@ -371,6 +381,8 @@ impl fmt::Display for Tile {
                 Tile::WALLCOBBLE => "Wall (Cobblestone)",
                 Tile::WALLSMOOTH => "Wall (Smooth)",
                 Tile::WALLCHISELED => "Wall (Chiseled)",
+                Tile::SLOPE => "Slope",
+                Tile::PILLAR => "Pillar",
                 Tile::PLAYERSPAWN => "Player Spawn",
                 Tile::COIN => "Coin",
                 Tile::LADDER => "Ladder",

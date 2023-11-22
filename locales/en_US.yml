@@ -60,6 +60,8 @@ tile:
   wallcobble: Cobblestone Wall
   wallsmooth: Smooth Wall
   wallchiseled: Chiseled Wall
+  pillar: Pillar
+  slope: Slope
   playerspawn: Player Spawn
   door: Door
   opendoor: Open Door

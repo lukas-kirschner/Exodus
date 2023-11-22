@@ -203,6 +203,21 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
+                            &Tile::SLOPE,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::PILLAR,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        ui.separator();
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
                             &Tile::AIR,
                             &mut selected_tile,
                             player_it,
