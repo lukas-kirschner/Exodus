@@ -127,6 +127,9 @@ campaign:
     space_exodus_control: "Control"
     space_exodus_mist: "Mist"
     space_exodus_the_ladder: "The Ladder"
+    february_2000: "February 2000 Map"
+    march_2000_jungle_puzzle_1: "Jungle Puzzle 1"
+    march_2000_jungle_puzzle_2: "Jungle Puzzle 2"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."
