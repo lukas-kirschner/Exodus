@@ -1,6 +1,6 @@
 use crate::game::constants::PLAYER_Z;
 use crate::game::tilewrapper::MapWrapper;
-use crate::{GameConfig, TilesetManager, LAYER_ID};
+use crate::{TilesetManager, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::player::Player;

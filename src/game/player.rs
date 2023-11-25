@@ -409,16 +409,24 @@ fn player_gravity(
         }
     }
 }
-
-fn respawn_player(
+/// Respawn the player. The position must be given in world coordinates
+pub fn respawn_player(
     commands: &mut Commands,
     atlas_handle_player: &TilesetManager,
-    world: &GameWorld,
+    position: (f32, f32),
 ) {
+    let mut player_inner = Player::new();
+    player_inner.push_movement_queue(Movement {
+        velocity: (
+            0.0,
+            -PLAYER_SPEED_ * (atlas_handle_player.current_tileset.texture_size() as f32),
+        ),
+        target: (position.0.floor() as i32, position.1.floor() as i32),
+        is_manual: false,
+    });
     let player: PlayerComponent = PlayerComponent {
-        player: Player::new(),
+        player: player_inner,
     };
-    let (map_player_position_x, map_player_position_y) = world.player_spawn();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
@@ -426,10 +434,8 @@ fn respawn_player(
             texture_atlas: atlas_handle_player.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    (map_player_position_x * atlas_handle_player.current_tileset().texture_size())
-                        as f32,
-                    (map_player_position_y * atlas_handle_player.current_tileset().texture_size())
-                        as f32,
+                    position.0 * atlas_handle_player.current_tileset().texture_size() as f32,
+                    position.1 * atlas_handle_player.current_tileset().texture_size() as f32,
                     PLAYER_Z,
                 ),
                 ..default()
@@ -452,7 +458,14 @@ pub fn setup_player(
     current_texture_atlas: Res<TilesetManager>,
     world: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, &current_texture_atlas, &world.world);
+    respawn_player(
+        &mut commands,
+        &current_texture_atlas,
+        (
+            world.world.player_spawn().0 as f32,
+            world.world.player_spawn().1 as f32,
+        ),
+    );
 }
 
 pub fn keyboard_controls(
