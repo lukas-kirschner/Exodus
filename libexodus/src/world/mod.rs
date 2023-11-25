@@ -137,6 +137,10 @@ impl GameWorld {
         self.forced_tileset = tileset;
         self
     }
+    /// Get the teleport location for the given Teleport
+    pub fn get_teleport_location(&self, id: TeleportId) -> Option<&(usize, usize)> {
+        self.teleport_metadata.teleport_exit_locations.get(&id)
+    }
     /// Set the tile at the given coordinate to the given value.
     /// If the tile to be set is a player spawn, the old player spawn will be deleted automatically
     /// (replaced by an Air tile).

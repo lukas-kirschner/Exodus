@@ -22,6 +22,7 @@ impl Plugin for AnimatedActionSpritePlugin {
 pub enum AnimatedSpriteAction {
     StateChange { state: AppState },
     GameOverTrigger { state: GameOverState },
+    Teleport { location: (usize, usize) },
     // TODO State for arbitrary scoreboard change: Pass a FnOnce which will be executed when animated sprite decays?
     None,
 }
@@ -149,6 +150,12 @@ fn animated_action_sprite_handler(
                     event_writer.send(GameOverEvent {
                         state: state.clone(),
                     });
+                },
+                AnimatedSpriteAction::Teleport { location } => {
+                    debug!(
+                        "Teleporting Player to ({},{}), triggered by AnimatedActionSprite",
+                        location.0, location.1
+                    );
                 },
             }
             return;
