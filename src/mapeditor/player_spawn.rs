@@ -14,7 +14,6 @@ pub fn init_player_spawn(
     mut commands: Commands,
     tileset: Res<TilesetManager>,
     world_wrapper: ResMut<MapWrapper>,
-    config: Res<GameConfig>,
 ) {
     // Code Duplication from player.rs - but we need to change things later
     let player: PlayerSpawnComponent = PlayerSpawnComponent {
@@ -28,8 +27,8 @@ pub fn init_player_spawn(
             texture_atlas: tileset.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    map_player_position_x as f32 * config.texture_size(),
-                    map_player_position_y as f32 * config.texture_size(),
+                    (map_player_position_x * tileset.current_tileset.texture_size()) as f32,
+                    (map_player_position_y * tileset.current_tileset.texture_size()) as f32,
                     PLAYER_Z,
                 ),
                 ..default()
