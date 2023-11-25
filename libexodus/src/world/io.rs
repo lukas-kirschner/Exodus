@@ -1,5 +1,5 @@
 use crate::exodus_serializable::ExodusSerializable;
-use crate::tiles::{InteractionKind, Tile};
+use crate::tiles::{InteractionKind, TeleportId, Tile};
 use crate::tilesets::Tileset;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
@@ -55,6 +55,7 @@ impl GameWorld {
             clean: true,
             messages: vec![],
             forced_tileset: None,
+            teleport_metadata: Default::default(),
         };
         ret.parse(&mut buf)?;
         Ok(ret)
@@ -432,6 +433,8 @@ impl Tile {
             Tile::ARROWDOWN => 0x35,
             Tile::MESSAGE { .. } => 0x36,
             Tile::EXIT => 0x11,
+            Tile::TELEPORTENTRY { teleport_id } => 0x70 + (teleport_id.const_to_u8() * 2),
+            Tile::TELEPORTEXIT { teleport_id } => 0x71 + (teleport_id.const_to_u8() * 2),
             Tile::CAMPAIGNTRAILWALKWAY => 0xf0,
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
             Tile::CAMPAIGNTRAILBORDER => 0xf2,
@@ -476,6 +479,12 @@ impl Tile {
             0x5C => Some(Tile::WALLSPIKESRT),
             0x5D => Some(Tile::WALLSPIKESRLB),
             0x5E => Some(Tile::WALLSPIKESRLT),
+            0x70..=0x7e if byte % 2 == 0 => Some(Tile::TELEPORTENTRY {
+                teleport_id: TeleportId::const_from_u8((byte - 0x70) / 2),
+            }),
+            0x71..=0x7f if byte % 2 == 1 => Some(Tile::TELEPORTEXIT {
+                teleport_id: TeleportId::const_from_u8((byte - 0x71) / 2),
+            }),
             0x32 => Some(Tile::ARROWRIGHT),
             0x33 => Some(Tile::ARROWLEFT),
             0x34 => Some(Tile::ARROWUP),
@@ -514,7 +523,12 @@ mod tests {
 
     #[test]
     fn test_bidirectional_serialization_for_tiles() {
-        for tile in Tile::iter() {
+        for tile in Tile::iter().chain(TeleportId::iter().flat_map(|teleport_id| {
+            vec![
+                Tile::TELEPORTEXIT { teleport_id },
+                Tile::TELEPORTENTRY { teleport_id },
+            ]
+        })) {
             let reference: &Tile = &tile;
             let actual = Tile::from_bytes(reference.to_bytes());
             assert!(
@@ -660,6 +674,43 @@ mod tests {
             .set_name("Test Map")
             .set_author("")
             .set_dirty();
+        test_write_and_read_map(&mut reference_map);
+    }
+
+    #[test]
+    fn test_write_and_read_map_with_removed_teleports() {
+        let mut reference_map = GameWorld::new(2, 2);
+        reference_map
+            .set(0, 0, Tile::WALL)
+            .set(
+                0,
+                0,
+                Tile::TELEPORTEXIT {
+                    teleport_id: TeleportId::ONE,
+                },
+            )
+            .set(0, 0, Tile::WALL)
+            .set(
+                0,
+                1,
+                Tile::TELEPORTEXIT {
+                    teleport_id: TeleportId::ONE,
+                },
+            );
+        assert!(matches!(reference_map.get(0, 0), Some(Tile::WALL)));
+        test_write_and_read_map(&mut reference_map);
+        reference_map.set(
+            1,
+            1,
+            Tile::TELEPORTEXIT {
+                teleport_id: TeleportId::ONE,
+            },
+        );
+        assert!(matches!(reference_map.get(0, 1), Some(Tile::AIR)));
+        assert!(matches!(
+            reference_map.get(1, 1),
+            Some(Tile::TELEPORTEXIT { .. })
+        ));
         test_write_and_read_map(&mut reference_map);
     }
 

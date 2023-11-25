@@ -14,11 +14,11 @@ use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::Ui;
+use bevy_egui::egui::{Align, Layout, Ui};
 use bevy_egui::{egui, EguiContexts};
-use libexodus::tiles::{Tile, UITiles};
+use libexodus::tiles::{TeleportId, Tile, UITiles};
 use std::borrow::Borrow;
-
+use strum::IntoEnumIterator;
 pub struct MapEditorUiPlugin;
 
 impl Plugin for MapEditorUiPlugin {
@@ -453,10 +453,35 @@ fn mapeditor_ui(
                 });
             });
         });
-    let ui_height = panel.response.rect.height();
+    let top = panel.response.rect.height();
+    let left_panel = egui::SidePanel::left("side_panel")
+        .resizable(false)
+        .exact_width(MAPEDITOR_BUTTON_SIZE)
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
+                for teleport_id in TeleportId::iter() {
+                    tile_kind_selector_button_for(
+                        ui,
+                        egui_textures.borrow(),
+                        &Tile::TELEPORTENTRY { teleport_id },
+                        &mut selected_tile,
+                        player_it,
+                    );
+                    tile_kind_selector_button_for(
+                        ui,
+                        egui_textures.borrow(),
+                        &Tile::TELEPORTEXIT { teleport_id },
+                        &mut selected_tile,
+                        player_it,
+                    );
+                }
+            });
+        });
+    let left = left_panel.response.rect.width();
     check_ui_size_changed(
         &WindowUiOverlayInfo {
-            top: ui_height,
+            top,
+            left,
             ..default()
         },
         current_window_size,

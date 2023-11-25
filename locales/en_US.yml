@@ -94,6 +94,8 @@ tile:
   arrow_down: Down Arrow
   exit: Exit
   message: Message
+  teleport_entry: Teleport Entry
+  teleport_exit: Teleport Exit
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map

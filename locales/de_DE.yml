@@ -95,6 +95,8 @@ tile:
   arrow_down: Pfeil nach unten
   exit: Ziel
   message: Nachricht
+  teleport_entry: Teleporter
+  teleport_exit: Teleporter-Ziel
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX

@@ -90,7 +90,7 @@ pub fn rescale_main_camera(
     // Shift the main camera by the UI margin sizes to fit the world into the viewport
 
     main_camera_transform.translation = Vec3::new(
-        ((ui_margins.left - ui_margins.right) * main_camera_projection.scale) / 2.,
+        ((ui_margins.right - ui_margins.left) * main_camera_projection.scale) / 2.,
         ((ui_margins.top - ui_margins.bottom) * main_camera_projection.scale) / 2.,
         0.,
     )

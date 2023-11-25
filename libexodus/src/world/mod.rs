@@ -1,5 +1,6 @@
-use crate::tiles::{Tile, TileKind};
+use crate::tiles::{TeleportId, Tile, TileKind};
 use crate::tilesets::Tileset;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
@@ -17,6 +18,11 @@ impl Display for OutOfBoundsError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Index out of bounds: {}", self.0)
     }
+}
+#[derive(Clone, Default)]
+struct TeleportMetadata {
+    /// The Teleport Exit Locations which must be unique for each map
+    teleport_exit_locations: HashMap<TeleportId, (usize, usize)>,
 }
 
 #[derive(Clone)]
@@ -39,6 +45,8 @@ pub struct GameWorld {
     messages: Vec<String>,
     /// All messages that are stored in this map
     forced_tileset: Option<Tileset>,
+    /// Info about the teleports in this map
+    teleport_metadata: TeleportMetadata,
 }
 
 impl Default for GameWorld {
@@ -53,6 +61,7 @@ impl Default for GameWorld {
             clean: true,
             messages: vec![],
             forced_tileset: None,
+            teleport_metadata: Default::default(),
         }
     }
 }
@@ -71,6 +80,7 @@ impl GameWorld {
             clean: true,
             messages: vec![],     // No messages
             forced_tileset: None, // Do not force a tile set
+            teleport_metadata: Default::default(),
         }
     }
     /// Get the unique ID of this map as hex-string representation
@@ -131,30 +141,51 @@ impl GameWorld {
     /// If the tile to be set is a player spawn, the old player spawn will be deleted automatically
     /// (replaced by an Air tile).
     pub fn set(&mut self, x: usize, y: usize, tile: Tile) -> &mut Self {
-        match &tile.kind() {
-            TileKind::AIR => {},
-            TileKind::SOLID => {},
-            TileKind::DEADLY { from: _ } => {},
-            TileKind::SPECIAL { interaction: _ } => {},
-            TileKind::PLAYERSPAWN => {
-                // Replace the old player spawn with air
-                let (px, py) = self.playerspawn;
-                if self
-                    .get(px as i32, py as i32)
-                    .map(|t| matches!(t.kind(), TileKind::PLAYERSPAWN))
-                    .unwrap_or(false)
+        match tile {
+            Tile::TELEPORTEXIT { teleport_id } => {
+                // Remove the old teleport exit to make sure there is always only one teleport exit at a time
+                if let Some((x, y)) = self
+                    .teleport_metadata
+                    .teleport_exit_locations
+                    .get(&teleport_id)
                 {
-                    self.set(px, py, Tile::AIR);
+                    self.set(*x, *y, Tile::AIR);
                 }
-                // Set the new player spawn
-                self.playerspawn = (x, y);
+                self.teleport_metadata
+                    .teleport_exit_locations
+                    .insert(teleport_id, (x, y));
             },
-            TileKind::COIN => {},
-            TileKind::LADDER => {},
-            TileKind::KEY => {},
-            TileKind::DOOR => {},
-            TileKind::COLLECTIBLE => {},
-            TileKind::EXIT => {},
+            _ => {
+                // Delete a teleport entry, in case there is one on the new tile
+                self.teleport_metadata
+                    .teleport_exit_locations
+                    .retain(|_, (xx, yy)| (*xx, *yy) != (x, y));
+                match &tile.kind() {
+                    TileKind::AIR => {},
+                    TileKind::SOLID => {},
+                    TileKind::DEADLY { from: _ } => {},
+                    TileKind::SPECIAL { interaction: _ } => {},
+                    TileKind::PLAYERSPAWN => {
+                        // Replace the old player spawn with air
+                        let (px, py) = self.playerspawn;
+                        if self
+                            .get(px as i32, py as i32)
+                            .map(|t| matches!(t.kind(), TileKind::PLAYERSPAWN))
+                            .unwrap_or(false)
+                        {
+                            self.set(px, py, Tile::AIR);
+                        }
+                        // Set the new player spawn
+                        self.playerspawn = (x, y);
+                    },
+                    TileKind::COIN => {},
+                    TileKind::LADDER => {},
+                    TileKind::KEY => {},
+                    TileKind::DOOR => {},
+                    TileKind::COLLECTIBLE => {},
+                    TileKind::EXIT => {},
+                }
+            },
         }
         self.data[x][y] = tile;
         self

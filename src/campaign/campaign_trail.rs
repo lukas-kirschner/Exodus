@@ -299,6 +299,7 @@ fn campaign_screen_ui(
                         (true, None, map.get_name().to_string())
                     }
                 },
+                InteractionKind::TeleportTo { .. } => (false, None, "".to_string()),
             },
             _ => (false, None, "".to_string()),
         };
@@ -418,6 +419,7 @@ pub fn play_map_keyboard_controls(
                         layer,
                     ));
                 },
+                InteractionKind::TeleportTo { .. } => {},
             }
         };
     }
