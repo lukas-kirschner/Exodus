@@ -2,11 +2,39 @@
 10 tutorial_walking.exm 0 2
 11 tutorial_jumping.exm 0 4
 12 -2 4
-13 tutorial_coins.exm -2 3
-14 tutorial_doors.exm -2 1
+13 tutorial_coins.exm -2 5
+14 tutorial_doors.exm -2 7
+
+50 0 -2
+51 space_exodus_the_quest_begins.exm 0 -3
+52 space_exodus_the_dungeon.exm 2 -3
+53 space_exodus_camouflage.exm 2 -5
+54 space_exodus_teleportation.exm 0 -5
+55 space_exodus_control.exm -2 -5
+56 space_exodus_mist.exm -4 -5
+57 space_exodus_the_ladder.exm -6 -5
+
+70 february_2000.exm -1 -2
+71 march_2000_jungle_puzzle_1.exm -3 -2
+72 march_2000_jungle_puzzle_2.exm -5 -2
+
 #
 0 10 tutorial
 10 11
 11 12
 12 13
 13 14
+
+0 50 Classic Campaign
+
+50 51 Space Exodus
+51 52
+52 53
+53 54
+54 55
+55 56
+56 57
+
+50 70 March 2000 Levels
+70 71
+71 72

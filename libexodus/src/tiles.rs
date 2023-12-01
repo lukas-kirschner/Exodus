@@ -10,6 +10,9 @@ pub enum InteractionKind {
     /// When interacting with this tile, the player may decide to play a map.
     /// This interaction kind is mainly used for tile-based Campaign Trails
     LaunchMap { map_name: String },
+    /// When interacting with this tile, the player should be teleported
+    /// to the given teleport exit.
+    TeleportTo { teleport_id: TeleportId },
 }
 impl Default for InteractionKind {
     fn default() -> Self {
@@ -58,6 +61,49 @@ pub enum TileKind {
 
 pub type AtlasIndex = usize;
 
+/// The ID for a Teleport
+#[derive(Default, Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, EnumIter, Hash)]
+pub enum TeleportId {
+    #[default]
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+}
+
+impl TryFrom<u8> for TeleportId {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(TeleportId::const_from_u8(value))
+    }
+}
+impl From<&TeleportId> for u8 {
+    fn from(value: &TeleportId) -> Self {
+        value.const_to_u8()
+    }
+}
+
+impl TeleportId {
+    pub const fn const_to_u8(&self) -> u8 {
+        match self {
+            TeleportId::ONE => 0,
+            TeleportId::TWO => 1,
+            TeleportId::THREE => 2,
+            TeleportId::FOUR => 3,
+        }
+    }
+    pub const fn const_from_u8(value: u8) -> Self {
+        match value {
+            0 => TeleportId::ONE,
+            1 => TeleportId::TWO,
+            2 => TeleportId::THREE,
+            3 => TeleportId::FOUR,
+            _ => panic!("Invalid Teleport ID"),
+        }
+    }
+}
+
 // Tiles Definitions
 #[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro)]
 pub enum Tile {
@@ -73,6 +119,10 @@ pub enum Tile {
     WALLSMOOTH,
     /// An alternative Wall with a "chiseled" texture
     WALLCHISELED,
+    /// A solid slope
+    SLOPE,
+    /// A solid pillar
+    PILLAR,
     /// The position where the player spawns
     PLAYERSPAWN,
     /// A door that can be opened with a key
@@ -145,6 +195,10 @@ pub enum Tile {
     CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { interaction: InteractionKind },
     /// A message tile that shows a message to the player as soon as they interact with it.
     MESSAGE { message_id: usize },
+    /// The entry of a Teleport, there may be more than one of these on a single map
+    TELEPORTENTRY { teleport_id: TeleportId },
+    /// The exit of a teleport, there may be only one on each map
+    TELEPORTEXIT { teleport_id: TeleportId },
 }
 
 impl Tile {
@@ -157,6 +211,8 @@ impl Tile {
             Tile::WALLCOBBLE => TileKind::SOLID,
             Tile::WALLSMOOTH => TileKind::SOLID,
             Tile::WALLCHISELED => TileKind::SOLID,
+            Tile::SLOPE => TileKind::SOLID,
+            Tile::PILLAR => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
             Tile::COIN => TileKind::COIN,
             Tile::LADDER => TileKind::LADDER,
@@ -231,6 +287,12 @@ impl Tile {
             },
             Tile::CAMPAIGNTRAILBORDER => TileKind::SOLID,
             Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => TileKind::SOLID,
+            Tile::TELEPORTENTRY { teleport_id } => TileKind::SPECIAL {
+                interaction: InteractionKind::TeleportTo {
+                    teleport_id: *teleport_id,
+                },
+            },
+            Tile::TELEPORTEXIT { .. } => TileKind::AIR,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -241,6 +303,8 @@ impl Tile {
             Tile::WALLCOBBLE => Some(123),
             Tile::WALLSMOOTH => Some(57),
             Tile::WALLCHISELED => Some(52),
+            Tile::SLOPE => Some(140),
+            Tile::PILLAR => Some(29),
             Tile::PLAYERSPAWN => None,
             Tile::COIN => Some(217),
             Tile::LADDER => Some(220),
@@ -277,6 +341,12 @@ impl Tile {
             Tile::CAMPAIGNTRAILBORDER => None,
             Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => Some(77),
             Tile::MESSAGE { .. } => Some(33),
+            Tile::TELEPORTENTRY { teleport_id } => {
+                Some(1 + (u8::from(teleport_id) * 2) as AtlasIndex)
+            },
+            Tile::TELEPORTEXIT { teleport_id } => {
+                Some(2 + (u8::from(teleport_id) * 2) as AtlasIndex)
+            },
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -319,6 +389,8 @@ impl Tile {
             Tile::WALLCOBBLE => "wallcobble",
             Tile::WALLSMOOTH => "wallsmooth",
             Tile::WALLCHISELED => "wallchiseled",
+            Tile::SLOPE => "slope",
+            Tile::PILLAR => "pillar",
             Tile::PLAYERSPAWN => "playerspawn",
             Tile::DOOR => "door",
             Tile::OPENDOOR => "opendoor",
@@ -355,6 +427,8 @@ impl Tile {
             Tile::CAMPAIGNTRAILBORDER => "campaign_trail_border",
             Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => "campaign_trail_locked_entry_point",
             Tile::MESSAGE { .. } => "message",
+            Tile::TELEPORTENTRY { .. } => "teleport_entry",
+            Tile::TELEPORTEXIT { .. } => "teleport_exit",
         }
     }
 }
@@ -371,6 +445,8 @@ impl fmt::Display for Tile {
                 Tile::WALLCOBBLE => "Wall (Cobblestone)",
                 Tile::WALLSMOOTH => "Wall (Smooth)",
                 Tile::WALLCHISELED => "Wall (Chiseled)",
+                Tile::SLOPE => "Slope",
+                Tile::PILLAR => "Pillar",
                 Tile::PLAYERSPAWN => "Player Spawn",
                 Tile::COIN => "Coin",
                 Tile::LADDER => "Ladder",
@@ -408,6 +484,8 @@ impl fmt::Display for Tile {
                 Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } =>
                     "Campaign Trail Locked Map Entry Point",
                 Tile::MESSAGE { .. } => "Message",
+                Tile::TELEPORTENTRY { .. } => "Teleport Entry",
+                Tile::TELEPORTEXIT { .. } => "Teleport Exit",
             }
         )
     }

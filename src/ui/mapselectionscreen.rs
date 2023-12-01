@@ -184,7 +184,12 @@ fn map_selection_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
-    add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+    add_navbar(
+        egui_ctx.ctx_mut(),
+        &mut state,
+        &egui_textures,
+        &t!("map_selection_screen.title"),
+    );
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         egui::ScrollArea::new([false, true])
@@ -281,8 +286,7 @@ fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
             ui.add_space(4.);
             ui.label(
                 egui::RichText::new(world.get_author())
-                    .text_style(egui::TextStyle::Name("MapAuthor".into()))
-                    .italics(),
+                    .text_style(egui::TextStyle::Name("MapAuthor".into())),
             );
         });
     });

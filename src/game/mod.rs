@@ -52,8 +52,8 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 OnTransition {
-                    from: AppState::MapSelectionScreen,
-                    to: AppState::MapEditor,
+                    from: AppState::GameOverScreen,
+                    to: AppState::Playing,
                 },
                 load_texture_pack.in_set(AppLabels::PrepareData),
             )

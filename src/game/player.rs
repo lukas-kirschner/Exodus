@@ -10,7 +10,7 @@ use libexodus::directions::Directions::*;
 use libexodus::directions::FromDirection;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{Tile, TileKind, EXITING_PLAYER_SPRITE};
+use libexodus::tiles::{InteractionKind, Tile, TileKind, EXITING_PLAYER_SPRITE};
 use libexodus::world::GameWorld;
 
 pub struct PlayerPlugin;
@@ -160,7 +160,9 @@ pub fn player_movement(
     time: Res<Time>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    for (mut _player, mut sprite, entity, mut transform, handle) in player_positions.iter_mut() {
+    for (mut _player, mut sprite, player_entity, mut transform, handle) in
+        player_positions.iter_mut()
+    {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // let mut transform: Transform = _transform;
@@ -271,7 +273,7 @@ pub fn player_movement(
                         TileKind::SOLID => {},
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
-                                commands.entity(entity).despawn_recursive();
+                                commands.entity(player_entity).despawn_recursive();
                                 sprite.index = 222; // Angel texture
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
@@ -297,7 +299,39 @@ pub fn player_movement(
                                 ));
                             }
                         },
-                        TileKind::SPECIAL { interaction: _ } => {},
+                        TileKind::SPECIAL { interaction } => {
+                            match interaction {
+                                InteractionKind::LaunchMap { .. } => { // Only applicable in Campaign Trail
+                                },
+                                InteractionKind::TeleportTo { teleport_id } => {
+                                    // Teleport the player to the given location
+                                    commands.entity(player_entity).despawn_recursive();
+                                    sprite.index = EXITING_PLAYER_SPRITE;
+                                    let layer = RenderLayers::layer(LAYER_ID);
+                                    if let Some(location) =
+                                        worldwrapper.world.get_teleport_location(teleport_id)
+                                    {
+                                        commands.spawn((
+                                            SpriteSheetBundle {
+                                                sprite: sprite.clone(),
+                                                texture_atlas: handle.clone(),
+                                                transform: *transform,
+                                                ..default()
+                                            },
+                                            AnimatedActionSprite::from_ascend_and_zoom(
+                                                EXITED_PLAYER_DECAY_SPEED,
+                                                EXITED_PLAYER_ASCEND_SPEED,
+                                                EXITED_PLAYER_ZOOM_SPEED,
+                                                AnimatedSpriteAction::Teleport {
+                                                    location: *location,
+                                                },
+                                            ),
+                                            layer,
+                                        ));
+                                    }
+                                },
+                            }
+                        },
                         TileKind::PLAYERSPAWN => {},
                         TileKind::COIN => {},
                         TileKind::LADDER => {
@@ -310,7 +344,7 @@ pub fn player_movement(
                         TileKind::DOOR => {},
                         TileKind::COLLECTIBLE => {},
                         TileKind::EXIT => {
-                            commands.entity(entity).despawn_recursive();
+                            commands.entity(player_entity).despawn_recursive();
                             sprite.index = EXITING_PLAYER_SPRITE;
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
@@ -375,16 +409,24 @@ fn player_gravity(
         }
     }
 }
-
-fn respawn_player(
+/// Respawn the player. The position must be given in world coordinates
+pub fn respawn_player(
     commands: &mut Commands,
     atlas_handle_player: &TilesetManager,
-    world: &GameWorld,
+    position: (f32, f32),
 ) {
+    let mut player_inner = Player::new();
+    player_inner.push_movement_queue(Movement {
+        velocity: (
+            0.0,
+            -PLAYER_SPEED_ * (atlas_handle_player.current_tileset.texture_size() as f32),
+        ),
+        target: (position.0.floor() as i32, position.1.floor() as i32),
+        is_manual: false,
+    });
     let player: PlayerComponent = PlayerComponent {
-        player: Player::new(),
+        player: player_inner,
     };
-    let (map_player_position_x, map_player_position_y) = world.player_spawn();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
@@ -392,10 +434,8 @@ fn respawn_player(
             texture_atlas: atlas_handle_player.current_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    (map_player_position_x * atlas_handle_player.current_tileset().texture_size())
-                        as f32,
-                    (map_player_position_y * atlas_handle_player.current_tileset().texture_size())
-                        as f32,
+                    position.0 * atlas_handle_player.current_tileset().texture_size() as f32,
+                    position.1 * atlas_handle_player.current_tileset().texture_size() as f32,
                     PLAYER_Z,
                 ),
                 ..default()
@@ -418,7 +458,14 @@ pub fn setup_player(
     current_texture_atlas: Res<TilesetManager>,
     world: ResMut<MapWrapper>,
 ) {
-    respawn_player(&mut commands, &current_texture_atlas, &world.world);
+    respawn_player(
+        &mut commands,
+        &current_texture_atlas,
+        (
+            world.world.player_spawn().0 as f32,
+            world.world.player_spawn().1 as f32,
+        ),
+    );
 }
 
 pub fn keyboard_controls(

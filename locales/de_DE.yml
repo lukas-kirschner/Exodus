@@ -8,11 +8,15 @@ main_menu:
 navbar:
   back_button_tooltip: Zurück
 config_screen:
+  title: Einstellungen
   language_label: Sprache
-  tileset_label: Textur-Set
-  player_name_label: Spieler-Name
-  player_name_tooltip: Name des Spielers, der in den Highscores gespeichert wird. Leer lassen, um Highscores zu deaktivieren.
+  language_tooltip: Die Sprache, welche überall im Spiel verwendet wird.
+  tileset_label: Texturpaket
+  tileset_tooltip: Das Texturpaket, welches für alle Texturen in der Benutzeroberfläche und der Spielwelt benutzt wird. Manche Kampagnenkarten sind von dieser Einstellung nicht betroffen.
+  player_name_label: Spielername
+  player_name_tooltip: Name des Spielers, der in den Highscores gespeichert wird. Leer lassen, um Highscores zu deaktivieren. Highscores werden immer für den jeweiligen Spieler gespeichert.
 map_selection_screen:
+  title: Karte auswählen
   play_map: Karte spielen
   edit_map: Karte bearbeiten
   delete_map: Karte löschen
@@ -20,6 +24,8 @@ map_selection_screen:
   no_highscore: Noch kein Highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+credits_screen:
+  title: Über
 game_ui:
   coins: Münzen
   moves: Züge
@@ -55,6 +61,8 @@ tile:
   wallcobble: Pflasterstein
   wallsmooth: Geflieste Mauer
   wallchiseled: Behauene Mauer
+  pillar: Säule
+  slope: Vorsprung
   playerspawn: Spawn
   door: Tür
   opendoor: Geöffnete Tür
@@ -87,6 +95,8 @@ tile:
   arrow_down: Pfeil nach unten
   exit: Ziel
   message: Nachricht
+  teleport_entry: Teleporter
+  teleport_exit: Teleporter-Ziel
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX
@@ -106,12 +116,23 @@ game_over_screen:
     lost: Die Karte kann mit dem "Erneut Spielen"-Button neu gestartet werden.
 campaign_screen:
   press_x_to_play: Bitte Enter drücken, um diese Map zu spielen!
+  title: Kampagnenmodus
 campaign:
   map:
     tutorial_walking: "Tutorial: Laufen"
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
     tutorial_doors: "Tutorial: Türen"
+    space_exodus_the_quest_begins: "The Quest Begins"
+    space_exodus_the_dungeon: "The Dungeon"
+    space_exodus_camouflage: "Camouflage"
+    space_exodus_teleportation: "Teleportation"
+    space_exodus_control: "Control"
+    space_exodus_mist: "Mist"
+    space_exodus_the_ladder: "The Ladder"
+    february_2000: "February 2000 Map"
+    march_2000_jungle_puzzle_1: "Jungle Puzzle 1"
+    march_2000_jungle_puzzle_2: "Jungle Puzzle 2"
   string:
     tutorial_walking_intro: "Willkommen bei Exodus! Bitte zwei mal auf Pfeil nach rechts drücken, um fortzufahren."
     tutorial_walking_walking: "Mit Pfeil nach Rechts/Links kann die Spielfigur auf der Karte fortbewegt werden."

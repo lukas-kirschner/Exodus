@@ -1,4 +1,6 @@
+use crate::game::player::respawn_player;
 use crate::game::scoreboard::{GameOverEvent, GameOverState};
+use crate::textures::tileset_manager::TilesetManager;
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
 
@@ -9,6 +11,7 @@ impl Plugin for AnimatedActionSpritePlugin {
             Update,
             animated_action_sprite_handler
                 .run_if(resource_exists::<GameConfig>())
+                .run_if(resource_exists::<TilesetManager>())
                 .in_set(AppLabels::PlayerMovement),
         )
         .add_systems(
@@ -22,6 +25,7 @@ impl Plugin for AnimatedActionSpritePlugin {
 pub enum AnimatedSpriteAction {
     StateChange { state: AppState },
     GameOverTrigger { state: GameOverState },
+    Teleport { location: (usize, usize) },
     // TODO State for arbitrary scoreboard change: Pass a FnOnce which will be executed when animated sprite decays?
     None,
 }
@@ -124,6 +128,7 @@ fn animated_action_sprite_handler(
     time: Res<Time>,
     mut app_state: ResMut<NextState<AppState>>,
     mut event_writer: EventWriter<GameOverEvent>,
+    tileset_manager: Res<TilesetManager>,
 ) {
     let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity, animated_sprite) in animated_sprites.iter_mut() {
@@ -149,6 +154,17 @@ fn animated_action_sprite_handler(
                     event_writer.send(GameOverEvent {
                         state: state.clone(),
                     });
+                },
+                AnimatedSpriteAction::Teleport { location } => {
+                    debug!(
+                        "Teleporting Player to ({},{}), triggered by AnimatedActionSprite",
+                        location.0, location.1
+                    );
+                    respawn_player(
+                        &mut commands,
+                        &tileset_manager,
+                        (location.0 as f32, location.1 as f32 + 0.75),
+                    )
                 },
             }
             return;

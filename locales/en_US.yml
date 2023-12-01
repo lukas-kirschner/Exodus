@@ -7,11 +7,15 @@ main_menu:
 navbar:
   back_button_tooltip: Back
 config_screen:
+  title: Game Configuration
   language_label: Language
+  language_tooltip: Set the written language used all throughout the game.
   tileset_label: Tile Set
+  tileset_tooltip: Set the default tileset that will be used for all game UI textures and the game world itself. This will not affect campaign maps that force the use of a specific texture pack.
   player_name_label: Player Name
-  player_name_tooltip: Player Name that will be stored in the high score database. If left blank, no high scores will be saved.
+  player_name_tooltip: Set the player name that will be stored in the high score database. If left blank, no high scores will be saved. Highscores are always saved per player.
 map_selection_screen:
+  title: Select a map
   play_map: Play Map
   edit_map: Edit Map
   delete_map: Delete map
@@ -19,6 +23,8 @@ map_selection_screen:
   no_highscore: No highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+credits_screen:
+  title: Credits
 game_ui:
   coins: Coins
   moves: Moves
@@ -54,6 +60,8 @@ tile:
   wallcobble: Cobblestone Wall
   wallsmooth: Smooth Wall
   wallchiseled: Chiseled Wall
+  pillar: Pillar
+  slope: Slope
   playerspawn: Player Spawn
   door: Door
   opendoor: Open Door
@@ -86,6 +94,8 @@ tile:
   arrow_down: Down Arrow
   exit: Exit
   message: Message
+  teleport_entry: Teleport Entry
+  teleport_exit: Teleport Exit
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map
@@ -105,12 +115,23 @@ game_over_screen:
     lost: Click the Replay Button to try again.
 campaign_screen:
   press_x_to_play: Press Enter to play this map!
+  title: Campaign Trail
 campaign:
   map:
     tutorial_walking: "Tutorial: Walking"
     tutorial_jumping: "Tutorial: Jumping"
     tutorial_coins: "Tutorial: Coins"
     tutorial_doors: "Tutorial: Doors"
+    space_exodus_the_quest_begins: "The Quest Begins"
+    space_exodus_the_dungeon: "The Dungeon"
+    space_exodus_camouflage: "Camouflage"
+    space_exodus_teleportation: "Teleportation"
+    space_exodus_control: "Control"
+    space_exodus_mist: "Mist"
+    space_exodus_the_ladder: "The Ladder"
+    february_2000: "February 2000 Map"
+    march_2000_jungle_puzzle_1: "Jungle Puzzle 1"
+    march_2000_jungle_puzzle_2: "Jungle Puzzle 2"
   string:
     tutorial_walking_intro: "Welcome to Exodus! Please press the right arrow key twice to continue with the tutorial."
     tutorial_walking_walking: "Press the right or left arrow key to advance the player left or right on the map."

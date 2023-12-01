@@ -67,7 +67,7 @@ pub fn compute_cursor_position_in_world(
             layer_camera_transform,
             texture_size,
         ) {
-            return Some((world_coord.0 as i32, world_coord.1 as i32));
+            return Some((world_coord.0.floor() as i32, world_coord.1.floor() as i32));
         }
     }
     None

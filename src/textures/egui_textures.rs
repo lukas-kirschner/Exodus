@@ -3,10 +3,8 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_egui::egui::{Pos2, TextureId};
 use bevy_egui::{egui, EguiContexts};
-use libexodus::player::Player;
-use libexodus::tiles::{AtlasIndex, Tile, UITiles};
+use libexodus::tiles::AtlasIndex;
 use std::collections::HashMap;
-use strum::IntoEnumIterator;
 
 #[derive(Resource)]
 pub struct EguiButtonTextures {
@@ -130,49 +128,18 @@ pub fn atlas_to_egui_textures(
         .expect("The texture atlas of the tile set has not yet been loaded!");
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
-    // Convert game world tiles
-    for tile in Tile::iter() {
-        if let Some(atlas_index) = tile.atlas_index() {
-            textures.insert(
-                atlas_index,
-                convert(
-                    texture_atlas,
-                    texture_handle,
-                    &mut egui_ctx,
-                    &atlas_index,
-                    &mut assets,
-                ),
-            );
-        }
+    // Convert all available textures from the sprite sheet
+    for atlas_index in 0..256 {
+        textures.insert(
+            atlas_index,
+            convert(
+                texture_atlas,
+                texture_handle,
+                &mut egui_ctx,
+                &atlas_index,
+                &mut assets,
+            ),
+        );
     }
-    // Convert Button Textures
-    for extratexture in UITiles::iter() {
-        if let Some(atlas_index) = extratexture.atlas_index() {
-            textures.insert(
-                atlas_index,
-                convert(
-                    texture_atlas,
-                    texture_handle,
-                    &mut egui_ctx,
-                    &atlas_index,
-                    &mut assets,
-                ),
-            );
-        }
-    }
-
-    // Convert Player Texture for the Player Spawn Button
-    let player = Player::new();
-    textures.insert(
-        player.atlas_index(),
-        convert(
-            texture_atlas,
-            texture_handle,
-            &mut egui_ctx,
-            &player.atlas_index(),
-            &mut assets,
-        ),
-    );
-
     commands.insert_resource(EguiButtonTextures { textures });
 }

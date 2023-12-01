@@ -266,7 +266,12 @@ fn campaign_screen_ui(
     config: Res<GameConfig>,
 ) {
     if let Ok(player_pos) = player_query.get_single() {
-        let navbar_response = add_navbar(&mut egui_ctx, &mut state, &egui_textures);
+        let navbar_response = add_navbar(
+            egui_ctx.ctx_mut(),
+            &mut state,
+            &egui_textures,
+            &t!("campaign_screen.title"),
+        );
         let ui_top_height = navbar_response.response.rect.height();
 
         // Bottom UI
@@ -294,6 +299,7 @@ fn campaign_screen_ui(
                         (true, None, map.get_name().to_string())
                     }
                 },
+                InteractionKind::TeleportTo { .. } => (false, None, "".to_string()),
             },
             _ => (false, None, "".to_string()),
         };
@@ -413,6 +419,7 @@ pub fn play_map_keyboard_controls(
                         layer,
                     ));
                 },
+                InteractionKind::TeleportTo { .. } => {},
             }
         };
     }
