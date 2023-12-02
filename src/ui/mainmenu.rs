@@ -1,3 +1,4 @@
+use crate::game::load_texture_pack_from_config;
 use crate::textures::egui_textures::atlas_to_egui_textures;
 use crate::ui::{BUTTON_HEIGHT, UIMAINMENUMARGIN};
 use crate::AppState;
@@ -124,6 +125,9 @@ impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::MainMenu), configure_visuals)
             .add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
-            .add_systems(OnEnter(AppState::MainMenu), atlas_to_egui_textures);
+            .add_systems(
+                OnEnter(AppState::MainMenu),
+                (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
+            );
     }
 }

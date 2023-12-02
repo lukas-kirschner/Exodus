@@ -6,6 +6,9 @@ use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::AtlasIndex;
 use std::collections::HashMap;
 
+/// The size in pixels of all square EGUI textures
+const EGUI_TEX_SIZE: usize = 32;
+
 #[derive(Resource)]
 pub struct EguiButtonTextures {
     pub textures: HashMap<AtlasIndex, (TextureId, egui::Vec2, egui::Rect)>,
@@ -29,12 +32,18 @@ fn scale_texture(
     assets: &mut Assets<Image>,
     texture_handle: &Handle<Image>,
 ) -> (Handle<Image>, usize) {
-    const TEXTURE_SIZE: usize = 32;
-    let image = assets.get(texture_handle).unwrap();
+    let source_image = assets.get(texture_handle).unwrap();
     assert_eq!(
         uv.max.x - uv.min.x,
         uv.max.y - uv.min.y,
         "Expected square textures!"
+    );
+    assert_eq!(
+        (uv.max.x - uv.min.x) * 16.,
+        source_image.width() as f32,
+        "Expected a source image width of {}, got {}",
+        (uv.max.x - uv.min.x) * 16.,
+        source_image.width()
     );
     debug_assert_eq!(
         (uv.max.x - uv.min.x).fract(),
@@ -42,39 +51,52 @@ fn scale_texture(
         "Expected texture uv sizes to be an integer!"
     );
     let old_texture_size = (uv.max.x - uv.min.x) as usize;
-    let ratio = old_texture_size as f64 / TEXTURE_SIZE as f64;
-    let rgba_image = image.clone().try_into_dynamic().unwrap().into_rgba8();
+    let ratio = old_texture_size as f64 / EGUI_TEX_SIZE as f64;
+    let rgba_image = source_image
+        .clone()
+        .try_into_dynamic()
+        .unwrap()
+        .into_rgba8();
     let data = rgba_image.as_raw();
-    let (data_w, data_h) = (image.size().x as usize * 4, image.size().y as usize);
+    let (data_w, data_h) = (
+        source_image.size().x as usize * 4,
+        source_image.size().y as usize,
+    );
     assert_eq!(data_w * data_h, data.len());
     assert_eq!(
-        image.texture_descriptor.format,
+        source_image.texture_descriptor.format,
         TextureFormat::Rgba8UnormSrgb,
         "Image format {:?} expected! Got {:?} instead",
         TextureFormat::Rgba8UnormSrgb,
-        image.texture_descriptor.format
+        source_image.texture_descriptor.format
     );
-    let mut target_arr = Vec::with_capacity(TEXTURE_SIZE * TEXTURE_SIZE * 4);
-    for y in 0..TEXTURE_SIZE {
+    let mut target_arr = Vec::with_capacity(EGUI_TEX_SIZE * EGUI_TEX_SIZE * 4);
+    for y in 0..EGUI_TEX_SIZE {
         let py = (y as f64 * ratio).floor() as usize;
         let y_img = py + uv.min.y as usize;
         assert!(
-            y_img < image.size().y as usize,
+            y_img < source_image.size().y as usize,
             "Y Index {} ({}) out of bounds! Height: {}",
             y_img,
             py,
-            image.size().y
+            source_image.size().y
         );
 
-        for x in 0..TEXTURE_SIZE {
+        for x in 0..EGUI_TEX_SIZE {
             let px = (x as f64 * ratio).floor() as usize;
             let x_img = px + uv.min.x as usize;
             assert!(
-                x_img < image.size().x as usize,
-                "X Index {} ({}) out of bounds! Width: {}",
+                x_img < source_image.size().x as usize,
+                "X Index {} on source UV ({},{})->({},{}) ({} * {} = {}) out of bounds! Width: {}",
                 x_img,
+                uv.min.x,
+                uv.min.y,
+                uv.max.x,
+                uv.max.y,
+                x,
+                ratio,
                 px,
-                image.size().x
+                source_image.size().x
             );
 
             for offset in 0..4usize {
@@ -86,15 +108,15 @@ fn scale_texture(
     (
         assets.add(Image::new(
             Extent3d {
-                width: TEXTURE_SIZE as u32,
-                height: TEXTURE_SIZE as u32,
+                width: EGUI_TEX_SIZE as u32,
+                height: EGUI_TEX_SIZE as u32,
                 depth_or_array_layers: 1,
             },
             TextureDimension::D2,
             target_arr,
-            image.texture_descriptor.format,
+            source_image.texture_descriptor.format,
         )),
-        TEXTURE_SIZE,
+        EGUI_TEX_SIZE,
     )
 }
 
@@ -109,23 +131,31 @@ fn convert(
     let (handle, size) = scale_texture(&rect, assets, texture_handle);
     let uv: egui::Rect = egui::Rect::from_min_max(Pos2::new(0., 0.), Pos2::new(1., 1.));
     let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
-    // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
-    // handle.make_strong(assets); //TODO Memory leak?
     let tex: TextureId = egui_ctx.add_image(handle);
     (tex, rect_vec2, uv)
 }
 
 /// Convert Bevy Textures to Egui Textures to show those on the buttons
 pub fn atlas_to_egui_textures(
-    texture_atlas_handle: Res<TilesetManager>,
+    tileset_manager: Res<TilesetManager>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut egui_ctx: EguiContexts,
     mut assets: ResMut<Assets<Image>>,
 ) {
     let texture_atlas: &TextureAtlas = texture_atlases
-        .get(&texture_atlas_handle.current_handle())
-        .expect("The texture atlas of the tile set has not yet been loaded!");
+        .get(&tileset_manager.current_handle())
+        .expect(
+            format!(
+                "The texture atlas of the tile set {} has not yet been loaded!",
+                tileset_manager.current_tileset
+            )
+            .as_str(),
+        );
+    assert_eq!(
+        texture_atlas.size.x / 16.,
+        tileset_manager.current_tileset.texture_size() as f32
+    );
     let texture_handle: &Handle<Image> = &texture_atlas.texture;
     let mut textures = HashMap::new();
     // Convert all available textures from the sprite sheet
