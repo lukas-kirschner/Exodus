@@ -14,24 +14,30 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(OnEnter(AppState::Playing),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
-            .add_systems(OnEnter(AppState::Playing),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
-            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::Playing)).after(AppLabels::GameUI))
-            .add_systems(OnExit(AppState::Playing),destroy_camera)
-            .add_systems(OnExit(AppState::Playing),destroy_world)
-        // Map Editor needs a world as well:
-            .add_systems(OnEnter(AppState::MapEditor),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
-            .add_systems(OnEnter(AppState::MapEditor),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
-            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::MapEditor)).after(AppLabels::GameUI))
-            .add_systems(OnExit(AppState::MapEditor),destroy_camera)
-            .add_systems(OnExit(AppState::MapEditor),destroy_world)
-        // Campaign Trails are "worlds" as well:
-            .add_systems(OnEnter(AppState::CampaignTrailScreen),(apply_deferred,reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData))
-            .add_systems(OnEnter(AppState::CampaignTrailScreen),setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
-            .add_systems(Update,handle_ui_resize.run_if(in_state(AppState::CampaignTrailScreen)).after(AppLabels::GameUI))
-            .add_systems(OnExit(AppState::CampaignTrailScreen),destroy_camera)
-            .add_systems(OnExit(AppState::CampaignTrailScreen),destroy_world);
+        app.add_systems(
+            OnEnter(AppState::Playing),
+            (apply_deferred, reset_world)
+                .chain()
+                .in_set(AppLabels::World)
+                .after(AppLabels::PrepareData),
+        )
+        .add_systems(
+            OnEnter(AppState::Playing),
+            setup_camera
+                .after(AppLabels::World)
+                .in_set(AppLabels::Camera),
+        )
+        .add_systems(
+            Update,
+            handle_ui_resize
+                .run_if(in_state(AppState::Playing))
+                .after(AppLabels::GameUI),
+        )
+        .add_systems(OnExit(AppState::Playing), destroy_camera)
+        .add_systems(OnExit(AppState::Playing), destroy_world)
+        // Map Editor needs a world as well:.add_systems(OnEnter(AppState::MapEditor), (apply_deferred, reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData)).add_systems(OnEnter(AppState::MapEditor), setup_camera.after(AppLabels::World).in_set(AppLabels::Camera)).add_systems(Update, handle_ui_resize.run_if(in_state(AppState::MapEditor)).after(AppLabels::GameUI)).add_systems(OnExit(AppState::MapEditor), destroy_camera).add_systems(OnExit(AppState::MapEditor), destroy_world)
+        // Campaign Trails are "worlds" as well:.add_systems(OnEnter(AppState::CampaignTrailScreen), (apply_deferred, reset_world).chain().in_set(AppLabels::World).after(AppLabels::PrepareData)).add_systems(OnEnter(AppState::CampaignTrailScreen), setup_camera.after(AppLabels::World).in_set(AppLabels::Camera)).add_systems(Update, handle_ui_resize.run_if(in_state(AppState::CampaignTrailScreen)).after(AppLabels::GameUI)).add_systems(OnExit(AppState::CampaignTrailScreen), destroy_camera).add_systems(OnExit(AppState::CampaignTrailScreen), destroy_world)
+        ;
     }
 }
 
@@ -65,8 +71,11 @@ pub fn spawn_tile(
 ) {
     let mut bundle: EntityCommands = commands.spawn((
         SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(atlas_index),
-            texture_atlas: map_texture_atlas.current_handle(),
+            sprite: Sprite::default(),
+            atlas: TextureAtlas {
+                layout: map_texture_atlas.current_atlas_handle(),
+                index: atlas_index,
+            },
             transform: Transform {
                 // Multiply the position by the texture size
                 translation: (*tile_position

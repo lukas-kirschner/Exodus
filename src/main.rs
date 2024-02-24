@@ -275,7 +275,7 @@ fn main() {
         .init_resource::<WindowUiOverlayInfo>()
         .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
-        .add_state::<AppState>()
+        .init_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins
@@ -299,6 +299,7 @@ fn main() {
                     }
                     .into(),
                     level: bevy::log::Level::DEBUG,
+                    update_subscriber: None,
                 }),
         )
         .add_systems(Update, resize_notificator)

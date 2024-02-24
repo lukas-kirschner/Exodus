@@ -27,7 +27,7 @@ impl Default for WindowUiOverlayInfo {
 }
 
 pub fn menu_esc_control(
-    mut keys: ResMut<Input<KeyCode>>,
+    mut keys: ResMut<ButtonInput<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
     current_app_state: ResMut<State<AppState>>,
 ) {

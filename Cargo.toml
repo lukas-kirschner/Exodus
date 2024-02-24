@@ -26,7 +26,7 @@ load_path = "locales"
 
 # Bevy Debloating - see https://bevy-cheatbook.github.io/setup/bevy-config.html
 [dependencies.bevy]
-version = "0.12.0"
+version = "0.13.0"
 default-features = false
 features = [
 
@@ -89,9 +89,10 @@ features = [
 
 # Only include the features of bevy_egui that we actually need:
 [dependencies.bevy_egui]
-version = "0.24.0"
+version = "0.25.0"
 default-features = false
 features = [
+    "render"
 #    "default_fonts" # Do not include the default fonts, load the system fonts at runtime
 ]
 

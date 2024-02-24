@@ -42,17 +42,19 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
-            sprite: TextureAtlasSprite {
+            sprite: Sprite {
                 color: Color::Rgba {
                     red: 1.0,
                     green: 1.0,
                     blue: 1.0,
                     alpha: MAPEDITOR_PREVIEWTILE_ALPHA,
                 },
-                index: Tile::WALL.atlas_index().unwrap(),
                 ..default()
             },
-            texture_atlas: current_texture_atlas.current_handle(),
+            atlas: TextureAtlas {
+                layout: current_texture_atlas.current_atlas_handle(),
+                index: Tile::WALL.atlas_index().unwrap(),
+            },
             transform: Transform {
                 translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
                 ..default()
@@ -66,22 +68,22 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
 
 fn set_preview_tile_texture(
     new_tile: &Tile,
-    texture_atlas_handle: &mut Handle<TextureAtlas>,
-    texture_atlas_sprite: &mut TextureAtlasSprite,
+    texture_atlas_handle: &mut Handle<TextureAtlasLayout>,
+    texture_atlas_sprite: &mut TextureAtlas,
     preview_tile: &mut PreviewTile,
     current_texture_atlas: &TilesetManager,
 ) {
     match *new_tile {
         Tile::PLAYERSPAWN => {
-            *texture_atlas_handle = current_texture_atlas.current_handle();
+            *texture_atlas_handle = current_texture_atlas.current_atlas_handle();
             texture_atlas_sprite.index = Player::new().atlas_index();
         },
         _ => {
             if let Some(atlas_index) = new_tile.atlas_index() {
-                *texture_atlas_handle = current_texture_atlas.current_handle();
+                *texture_atlas_handle = current_texture_atlas.current_atlas_handle();
                 texture_atlas_sprite.index = atlas_index;
             } else {
-                *texture_atlas_handle = current_texture_atlas.current_handle();
+                *texture_atlas_handle = current_texture_atlas.current_atlas_handle();
                 texture_atlas_sprite.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
             }
         },
@@ -98,20 +100,20 @@ fn update_preview_tile(
     current_tile: Res<SelectedTile>,
     mut preview_tile_q: Query<(
         &mut PreviewTile,
-        &mut Handle<TextureAtlas>,
-        &mut TextureAtlasSprite,
+        &mut Handle<TextureAtlasLayout>,
+        &mut TextureAtlas,
         &mut Transform,
     )>,
     current_texture_atlas: Res<TilesetManager>,
     config: Res<GameConfig>,
 ) {
-    let (mut preview_tile, mut texture_atlas_handle, mut texture_atlas_sprite, mut transform) =
+    let (mut preview_tile, mut texture_atlas_handle, mut atlas, mut transform) =
         preview_tile_q.single_mut();
     if current_tile.tile != preview_tile.current_tile {
         set_preview_tile_texture(
             &current_tile.tile,
             &mut texture_atlas_handle,
-            &mut texture_atlas_sprite,
+            &mut atlas,
             &mut preview_tile,
             &current_texture_atlas,
         );
