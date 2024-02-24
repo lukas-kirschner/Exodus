@@ -13,11 +13,11 @@ members = [
 [dependencies]
 indoc = "2.0.4"
 libexodus = { path = "libexodus" }
-strum = "0.25.0"
-once_cell = "1.16.0"
-rust-i18n = "2.3.0"
+strum = "0.26.1"
+once_cell = "1.19.0"
+rust-i18n = "3.0.1"
 regex = "1.10.2"
-font-kit = "0.11.0"
+font-kit = "0.12.0"
 
 [package.metadata.i18n]
 available-locales = ["en_US", "de_DE"]

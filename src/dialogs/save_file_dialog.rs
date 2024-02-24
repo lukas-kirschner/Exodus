@@ -90,7 +90,7 @@ impl SaveFileDialog {
 
 impl UIDialog for SaveFileDialog {
     fn dialog_title(&self) -> String {
-        t!("map_editor.dialog.save_dialog_title")
+        t!("map_editor.dialog.save_dialog_title").to_string()
     }
 
     fn draw(
@@ -205,7 +205,7 @@ impl UIDialog for SaveFileDialog {
                             let etext = if self.state == SaveFileDialogState::Error {
                                 format!("Error: {}", self.error_text.as_str())
                             } else {
-                                t!("map_editor.dialog.save_dialog_overwrite")
+                                t!("map_editor.dialog.save_dialog_overwrite").to_string()
                             };
                             ui.label(etext.as_str());
                             if self.state == SaveFileDialogState::Error {

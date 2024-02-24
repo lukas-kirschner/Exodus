@@ -38,7 +38,7 @@ impl EditMessageDialog {
 
 impl UIDialog for EditMessageDialog {
     fn dialog_title(&self) -> String {
-        t!("map_editor.dialog.edit_message_dialog_title")
+        t!("map_editor.dialog.edit_message_dialog_title").to_string()
     }
 
     fn draw(
