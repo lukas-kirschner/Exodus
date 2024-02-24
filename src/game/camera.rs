@@ -193,9 +193,9 @@ pub fn compute_world_to_viewport(
     layer_camera_transform: &GlobalTransform,
     texture_size: f32,
 ) -> Option<Vec2> {
-    let main_x = ((world_position.x / texture_size) - 0.5)
+    let main_x = ((world_position.x - 0.5) / texture_size)
         - (layer_camera_transform.translation().x / texture_size);
-    let main_y = ((world_position.y / texture_size) - 0.5)
+    let main_y = ((world_position.y - 0.5) / texture_size)
         - (layer_camera_transform.translation().y / texture_size);
     if let Some(screen_player) = main_camera.world_to_viewport(
         main_camera_transform,
