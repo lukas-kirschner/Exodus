@@ -76,7 +76,7 @@ pub struct ReturnTo(pub AppState);
 /// Open the door at the new player position and return true if the door has been opened.
 /// Fail, if the player does not have enough keys
 fn door_opened(
-    doors: &mut Query<(Entity, &Transform, &mut TextureAtlas), With<DoorWrapper>>,
+    doors: &mut Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
     commands: &mut Commands,
     target_x_coord: i32,
     target_y_coord: i32,
@@ -97,7 +97,7 @@ fn door_opened(
         return false;
     }
     if scoreboard.keys > 0 {
-        for (entity, transform, mut atlas) in doors.iter_mut() {
+        for (entity, transform, mut atlas, texture) in doors.iter_mut() {
             if transform.translation.x == target_x_px as f32
                 && transform.translation.y == target_y_px as f32
             {
@@ -118,6 +118,7 @@ fn door_opened(
                             layout: atlas_handle.current_atlas_handle(),
                             index: Tile::KEY.atlas_index().unwrap(),
                         },
+                        texture: texture.clone(),
                         transform: Transform {
                             translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z - 0.1)
                                 .into(),
@@ -150,14 +151,14 @@ pub fn player_movement(
     mut player_positions: Query<
         (
             &mut PlayerComponent,
-            &mut Sprite,
+            &Handle<Image>,
             Entity,
             &mut Transform,
             &mut TextureAtlas,
         ),
         Without<DoorWrapper>,
     >,
-    mut doors: Query<(Entity, &Transform, &mut TextureAtlas), With<DoorWrapper>>,
+    mut doors: Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
     mut worldwrapper: ResMut<MapWrapper>,
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -281,7 +282,8 @@ pub fn player_movement(
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
                                     SpriteSheetBundle {
-                                        sprite: sprite.clone(),
+                                        sprite: Sprite::default(),
+                                        texture: sprite.clone(),
                                         atlas: atlas.clone(),
                                         transform: Transform {
                                             translation: transform.translation,
@@ -316,7 +318,8 @@ pub fn player_movement(
                                     {
                                         commands.spawn((
                                             SpriteSheetBundle {
-                                                sprite: sprite.clone(),
+                                                texture: sprite.clone(),
+                                                sprite: Sprite::default(),
                                                 atlas: atlas.clone(),
                                                 transform: *transform,
                                                 ..default()
@@ -352,7 +355,8 @@ pub fn player_movement(
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
                                 SpriteSheetBundle {
-                                    sprite: sprite.clone(),
+                                    texture: sprite.clone(),
+                                    sprite: Sprite::default(),
                                     atlas: atlas.clone(),
                                     transform: *transform,
                                     ..default()
@@ -439,6 +443,7 @@ pub fn respawn_player(
                 layout: atlas_handle_player.current_atlas_handle(),
                 index: player.player.atlas_index(),
             },
+            texture: atlas_handle_player.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(
                     position.0 * atlas_handle_player.current_tileset().texture_size() as f32,

@@ -76,6 +76,7 @@ pub fn spawn_tile(
                 layout: map_texture_atlas.current_atlas_handle(),
                 index: atlas_index,
             },
+            texture: map_texture_atlas.current_texture_handle(),
             transform: Transform {
                 // Multiply the position by the texture size
                 translation: (*tile_position

@@ -28,6 +28,7 @@ pub fn init_player_spawn(
                 layout: tileset.current_atlas_handle(),
                 index: player.player.atlas_index(),
             },
+            texture: tileset.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(
                     (map_player_position_x * tileset.current_tileset.texture_size()) as f32,

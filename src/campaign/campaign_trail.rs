@@ -343,7 +343,7 @@ pub fn play_map_keyboard_controls(
         &mut PlayerComponent,
         &Transform,
         Entity,
-        &mut Sprite,
+        &Handle<Image>,
         &mut TextureAtlas,
     )>,
     config: Res<GameConfig>,
@@ -398,14 +398,14 @@ pub fn play_map_keyboard_controls(
                         (player_map_x - offset_x, player_map_y - offset_y);
 
                     commands.entity(entity).despawn_recursive();
-                    let exit_sprite = sprite.clone();
                     let mut exit_atlas = atlas.clone();
                     exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
                         SpriteSheetBundle {
-                            sprite: exit_sprite,
+                            sprite: Sprite::default(),
                             atlas: exit_atlas,
+                            texture: sprite.clone(),
                             transform: *player_pos,
                             ..default()
                         },

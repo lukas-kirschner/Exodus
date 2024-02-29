@@ -4,7 +4,7 @@ use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
 use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
-use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
+use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::textures::Textures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
@@ -208,7 +208,7 @@ struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<RpgSpriteHandles>()
+        app.init_resource::<ImageHandles>()
             .init_resource::<TilesetManager>()
             .add_plugins(Textures);
     }

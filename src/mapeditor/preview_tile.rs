@@ -55,6 +55,7 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
                 layout: current_texture_atlas.current_atlas_handle(),
                 index: Tile::WALL.atlas_index().unwrap(),
             },
+            texture: current_texture_atlas.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
                 ..default()

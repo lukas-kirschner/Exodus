@@ -66,13 +66,13 @@ pub fn file_name_for_tileset(tileset: &Tileset) -> &str {
 
 #[derive(Resource)]
 /// A struct containing all loaded handles from the tilesets folder
-pub struct RpgSpriteHandles {
+pub struct ImageHandles {
     pub handles: Handle<LoadedFolder>,
 }
 
-impl FromWorld for RpgSpriteHandles {
+impl FromWorld for ImageHandles {
     fn from_world(_: &mut World) -> Self {
-        RpgSpriteHandles {
+        ImageHandles {
             handles: Default::default(),
         }
     }
