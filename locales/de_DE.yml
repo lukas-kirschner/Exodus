@@ -24,6 +24,25 @@ map_selection_screen:
   no_highscore: Noch kein Highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+  dialog:
+    create_new_map_dialog_title: Neue Karte erstellen
+    create_new_map_dialog_size_5mx: Psion 5mx
+    create_new_map_dialog_size_small: Klein
+    create_new_map_dialog_size_medium: Mittel
+    create_new_map_dialog_size_large: Groß
+    create_new_map_dialog_size_huge: Riesig
+    create_new_map_dialog_size_custom: Benutzerdefiniert
+    create_new_map_dialog_size_tooltip: Größe der neuen Karte
+    create_new_map_dialog_cancel_tooltip: Kartenerstellung abbrechen und zur Kartenauswahl zurückkehren
+    create_new_map_dialog_generate: Generieren
+    create_new_map_dialog_generate_tooltip: Generiert die Karte mit den gewählten Einstellungen und erstellt eine Vorschau
+    create_new_map_dialog_accept: Akzeptieren
+    create_new_map_dialog_accept_tooltip: Akzeptiert die generierte Karte und öffnet den Karteneditor, um sie weiter zu bearbeiten
+    create_new_map_dialog_cant_accept_tooltip: Es wurde noch keine Karte generiert! Bitte klicken Sie auf Generieren, um mit den gewählten Einstellungen eine Karte zu erstellen.
+    create_new_map_dialog_width_edit: Ziehen, um die Breite der Karte einzustellen
+    create_new_map_dialog_height_edit: Ziehen, um die Höhe der Karte einzustellen
+    create_new_map_dialog_width_noedit: Kartenbreite
+    create_new_map_dialog_height_noedit: Kartenhöhe
 credits_screen:
   title: Über
 game_ui:

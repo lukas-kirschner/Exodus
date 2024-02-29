@@ -1,3 +1,6 @@
+use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
+use crate::dialogs::save_file_dialog::SaveFileDialog;
+use crate::dialogs::DialogResource;
 use crate::game::player::ReturnTo;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -196,6 +199,20 @@ fn map_selection_screen_ui(
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
             .show(ui, |ui| {
+                //TODO
+                let sbutton = image_button(
+                    ui,
+                    &egui_textures,
+                    &UITiles::SAVEBUTTON,
+                    "map_editor.dialog.save_tooltip",
+                );
+                if sbutton.clicked() {
+                    commands.insert_resource(DialogResource {
+                        ui_dialog: Box::new(CreateNewMapDialog::default()),
+                    });
+                    state.set(AppState::MapSelectionScreenDialog);
+                }
+                //TODO
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     egui::Grid::new("maps_grid")
                         .striped(true)
@@ -291,6 +308,37 @@ fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
         });
     });
 }
+/// Handle all possible kinds of dialogs that can occur in the Map Selection Screen
+fn map_selection_screen_dialog(
+    mut egui_ctx: EguiContexts,
+    egui_textures: Res<EguiButtonTextures>,
+    mut dialog: ResMut<DialogResource>,
+    mut state: ResMut<NextState<AppState>>,
+    directories: Res<GameDirectoriesWrapper>,
+    mut commands: Commands,
+) {
+    egui::Window::new(dialog.ui_dialog.dialog_title())
+        .resizable(false)
+        .collapsible(false)
+        .show(egui_ctx.ctx_mut(), |ui| {
+            dialog
+                .ui_dialog
+                .draw(ui, &egui_textures, &directories.game_directories);
+        });
+    if dialog.ui_dialog.is_done() {
+        if let Some(create_map_dialog) = dialog.ui_dialog.as_create_new_map_dialog() {
+            if let Some(world) = create_map_dialog.generate_map() {
+                commands.insert_resource(MapWrapper {
+                    world,
+                    previous_best: None,
+                })
+            }
+            state.set(AppState::MapEditor);
+        }
+    } else if dialog.ui_dialog.is_cancelled() {
+        state.set(AppState::MapSelectionScreen);
+    }
+}
 
 pub struct MapSelectionScreenPlugin;
 
@@ -314,6 +362,13 @@ impl Plugin for MapSelectionScreenPlugin {
             .add_systems(
                 Update,
                 menu_esc_control.run_if(in_state(AppState::MapSelectionScreen)),
+            )
+            .add_systems(
+                Update,
+                map_selection_screen_dialog.run_if(
+                    in_state(AppState::MapSelectionScreenDialog)
+                        .and_then(resource_exists::<DialogResource>),
+                ),
             );
     }
 }

@@ -44,7 +44,9 @@ impl Plugin for MapEditorUiPlugin {
             )
             .add_systems(
                 Update,
-                mapeditor_dialog.run_if(in_state(AppState::MapEditorDialog)),
+                mapeditor_dialog.run_if(
+                    in_state(AppState::MapEditorDialog).and_then(resource_exists::<DialogResource>),
+                ),
             );
     }
 }

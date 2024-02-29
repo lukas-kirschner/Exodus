@@ -23,6 +23,25 @@ map_selection_screen:
   no_highscore: No highscore
   moves_fmt: "%{moves}"
   coins_fmt: "%{coins}"
+  dialog:
+    create_new_map_dialog_title: Create new map
+    create_new_map_dialog_size_5mx: Psion 5mx
+    create_new_map_dialog_size_small: Small
+    create_new_map_dialog_size_medium: Medium
+    create_new_map_dialog_size_large: Large
+    create_new_map_dialog_size_huge: Huge
+    create_new_map_dialog_size_custom: Custom
+    create_new_map_dialog_size_tooltip: Select a size for the new map
+    create_new_map_dialog_cancel_tooltip: Cancel map generation and return to map selection screen
+    create_new_map_dialog_generate: Generate
+    create_new_map_dialog_generate_tooltip: Generate the map with the given settings and create a preview
+    create_new_map_dialog_accept: Accept
+    create_new_map_dialog_accept_tooltip: Accept the generated map and launch the map editor to continue editing
+    create_new_map_dialog_cant_accept_tooltip: A map must be generated before it can be accepted! Please click the Generate button to generate a map using the given settings.
+    create_new_map_dialog_width_edit: Enter a number or drag the mouse to set the map width in tiles.
+    create_new_map_dialog_height_edit: Enter a number or drag the mouse to set the map height in tiles.
+    create_new_map_dialog_width_noedit: Map width
+    create_new_map_dialog_height_noedit: Map height
 credits_screen:
   title: Credits
 game_ui:
