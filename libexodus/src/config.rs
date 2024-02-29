@@ -73,12 +73,14 @@ impl Tileset {
         match self {
             Tileset::TinyPlatformQuestTiles => 0x00,
             Tileset::Classic => 0x01,
+            Tileset::Antarctica => 0x02,
         }
     }
     pub const fn from_bytes(byte: u8) -> Option<Self> {
         match byte {
             0x00 => Some(Tileset::TinyPlatformQuestTiles),
             0x01 => Some(Tileset::Classic),
+            0x02 => Some(Tileset::Antarctica),
             _ => None,
         }
     }

@@ -6,6 +6,7 @@ pub enum Tileset {
     #[default]
     TinyPlatformQuestTiles,
     Classic,
+    Antarctica,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -37,6 +38,7 @@ impl Tileset {
         match self {
             Tileset::TinyPlatformQuestTiles => (0x90, 0x90, 0x90),
             Tileset::Classic => (0xff, 0xff, 0xff),
+            Tileset::Antarctica => (0x87, 0xce, 0xeb),
         }
         .into()
     }
@@ -44,6 +46,7 @@ impl Tileset {
         match self {
             Tileset::TinyPlatformQuestTiles => 16,
             Tileset::Classic => 16,
+            Tileset::Antarctica => 32,
         }
     }
 }
@@ -53,6 +56,7 @@ impl Display for Tileset {
         match self {
             Tileset::TinyPlatformQuestTiles => write!(f, "Tiny Platform Quest Tiles"),
             Tileset::Classic => write!(f, "Classic"),
+            Tileset::Antarctica => write!(f, "Antarctica"),
         }
     }
 }

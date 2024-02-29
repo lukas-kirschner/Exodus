@@ -91,17 +91,19 @@ fn check_and_init_textures(
                 None,
                 None,
             );
+            let atlas_size = texture_atlas.size;
             let atlas_handle = texture_atlases.add(texture_atlas);
             tileset_manager.set_handle(tileset, atlas_handle.clone(), handle.clone().typed());
             debug!(
-                "Successfully loaded texture atlas {0} with tile size {1}x{1}",
+                "Successfully loaded texture atlas {0} with tile size {1}x{1} and atlas size {2}x{3}",
                 asset_server
                     .get_path(handle.id())
                     .unwrap()
                     .path()
                     .to_str()
                     .unwrap(),
-                tileset.texture_size()
+                tileset.texture_size(),
+                atlas_size.x,atlas_size.y
             );
         }
         // Finish loading and start the processing

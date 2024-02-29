@@ -61,6 +61,7 @@ pub fn file_name_for_tileset(tileset: &Tileset) -> &str {
     match tileset {
         Tileset::TinyPlatformQuestTiles => "Tiny_Platform_Quest_Tiles.png",
         Tileset::Classic => "Classic.png",
+        Tileset::Antarctica => "Antarctica.png",
     }
 }
 

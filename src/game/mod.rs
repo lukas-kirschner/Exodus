@@ -17,6 +17,7 @@ use crate::game::player::{PlayerPlugin, ReturnTo};
 use crate::game::tilewrapper::{reset_score, MapWrapper};
 use crate::game::ui::GameUIPlugin;
 use crate::game::world::WorldPlugin;
+use crate::textures::egui_textures::atlas_to_egui_textures;
 use crate::textures::tileset_manager::TilesetManager;
 
 pub struct GamePlugin;
@@ -41,26 +42,37 @@ impl Plugin for GamePlugin {
                     from: AppState::MapSelectionScreen,
                     to: AppState::Playing,
                 },
-                load_texture_pack.in_set(AppLabels::PrepareData),
+                (load_texture_pack, atlas_to_egui_textures)
+                    .chain()
+                    .in_set(AppLabels::PrepareData),
             )
             .add_systems(
                 OnTransition {
                     from: AppState::CampaignTrailScreen,
                     to: AppState::Playing,
                 },
-                load_texture_pack.in_set(AppLabels::PrepareData),
+                (load_texture_pack, atlas_to_egui_textures)
+                    .chain()
+                    .in_set(AppLabels::PrepareData),
             )
             .add_systems(
                 OnTransition {
                     from: AppState::GameOverScreen,
                     to: AppState::Playing,
                 },
-                load_texture_pack.in_set(AppLabels::PrepareData),
+                (load_texture_pack, atlas_to_egui_textures)
+                    .chain()
+                    .in_set(AppLabels::PrepareData),
             )
-            .add_systems(OnExit(AppState::Playing), load_texture_pack_from_config)
+            .add_systems(
+                OnExit(AppState::Playing),
+                (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
+            )
             .add_systems(
                 OnExit(AppState::ConfigScreen),
-                load_texture_pack_from_config.in_set(AppLabels::PrepareData),
+                (load_texture_pack_from_config, atlas_to_egui_textures)
+                    .chain()
+                    .in_set(AppLabels::PrepareData),
             );
     }
 }
@@ -87,7 +99,7 @@ fn load_texture_pack(
 }
 
 /// Set the loaded texture pack to the texture pack set in the config
-fn load_texture_pack_from_config(
+pub fn load_texture_pack_from_config(
     res_config: Res<GameConfig>,
     mut res_tileset: ResMut<TilesetManager>,
 ) {
