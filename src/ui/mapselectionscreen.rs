@@ -81,7 +81,7 @@ fn load_maps(
     //If we are in debug mode, insert the debug maps
     if cfg!(debug_assertions) {
         let mut example_map = GameWorld::exampleworld();
-        example_map.set_name(t!("debug.map_presets.example_world").as_str());
+        example_map.set_name(t!("debug.map_presets.example_world").as_ref());
         example_map.recompute_hash();
         let example_map_highscore = get_highscore(
             &highscores.highscores,
@@ -93,7 +93,7 @@ fn load_maps(
             previous_best: example_map_highscore,
         });
         let mut showcasemap = GameWorld::showcaseworld();
-        showcasemap.set_name(t!("debug.map_presets.showcase").as_str());
+        showcasemap.set_name(t!("debug.map_presets.showcase").as_ref());
         showcasemap.recompute_hash();
         let showcasemap_highscore = get_highscore(
             &highscores.highscores,
@@ -105,7 +105,7 @@ fn load_maps(
             previous_best: showcasemap_highscore,
         });
         let mut psion_sized_map = presets::map_with_border(35, 15);
-        psion_sized_map.set_name(t!("debug.map_presets.empty5mx").as_str());
+        psion_sized_map.set_name(t!("debug.map_presets.empty5mx").as_ref());
         psion_sized_map.recompute_hash();
         maps.maps.push(MapWrapper {
             world: psion_sized_map,
@@ -120,7 +120,7 @@ fn load_maps(
                     h = (i + 3).to_string().as_str(),
                     w = (24 + i).to_string().as_str()
                 )
-                .as_str(),
+                .as_ref(),
             );
             map.recompute_hash();
             maps.maps.push(MapWrapper {

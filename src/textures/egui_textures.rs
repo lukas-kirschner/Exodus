@@ -1,5 +1,6 @@
 use crate::TilesetManager;
 use bevy::prelude::*;
+use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_egui::egui::{Pos2, TextureId};
 use bevy_egui::{egui, EguiContexts};
@@ -93,13 +94,14 @@ fn scale_texture(
             TextureDimension::D2,
             target_arr,
             image.texture_descriptor.format,
+            RenderAssetUsages::default(),
         )),
         TEXTURE_SIZE,
     )
 }
 
 fn convert(
-    texture_atlas: &TextureAtlas,
+    texture_atlas: &TextureAtlasLayout,
     texture_handle: &Handle<Image>,
     egui_ctx: &mut EguiContexts,
     atlas_index: &AtlasIndex,
@@ -111,6 +113,7 @@ fn convert(
     let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
     // Convert bevy::prelude::Image to bevy_egui::egui::TextureId?
     // handle.make_strong(assets); //TODO Memory leak?
+    assert!(handle.is_strong(), "Memory Leak!");
     let tex: TextureId = egui_ctx.add_image(handle);
     (tex, rect_vec2, uv)
 }
@@ -119,14 +122,14 @@ fn convert(
 pub fn atlas_to_egui_textures(
     texture_atlas_handle: Res<TilesetManager>,
     mut commands: Commands,
-    texture_atlases: Res<Assets<TextureAtlas>>,
+    texture_atlases: Res<Assets<TextureAtlasLayout>>,
     mut egui_ctx: EguiContexts,
     mut assets: ResMut<Assets<Image>>,
 ) {
-    let texture_atlas: &TextureAtlas = texture_atlases
-        .get(&texture_atlas_handle.current_handle())
-        .expect("The texture atlas of the tile set has not yet been loaded!");
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
+    let texture_atlas: &TextureAtlasLayout = texture_atlases
+        .get(&texture_atlas_handle.current_atlas_handle())
+        .expect("The atlas layout of the tile set has not yet been loaded!");
+    let texture_handle: Handle<Image> = texture_atlas_handle.current_texture_handle();
     let mut textures = HashMap::new();
     // Convert all available textures from the sprite sheet
     for atlas_index in 0..256 {
@@ -134,7 +137,7 @@ pub fn atlas_to_egui_textures(
             atlas_index,
             convert(
                 texture_atlas,
-                texture_handle,
+                &texture_handle,
                 &mut egui_ctx,
                 &atlas_index,
                 &mut assets,

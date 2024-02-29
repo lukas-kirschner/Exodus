@@ -30,7 +30,7 @@ impl Plugin for EditWorldPlugin {
 fn view_delete_tile_at(
     pos: &Vec2,
     commands: &mut Commands,
-    tile_entity_query: &Query<(Entity, &mut Transform, &mut TextureAtlasSprite), With<WorldTile>>,
+    tile_entity_query: &Query<(Entity, &mut Transform, &mut TextureAtlas), With<WorldTile>>,
     map_texture_atlas: &TilesetManager,
 ) {
     for (entity, transform, _) in tile_entity_query.iter() {
@@ -49,21 +49,18 @@ fn view_delete_tile_at(
 /// Update the tile texture of the given tile to match the new tile.
 fn update_texture_at(
     pos: &Vec2,
-    tile_entity_query: &mut Query<
-        (Entity, &mut Transform, &mut TextureAtlasSprite),
-        With<WorldTile>,
-    >,
+    tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlas), With<WorldTile>>,
     new_tile: &Tile,
     map_texture_atlas: &TilesetManager,
 ) {
     if let Some(new_atlas_index) = new_tile.atlas_index() {
-        for (_, transform, mut texture_atlas_sprite) in tile_entity_query.iter_mut() {
+        for (_, transform, mut atlas) in tile_entity_query.iter_mut() {
             if transform.translation.x as i32
                 == (pos.x as i32 * map_texture_atlas.current_tileset.texture_size() as i32)
                 && transform.translation.y as i32
                     == (pos.y as i32 * map_texture_atlas.current_tileset.texture_size() as i32)
             {
-                texture_atlas_sprite.index = new_atlas_index;
+                atlas.index = new_atlas_index;
                 debug!("Updated tile texture at position {},{}", pos.x, pos.y);
                 return;
             }
@@ -79,10 +76,7 @@ fn replace_world_tile_at(
     new_tile: &Tile,
     commands: &mut Commands,
     map: &mut MapWrapper,
-    tile_entity_query: &mut Query<
-        (Entity, &mut Transform, &mut TextureAtlasSprite),
-        With<WorldTile>,
-    >,
+    tile_entity_query: &mut Query<(Entity, &mut Transform, &mut TextureAtlas), With<WorldTile>>,
     atlas: &TilesetManager,
     layer_query: Query<&RenderLayers, With<LayerCamera>>,
 ) {
@@ -145,12 +139,9 @@ fn mouse_down_handler(
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut map: ResMut<MapWrapper>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     current_tile: Res<SelectedTile>,
-    mut tile_entity_query: Query<
-        (Entity, &mut Transform, &mut TextureAtlasSprite),
-        With<WorldTile>,
-    >,
+    mut tile_entity_query: Query<(Entity, &mut Transform, &mut TextureAtlas), With<WorldTile>>,
     atlas: Res<TilesetManager>,
     layer_query: Query<&RenderLayers, With<LayerCamera>>,
     config: Res<GameConfig>,
@@ -224,7 +215,7 @@ fn mouse_down_handler_playerspawn(
     q_layer_camera: Query<(&Camera, &GlobalTransform), With<LayerCamera>>,
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     _map: ResMut<MapWrapper>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     current_tile: Res<SelectedTile>,
     mut player_spawn_query: Query<&mut Transform, With<PlayerSpawnComponent>>,
     config: Res<GameConfig>,

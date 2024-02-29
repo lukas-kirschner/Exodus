@@ -4,7 +4,7 @@ use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
 use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
-use crate::textures::tileset_manager::{RpgSpriteHandles, TilesetManager};
+use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::textures::Textures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
@@ -12,7 +12,7 @@ use bevy::asset::LoadedFolder;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::render::view::Layer;
-use bevy::window::{PrimaryWindow, WindowMode, WindowResized};
+use bevy::window::{PrimaryWindow, WindowMode, WindowResized, WindowResolution};
 use bevy_egui::EguiPlugin;
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
@@ -208,7 +208,7 @@ struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<RpgSpriteHandles>()
+        app.init_resource::<ImageHandles>()
             .init_resource::<TilesetManager>()
             .add_plugins(Textures);
     }
@@ -275,7 +275,7 @@ fn main() {
         .init_resource::<WindowUiOverlayInfo>()
         .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
-        .add_state::<AppState>()
+        .init_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins
@@ -284,7 +284,7 @@ fn main() {
                     primary_window: Some(Window {
                         title: window_title,
                         resizable: true,
-                        resolution: (1001., 501.).into(),
+                        resolution: WindowResolution::new(1001., 501.),
                         decorations: true,
                         mode: WindowMode::Windowed,
                         ..Default::default()
@@ -299,6 +299,7 @@ fn main() {
                     }
                     .into(),
                     level: bevy::log::Level::DEBUG,
+                    update_subscriber: None,
                 }),
         )
         .add_systems(Update, resize_notificator)

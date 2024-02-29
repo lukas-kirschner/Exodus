@@ -1,5 +1,5 @@
 use crate::textures::fonts::egui_fonts;
-use crate::textures::tileset_manager::{file_name_for_tileset, RpgSpriteHandles, TilesetManager};
+use crate::textures::tileset_manager::{file_name_for_tileset, ImageHandles, TilesetManager};
 use crate::{AllAssetHandles, AppState};
 use bevy::asset::{LoadedFolder, RecursiveDependencyLoadState};
 use bevy::prelude::*;
@@ -28,9 +28,10 @@ impl Plugin for Textures {
         "Textures Handler"
     }
 }
-
+/// Begin loading the textures through the AssetServer.
+/// This will initialize the Texture Handles, but the actual loading will take place concurrently in the background.
 fn load_textures(
-    mut rpg_sprite_handles: ResMut<RpgSpriteHandles>,
+    mut rpg_sprite_handles: ResMut<ImageHandles>,
     asset_server: Res<AssetServer>,
     mut all_assets: ResMut<AllAssetHandles>,
 ) {
@@ -38,12 +39,13 @@ fn load_textures(
     rpg_sprite_handles.handles = asset_server.load_folder("textures/tilesets");
     all_assets.handles.push(rpg_sprite_handles.handles.clone());
 }
-
+/// This function checks repeatedly whether all textures have been loaded successfully in the background.
+/// If this is the case, it will trigger the next stage and initialize the texture slices.
 fn check_and_init_textures(
     mut state: ResMut<NextState<AppState>>,
-    sprite_handles: ResMut<RpgSpriteHandles>,
+    sprite_handles: ResMut<ImageHandles>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     mut tileset_manager: ResMut<TilesetManager>,
     all_assets: Res<AllAssetHandles>,
     mut folder_assets: ResMut<Assets<LoadedFolder>>,
@@ -82,8 +84,7 @@ fn check_and_init_textures(
                 .unwrap_or_else(|| {
                     panic!("Texture not found: {}", textures_folder.to_str().unwrap())
                 });
-            let texture_atlas = TextureAtlas::from_grid(
-                handle.clone().typed(),
+            let texture_atlas = TextureAtlasLayout::from_grid(
                 Vec2::splat(tileset.texture_size() as f32),
                 16,
                 16,
@@ -91,7 +92,7 @@ fn check_and_init_textures(
                 None,
             );
             let atlas_handle = texture_atlases.add(texture_atlas);
-            tileset_manager.set_handle(tileset, atlas_handle.clone());
+            tileset_manager.set_handle(tileset, atlas_handle.clone(), handle.clone().typed());
             debug!(
                 "Successfully loaded texture atlas {0} with tile size {1}x{1}",
                 asset_server

@@ -10,8 +10,8 @@ impl Plugin for AnimatedActionSpritePlugin {
         app.add_systems(
             Update,
             animated_action_sprite_handler
-                .run_if(resource_exists::<GameConfig>())
-                .run_if(resource_exists::<TilesetManager>())
+                .run_if(resource_exists::<GameConfig>)
+                .run_if(resource_exists::<TilesetManager>)
                 .in_set(AppLabels::PlayerMovement),
         )
         .add_systems(
@@ -118,12 +118,7 @@ impl AnimatedActionSprite {
 
 fn animated_action_sprite_handler(
     mut commands: Commands,
-    mut animated_sprites: Query<(
-        &mut TextureAtlasSprite,
-        &mut Transform,
-        Entity,
-        &AnimatedActionSprite,
-    )>,
+    mut animated_sprites: Query<(&mut Sprite, &mut Transform, Entity, &AnimatedActionSprite)>,
     config: Res<GameConfig>,
     time: Res<Time>,
     mut app_state: ResMut<NextState<AppState>>,

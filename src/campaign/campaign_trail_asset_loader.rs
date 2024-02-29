@@ -2,10 +2,12 @@ use bevy::asset::io::Reader;
 use bevy::asset::AsyncReadExt;
 use bevy::asset::{AssetLoader, BoxedFuture, LoadContext};
 use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use libexodus::campaign::graph::{Graph, GraphParseError};
 use libexodus::exodus_serializable::ExodusSerializable;
 
 pub struct CampaignTrailAssetPlugin;
+
 impl Plugin for CampaignTrailAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<CampaignTrailAsset>()
@@ -13,10 +15,8 @@ impl Plugin for CampaignTrailAssetPlugin {
     }
 }
 
-#[derive(Debug, TypeUuid, TypePath, Asset)]
-#[uuid = "b1cec786-f177-4067-91b7-dc05dc869eb0"]
+#[derive(Debug, TypePath, Asset)]
 pub(crate) struct CampaignTrailAsset(pub Graph);
-use bevy::reflect::{TypePath, TypeUuid};
 
 #[derive(Default)]
 pub(crate) struct CampaignTrailLoader;

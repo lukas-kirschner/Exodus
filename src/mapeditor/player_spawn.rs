@@ -23,8 +23,12 @@ pub fn init_player_spawn(
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(player.player.atlas_index()),
-            texture_atlas: tileset.current_handle(),
+            sprite: Sprite::default(),
+            atlas: TextureAtlas {
+                layout: tileset.current_atlas_handle(),
+                index: player.player.atlas_index(),
+            },
+            texture: tileset.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(
                     (map_player_position_x * tileset.current_tileset.texture_size()) as f32,
