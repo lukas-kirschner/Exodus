@@ -57,7 +57,7 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
-fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlasSprite, right: bool) {
+fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlas, right: bool) {
     if right && !player.is_facing_right() {
         player.set_face_right(true);
         sprite.index = player.atlas_index();
@@ -76,7 +76,7 @@ pub struct ReturnTo(pub AppState);
 /// Open the door at the new player position and return true if the door has been opened.
 /// Fail, if the player does not have enough keys
 fn door_opened(
-    doors: &mut Query<(Entity, &Transform, &mut TextureAtlasSprite), With<DoorWrapper>>,
+    doors: &mut Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
     commands: &mut Commands,
     target_x_coord: i32,
     target_y_coord: i32,
@@ -97,7 +97,7 @@ fn door_opened(
         return false;
     }
     if scoreboard.keys > 0 {
-        for (entity, transform, mut texture_atlas_sprite) in doors.iter_mut() {
+        for (entity, transform, mut atlas, texture) in doors.iter_mut() {
             if transform.translation.x == target_x_px as f32
                 && transform.translation.y == target_y_px as f32
             {
@@ -108,13 +108,17 @@ fn door_opened(
                     target_y_coord as usize,
                     Tile::OPENDOOR,
                 );
-                texture_atlas_sprite.index = Tile::OPENDOOR.atlas_index().unwrap();
+                atlas.index = Tile::OPENDOOR.atlas_index().unwrap();
                 scoreboard.keys -= 1;
                 // Spawn a "Key Used" Animation:
                 commands.spawn((
                     SpriteSheetBundle {
-                        sprite: TextureAtlasSprite::new(Tile::KEY.atlas_index().unwrap()),
-                        texture_atlas: atlas_handle.current_handle(),
+                        sprite: Sprite::default(),
+                        atlas: TextureAtlas {
+                            layout: atlas_handle.current_atlas_handle(),
+                            index: Tile::KEY.atlas_index().unwrap(),
+                        },
+                        texture: texture.clone(),
                         transform: Transform {
                             translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z - 0.1)
                                 .into(),
@@ -147,20 +151,20 @@ pub fn player_movement(
     mut player_positions: Query<
         (
             &mut PlayerComponent,
-            &mut TextureAtlasSprite,
+            &Handle<Image>,
             Entity,
             &mut Transform,
-            &Handle<TextureAtlas>,
+            &mut TextureAtlas,
         ),
         Without<DoorWrapper>,
     >,
-    mut doors: Query<(Entity, &Transform, &mut TextureAtlasSprite), With<DoorWrapper>>,
+    mut doors: Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
     mut worldwrapper: ResMut<MapWrapper>,
     config: Res<GameConfig>,
     time: Res<Time>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    for (mut _player, mut sprite, player_entity, mut transform, handle) in
+    for (mut _player, sprite, player_entity, mut transform, mut atlas) in
         player_positions.iter_mut()
     {
         // Peek the player's movement queue
@@ -227,7 +231,7 @@ pub fn player_movement(
             let direction = movement.direction();
             if direction == EAST {
                 // Check player's x direction and change texture accordingly
-                set_player_direction(player, &mut sprite, true);
+                set_player_direction(player, &mut atlas, true);
 
                 if transform.translation.x < target_x_px {
                     transform.translation.x += velocity_x * time.delta_seconds();
@@ -239,7 +243,7 @@ pub fn player_movement(
                 if velocity_x < 0. {
                     // Do not change direction if no x acceleration is happening
                     // Check player's x direction and change texture accordingly
-                    set_player_direction(player, &mut sprite, false);
+                    set_player_direction(player, &mut atlas, false);
                 }
 
                 if transform.translation.x > target_x_px {
@@ -274,12 +278,13 @@ pub fn player_movement(
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(player_entity).despawn_recursive();
-                                sprite.index = 222; // Angel texture
+                                atlas.index = 222; // Angel texture
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
                                     SpriteSheetBundle {
-                                        sprite: sprite.clone(),
-                                        texture_atlas: handle.clone(),
+                                        sprite: Sprite::default(),
+                                        texture: sprite.clone(),
+                                        atlas: atlas.clone(),
                                         transform: Transform {
                                             translation: transform.translation,
                                             scale: transform.scale * Vec3::splat(1.2),
@@ -306,15 +311,16 @@ pub fn player_movement(
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location
                                     commands.entity(player_entity).despawn_recursive();
-                                    sprite.index = EXITING_PLAYER_SPRITE;
+                                    atlas.index = EXITING_PLAYER_SPRITE;
                                     let layer = RenderLayers::layer(LAYER_ID);
                                     if let Some(location) =
                                         worldwrapper.world.get_teleport_location(teleport_id)
                                     {
                                         commands.spawn((
                                             SpriteSheetBundle {
-                                                sprite: sprite.clone(),
-                                                texture_atlas: handle.clone(),
+                                                texture: sprite.clone(),
+                                                sprite: Sprite::default(),
+                                                atlas: atlas.clone(),
                                                 transform: *transform,
                                                 ..default()
                                             },
@@ -345,12 +351,13 @@ pub fn player_movement(
                         TileKind::COLLECTIBLE => {},
                         TileKind::EXIT => {
                             commands.entity(player_entity).despawn_recursive();
-                            sprite.index = EXITING_PLAYER_SPRITE;
+                            atlas.index = EXITING_PLAYER_SPRITE;
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
                                 SpriteSheetBundle {
-                                    sprite: sprite.clone(),
-                                    texture_atlas: handle.clone(),
+                                    texture: sprite.clone(),
+                                    sprite: Sprite::default(),
+                                    atlas: atlas.clone(),
                                     transform: *transform,
                                     ..default()
                                 },
@@ -409,6 +416,7 @@ fn player_gravity(
         }
     }
 }
+
 /// Respawn the player. The position must be given in world coordinates
 pub fn respawn_player(
     commands: &mut Commands,
@@ -430,8 +438,12 @@ pub fn respawn_player(
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
         SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(player.player.atlas_index()),
-            texture_atlas: atlas_handle_player.current_handle(),
+            sprite: Sprite::default(),
+            atlas: TextureAtlas {
+                layout: atlas_handle_player.current_atlas_handle(),
+                index: player.player.atlas_index(),
+            },
+            texture: atlas_handle_player.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(
                     position.0 * atlas_handle_player.current_tileset().texture_size() as f32,
@@ -469,8 +481,8 @@ pub fn setup_player(
 }
 
 pub fn keyboard_controls(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut players: Query<(&mut PlayerComponent, &mut TextureAtlasSprite, &Transform)>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut players: Query<(&mut PlayerComponent, &mut TextureAtlas, &Transform)>,
     mut scoreboard: ResMut<Scoreboard>,
     config: Res<GameConfig>,
     map: Res<MapWrapper>,
@@ -484,14 +496,14 @@ pub fn keyboard_controls(
                 // Register the key press
                 let cur_x: i32 = (transform.translation.x / (config.texture_size())) as i32;
                 let cur_y: i32 = (transform.translation.y / (config.texture_size())) as i32;
-                if keyboard_input.just_pressed(KeyCode::Left) {
+                if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
                     set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {
                         velocity: (-vx, 0.),
                         target: (cur_x - 1, cur_y),
                         is_manual: true,
                     });
-                } else if keyboard_input.just_pressed(KeyCode::Up) {
+                } else if keyboard_input.just_pressed(KeyCode::ArrowUp) {
                     let tile = map.world.get(cur_x, cur_y).unwrap();
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
@@ -512,20 +524,20 @@ pub fn keyboard_controls(
                             is_manual: true,
                         });
                     }
-                } else if keyboard_input.just_pressed(KeyCode::Right) {
+                } else if keyboard_input.just_pressed(KeyCode::ArrowRight) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y),
                         is_manual: true,
                     });
-                } else if keyboard_input.just_pressed(KeyCode::Down) {
+                } else if keyboard_input.just_pressed(KeyCode::ArrowDown) {
                     player.push_movement_queue(Movement {
                         velocity: (0., -vy),
                         target: (cur_x, cur_y - 1),
                         is_manual: true,
                     });
-                } else if keyboard_input.just_pressed(KeyCode::Q) {
+                } else if keyboard_input.just_pressed(KeyCode::KeyQ) {
                     set_player_direction(player, &mut sprite, false);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
@@ -547,7 +559,7 @@ pub fn keyboard_controls(
                         target: (cur_x - 2, cur_y + 2),
                         is_manual: true,
                     });
-                } else if keyboard_input.just_pressed(KeyCode::W) {
+                } else if keyboard_input.just_pressed(KeyCode::KeyW) {
                     set_player_direction(player, &mut sprite, true);
                     player.push_movement_queue(Movement {
                         velocity: (0., vy),
@@ -571,12 +583,12 @@ pub fn keyboard_controls(
                     });
                 }
                 if keyboard_input.any_just_pressed(vec![
-                    KeyCode::Up,
-                    KeyCode::Right,
-                    KeyCode::Down,
-                    KeyCode::Left,
-                    KeyCode::Q,
-                    KeyCode::W,
+                    KeyCode::ArrowUp,
+                    KeyCode::ArrowRight,
+                    KeyCode::ArrowDown,
+                    KeyCode::ArrowLeft,
+                    KeyCode::KeyQ,
+                    KeyCode::KeyW,
                 ]) {
                     scoreboard.moves += 1;
                 }

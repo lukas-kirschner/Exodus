@@ -1,5 +1,6 @@
 use crate::TilesetManager;
 use bevy::prelude::*;
+use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_egui::egui::{Pos2, TextureId};
 use bevy_egui::{egui, EguiContexts};
@@ -115,13 +116,14 @@ fn scale_texture(
             TextureDimension::D2,
             target_arr,
             source_image.texture_descriptor.format,
+            RenderAssetUsages::default(),
         )),
         EGUI_TEX_SIZE,
     )
 }
 
 fn convert(
-    texture_atlas: &TextureAtlas,
+    texture_atlas: &TextureAtlasLayout,
     texture_handle: &Handle<Image>,
     egui_ctx: &mut EguiContexts,
     atlas_index: &AtlasIndex,
@@ -131,6 +133,7 @@ fn convert(
     let (handle, size) = scale_texture(&rect, assets, texture_handle);
     let uv: egui::Rect = egui::Rect::from_min_max(Pos2::new(0., 0.), Pos2::new(1., 1.));
     let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
+    assert!(handle.is_strong(), "Memory Leak!");
     let tex: TextureId = egui_ctx.add_image(handle);
     (tex, rect_vec2, uv)
 }
@@ -139,24 +142,18 @@ fn convert(
 pub fn atlas_to_egui_textures(
     tileset_manager: Res<TilesetManager>,
     mut commands: Commands,
-    texture_atlases: Res<Assets<TextureAtlas>>,
+    texture_atlases: Res<Assets<TextureAtlasLayout>>,
     mut egui_ctx: EguiContexts,
     mut assets: ResMut<Assets<Image>>,
 ) {
-    let texture_atlas: &TextureAtlas = texture_atlases
-        .get(&tileset_manager.current_handle())
-        .expect(
-            format!(
-                "The texture atlas of the tile set {} has not yet been loaded!",
-                tileset_manager.current_tileset
-            )
-            .as_str(),
-        );
+    let texture_atlas: &TextureAtlasLayout = texture_atlases
+        .get(&tileset_manager.current_atlas_handle())
+        .expect("The atlas layout of the tile set has not yet been loaded!");
     assert_eq!(
         texture_atlas.size.x / 16.,
         tileset_manager.current_tileset.texture_size() as f32
     );
-    let texture_handle: &Handle<Image> = &texture_atlas.texture;
+    let texture_handle: Handle<Image> = tileset_manager.current_texture_handle();
     let mut textures = HashMap::new();
     // Convert all available textures from the sprite sheet
     for atlas_index in 0..256 {
@@ -164,7 +161,7 @@ pub fn atlas_to_egui_textures(
             atlas_index,
             convert(
                 texture_atlas,
-                texture_handle,
+                &texture_handle,
                 &mut egui_ctx,
                 &atlas_index,
                 &mut assets,

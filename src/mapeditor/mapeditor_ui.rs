@@ -14,7 +14,7 @@ use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent};
 use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align, Layout, Ui};
+use bevy_egui::egui::{Align, Layout, TextBuffer, Ui};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::tiles::{TeleportId, Tile, UITiles};
 use std::borrow::Borrow;

@@ -338,13 +338,13 @@ fn campaign_screen_ui(
 }
 
 pub fn play_map_keyboard_controls(
-    mut keyboard_input: ResMut<Input<KeyCode>>,
+    mut keyboard_input: ResMut<ButtonInput<KeyCode>>,
     player_query: Query<(
         &mut PlayerComponent,
         &Transform,
         Entity,
-        &mut TextureAtlasSprite,
-        &Handle<TextureAtlas>,
+        &Handle<Image>,
+        &mut TextureAtlas,
     )>,
     config: Res<GameConfig>,
     campaign_trail: Res<MapWrapper>,
@@ -354,9 +354,9 @@ pub fn play_map_keyboard_controls(
     mut current_campaign_trail: Query<&mut CampaignTrail, With<SelectedCampaignTrail>>,
     mut state: ResMut<NextState<AppState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Return) {
-        keyboard_input.reset(KeyCode::Return);
-        let Ok((_player, player_pos, entity, sprite, handle)) = player_query.get_single() else {
+    if keyboard_input.just_pressed(KeyCode::Enter) {
+        keyboard_input.reset(KeyCode::Enter);
+        let Ok((_player, player_pos, entity, sprite, atlas)) = player_query.get_single() else {
             debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
             state.set(AppState::Playing);
             return;
@@ -398,13 +398,14 @@ pub fn play_map_keyboard_controls(
                         (player_map_x - offset_x, player_map_y - offset_y);
 
                     commands.entity(entity).despawn_recursive();
-                    let mut exit_sprite = sprite.clone();
-                    exit_sprite.index = EXITING_PLAYER_SPRITE;
+                    let mut exit_atlas = atlas.clone();
+                    exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
                         SpriteSheetBundle {
-                            sprite: exit_sprite,
-                            texture_atlas: handle.clone(),
+                            sprite: Sprite::default(),
+                            atlas: exit_atlas,
+                            texture: sprite.clone(),
                             transform: *player_pos,
                             ..default()
                         },

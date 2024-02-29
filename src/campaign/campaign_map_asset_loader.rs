@@ -1,12 +1,13 @@
 use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, BoxedFuture, LoadContext};
 use bevy::prelude::*;
-use bevy::reflect::{TypePath, TypeUuid};
+use bevy::reflect::TypePath;
 use libexodus::exodus_serializable::ExodusSerializable;
 use libexodus::world::io_error::GameWorldParseError;
 use libexodus::world::GameWorld;
 
 pub struct CampaignMapAssetPlugin;
+
 impl Plugin for CampaignMapAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<CampaignMapAsset>()
@@ -14,8 +15,7 @@ impl Plugin for CampaignMapAssetPlugin {
     }
 }
 
-#[derive(TypeUuid, TypePath, Asset)]
-#[uuid = "09617fc8-031c-4a4e-ae9f-3cc028c64692"]
+#[derive(TypePath, Asset)]
 pub(crate) struct CampaignMapAsset(pub GameWorld);
 
 #[derive(Default)]

@@ -30,7 +30,7 @@ impl UnsavedChangesDialog {
 
 impl UIDialog for UnsavedChangesDialog {
     fn dialog_title(&self) -> String {
-        t!("map_editor.dialog.unsaved_changes_dialog_title")
+        t!("map_editor.dialog.unsaved_changes_dialog_title").to_string()
     }
 
     fn draw(&mut self, ui: &mut Ui, _egui_textures: &EguiButtonTextures, _: &GameDirectories) {

@@ -117,7 +117,7 @@ pub struct HighscoresDatabaseWrapper {
 }
 
 fn back_with_esc_controls(
-    keys: ResMut<Input<KeyCode>>,
+    keys: ResMut<ButtonInput<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
     return_to: Res<ReturnTo>,
 ) {

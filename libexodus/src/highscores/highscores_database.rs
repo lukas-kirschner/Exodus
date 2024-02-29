@@ -64,7 +64,6 @@ impl HighscoresDatabase {
         self.records
             .get(map)
             .and_then(|highscore_records| highscore_records.get_best(player))
-            .map(|(timestamp, highscore)| (timestamp, highscore))
     }
     /// Get the size, i.e., the number of maps stored in this database
     pub fn len(&self) -> usize {
