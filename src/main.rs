@@ -12,7 +12,7 @@ use bevy::asset::LoadedFolder;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::render::view::Layer;
-use bevy::window::{PrimaryWindow, WindowMode, WindowResized};
+use bevy::window::{PrimaryWindow, WindowMode, WindowResized, WindowResolution};
 use bevy_egui::EguiPlugin;
 use libexodus::config::Config;
 use libexodus::directories::GameDirectories;
@@ -284,7 +284,7 @@ fn main() {
                     primary_window: Some(Window {
                         title: window_title,
                         resizable: true,
-                        resolution: (1001., 501.).into(),
+                        resolution: WindowResolution::new(1001., 501.),
                         decorations: true,
                         mode: WindowMode::Windowed,
                         ..Default::default()

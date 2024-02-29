@@ -163,7 +163,7 @@ pub fn player_movement(
     time: Res<Time>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    for (mut _player, mut sprite, player_entity, mut transform, mut atlas) in
+    for (mut _player, sprite, player_entity, mut transform, mut atlas) in
         player_positions.iter_mut()
     {
         // Peek the player's movement queue

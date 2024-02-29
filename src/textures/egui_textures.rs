@@ -123,7 +123,6 @@ pub fn atlas_to_egui_textures(
     texture_atlas_handle: Res<TilesetManager>,
     mut commands: Commands,
     texture_atlases: Res<Assets<TextureAtlasLayout>>,
-    textures: Res<Assets<Image>>,
     mut egui_ctx: EguiContexts,
     mut assets: ResMut<Assets<Image>>,
 ) {
