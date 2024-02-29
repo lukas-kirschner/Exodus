@@ -144,3 +144,29 @@ There are some text fragments that are interpreted to show special text in the g
 | Text       | Meaning/Example                                  |
 |------------|--------------------------------------------------|
 | `t!(text)` | Translate `text` in the global translation table |
+
+## Game States
+
+```plantuml
+Loading -> LoadingCampaign
+LoadingCampaign -> Process
+Process -> MainMenu
+
+MainMenu -> MapSelectionScreen
+MapSelectionScreen -> MainMenu
+MainMenu -> CreditsScreen
+CreditsScreen -> MainMenu
+MainMenu -> ConfigScreen
+ConfigScreen -> MainMenu
+MainMenu -> CampaignTrailScreen
+CampaignTrailScreen -> MainMenu
+
+MapSelectionScreen -> Playing
+MapSelectionScreen -> MapEditor
+MapEditor -> MapEditorDialog
+MapEditorDialog -> MapEditor
+CampaignTrailScreen -> Playing
+Playing -> GameOverScreen
+GameOverScreen -> MapSelectionScreen
+GameOverScreen -> CampaignTrailScreen
+```
