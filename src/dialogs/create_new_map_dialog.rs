@@ -6,7 +6,7 @@ use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
 use bevy_egui::egui;
-use bevy_egui::egui::{Align, Layout, TextBuffer, Ui};
+use bevy_egui::egui::{Align, InnerResponse, Layout, Response, RichText, TextBuffer, Ui};
 use libexodus::config::Language;
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
 use libexodus::tiles::Tile;
@@ -56,6 +56,22 @@ fn SizeToString(size: &WorldSize) -> Cow<str> {
         },
     }
 }
+fn KindToString(size: &WorldGenerationKind) -> Cow<str> {
+    match size {
+        WorldGenerationKind::Empty => {
+            t!("map_selection_screen.dialog.create_new_map_dialog_kind_empty")
+        },
+        WorldGenerationKind::Border { .. } => {
+            t!("map_selection_screen.dialog.create_new_map_dialog_kind_border")
+        },
+        WorldGenerationKind::Filled { .. } => {
+            t!("map_selection_screen.dialog.create_new_map_dialog_kind_filled")
+        },
+        WorldGenerationKind::Labyrinth { .. } => {
+            t!("map_selection_screen.dialog.create_new_map_dialog_kind_labyrinth")
+        },
+    }
+}
 
 impl CreateNewMapDialog {
     /// Get the width of the new map
@@ -102,20 +118,18 @@ impl UIDialog for CreateNewMapDialog {
             ui.add_enabled_ui(self.state == CreateNewMapDialogState::Choosing, |ui| {
                 // Map Size
                 ui.scope(|ui| {
-                    ui.horizontal(|ui| {
-                        ui.scope(|ui| {
-                            ui.set_width(UIPANELCBWIDTH);
-                            let selected_width_kind = SizeToString(&self.size);
-                            egui::ComboBox::from_id_source("size_box").width(UIPANELCBWIDTH).selected_text(selected_width_kind).show_ui(ui, |ui| {
-                                for size in WorldSize::iter() {
-                                    ui.selectable_value(
-                                        &mut self.size,
-                                        size,
-                                        SizeToString(&size),
-                                    );
-                                }
-                            }).response.on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_size_tooltip"));
-                        });
+                    ui.scope(|ui| {
+                        ui.set_width(UIPANELCBWIDTH);
+                        let selected_width_kind = SizeToString(&self.size);
+                        egui::ComboBox::from_id_source("size_box").width(UIPANELCBWIDTH).selected_text(selected_width_kind).show_ui(ui, |ui| {
+                            for size in WorldSize::iter() {
+                                ui.selectable_value(
+                                    &mut self.size,
+                                    size,
+                                    SizeToString(&size),
+                                );
+                            }
+                        }).response.on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_size_tooltip"));
                     });
                     ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                         ui.add_enabled_ui(matches!(self.size,WorldSize::Custom {..}), |ui| {
@@ -132,6 +146,26 @@ impl UIDialog for CreateNewMapDialog {
                                 .on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_height_noedit"));
                         });
                     });
+                    // Algorithm Selection
+                    heading_label(ui,t!("map_selection_screen.dialog.create_new_map_dialog_kind_selector"));
+                    ui.scope(|ui| {
+                        ui.set_width(UIPANELCBWIDTH);
+                        let selected_kind = KindToString(&self.map_kind);
+                        egui::ComboBox::from_id_source("kind_box").width(UIPANELCBWIDTH).selected_text(selected_kind).show_ui(ui, |ui| {
+                            for kind in WorldGenerationKind::iter() {
+                                ui.selectable_value(
+                                    &mut self.map_kind,
+                                    kind.clone(),
+                                    KindToString(&kind),
+                                );
+                            }
+                        }).response.on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_kind_tooltip"));
+                    });
+                    // UI for the individual generation parameters, different for each generation kind
+                    ui.separator();
+                    ui_for_generation_kind(&mut self.map_kind,ui);
+                    ui.separator();
+                    // Buttons
                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                         ui.add_enabled_ui(self.preview.is_some(), |ui| {
                             let res = ui.button(t!("map_selection_screen.dialog.create_new_map_dialog_accept")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_accept_tooltip")).on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_cant_accept_tooltip"));
@@ -176,4 +210,67 @@ impl UIDialog for CreateNewMapDialog {
     fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
         Some(self)
     }
+}
+
+fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
+    match kind {
+        WorldGenerationKind::Empty => {
+            // No parameters at all
+        },
+        WorldGenerationKind::Border {
+            ref mut width,
+            ref mut color,
+        } => {},
+        WorldGenerationKind::Filled { ref mut color } => {
+            heading_label(
+                ui,
+                t!("map_selection_screen.dialog.create_new_map_dialog_filled_color"),
+            );
+            algorithm_color_selector(
+                ui,
+                color,
+                t!("map_selection_screen.dialog.create_new_map_dialog_filled_color_tooltip"),
+            );
+        },
+        WorldGenerationKind::Labyrinth { ref mut color } => {},
+    }
+}
+
+fn heading_label(ui: &mut Ui, translated_string: Cow<str>) -> InnerResponse<Response> {
+    ui.scope(|ui| {
+        ui.set_width(UIPANELCBWIDTH);
+        ui.label(
+            RichText::new(format!("{}:", translated_string))
+                .text_style(egui::TextStyle::Name("Subheading".into())),
+        )
+    })
+}
+
+const ALL_COLORS: [Tile; 5] = [
+    Tile::WALL,
+    Tile::WALLCOBBLE,
+    Tile::WALLSMOOTH,
+    Tile::WALLNATURE,
+    Tile::WALLCHISELED,
+];
+
+fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
+    ui.scope(|ui| {
+        ui.set_width(UIPANELCBWIDTH);
+        let selected_kind = TileToString(color);
+        egui::ComboBox::from_id_source(tooltip.to_string())
+            .width(UIPANELCBWIDTH)
+            .selected_text(selected_kind)
+            .show_ui(ui, |ui| {
+                for tile in ALL_COLORS {
+                    ui.selectable_value(color, tile.clone(), TileToString(&tile));
+                }
+            })
+            .response
+            .on_hover_text(tooltip);
+    });
+}
+
+fn TileToString(tile: &Tile) -> String {
+    t!(format!("tile.{}", tile.str_id()).as_str()).to_string()
 }

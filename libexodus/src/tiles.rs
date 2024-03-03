@@ -105,9 +105,10 @@ impl TeleportId {
 }
 
 // Tiles Definitions
-#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro)]
+#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro, Default)]
 pub enum Tile {
     /// An air tile without a texture
+    #[default]
     AIR,
     /// A tile of Wall, a solid block that cannot be destroyed
     WALL,

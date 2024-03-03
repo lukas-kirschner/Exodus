@@ -145,6 +145,11 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
             FontId::new(18.0, FontFamily::Name(Arc::from(SANSSERIF_ITALIC))),
         ),
         (
+            // Style for Subheadings (to separate sections of dialogs)
+            egui::TextStyle::Name("Subheading".into()),
+            FontId::new(18.0, FontFamily::Name(Arc::from(SANSSERIF_NORMAL))),
+        ),
+        (
             egui::TextStyle::Body,
             FontId::new(18.0, FontFamily::Name(Arc::from(SANSSERIF_NORMAL))),
         ),

@@ -43,6 +43,14 @@ map_selection_screen:
     create_new_map_dialog_height_edit: Ziehen, um die Höhe der Karte einzustellen
     create_new_map_dialog_width_noedit: Kartenbreite
     create_new_map_dialog_height_noedit: Kartenhöhe
+    create_new_map_dialog_kind_selector: Karten-Art
+    create_new_map_dialog_kind_empty: Leere Karte
+    create_new_map_dialog_kind_border: Karte mit Rahmen
+    create_new_map_dialog_kind_filled: Ausgefüllt
+    create_new_map_dialog_kind_labyrinth: Labyrinth
+    create_new_map_dialog_kind_tooltip: Art der erstellten Karte auswählen
+    create_new_map_dialog_filled_color: Füllen mit
+    create_new_map_dialog_filled_color_tooltip: Tile, mit welchem die komplette Karte ausgefüllt wird
 credits_screen:
   title: Über
 game_ui:

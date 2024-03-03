@@ -42,6 +42,14 @@ map_selection_screen:
     create_new_map_dialog_height_edit: Enter a number or drag the mouse to set the map height in tiles.
     create_new_map_dialog_width_noedit: Map width
     create_new_map_dialog_height_noedit: Map height
+    create_new_map_dialog_kind_selector: Map Kind
+    create_new_map_dialog_kind_empty: Empty Map
+    create_new_map_dialog_kind_border: Map with Border
+    create_new_map_dialog_kind_filled: Filled Map
+    create_new_map_dialog_kind_labyrinth: Labyrinth
+    create_new_map_dialog_kind_tooltip: Select the map kind to generate
+    create_new_map_dialog_filled_color: Fill with tile
+    create_new_map_dialog_filled_color_tooltip: Select a tile to fill the whole map with
 credits_screen:
   title: Credits
 game_ui:

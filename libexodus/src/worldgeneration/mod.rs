@@ -1,7 +1,7 @@
 use crate::tiles::Tile;
 use strum_macros::EnumIter;
 
-#[derive(Eq, PartialEq, Default)]
+#[derive(Eq, PartialEq, Default, EnumIter, Clone)]
 pub enum WorldGenerationKind {
     #[default]
     Empty,
