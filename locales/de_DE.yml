@@ -55,6 +55,11 @@ map_selection_screen:
     create_new_map_dialog_border_width_tooltip: Die Dicke des generierten Rahmens
     create_new_map_dialog_border_color: Umgeben mit
     create_new_map_dialog_border_color_tooltip: Tile, welches als Rahmen benutzt wird
+    create_new_map_dialog_labyrinth_color: Mauern
+    create_new_map_dialog_labyrinth_color_tooltip: Tile, welches für die inneren und äußeren Mauern des Labyrinthes benutzt wird
+    create_new_map_dialog_seed: Seed
+    create_new_map_dialog_seed_tooltip: Seed, der für die Kartenerstellung genutzt wird. Gleiche Seeds erzeugen die gleiche Karte, wenn alle Parameter übereinstimmen.
+    create_new_map_dialog_no_seed_tooltip: Diese Art der Karte nutzt keine Zufallsvariablen für die Kartenerstellung.
 credits_screen:
   title: Über
 game_ui:

@@ -167,6 +167,14 @@ impl UIDialog for CreateNewMapDialog {
                     ui.separator();
                     ui_for_generation_kind(&mut self.map_kind,ui);
                     ui.separator();
+                    // Seed (if applicable)
+                    ui.add_enabled_ui(self.map_kind.is_seeded(), |ui| {
+                        heading_label(ui,t!("map_selection_screen.dialog.create_new_map_dialog_seed"));
+                        ui.add_sized((UIPANELCBWIDTH,0.), egui::DragValue::new(&mut self.seed).clamp_range(u32::MIN..=u32::MAX).speed(0.1))
+                            .on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_seed_tooltip"))
+                            .on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_no_seed_tooltip"));
+                        // TODO add randomize button
+                    });
                     // Buttons
                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                         ui.add_enabled_ui(self.preview.is_some(), |ui| {
@@ -251,7 +259,17 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
                 t!("map_selection_screen.dialog.create_new_map_dialog_filled_color_tooltip"),
             );
         },
-        WorldGenerationKind::Labyrinth { ref mut color } => {},
+        WorldGenerationKind::Labyrinth { ref mut color } => {
+            heading_label(
+                ui,
+                t!("map_selection_screen.dialog.create_new_map_dialog_labyrinth_color"),
+            );
+            algorithm_color_selector(
+                ui,
+                color,
+                t!("map_selection_screen.dialog.create_new_map_dialog_labyrinth_color_tooltip"),
+            );
+        },
     }
 }
 

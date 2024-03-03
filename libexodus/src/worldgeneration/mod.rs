@@ -59,3 +59,15 @@ impl WorldSize {
         }
     }
 }
+
+impl WorldGenerationKind {
+    /// Whether randomness, i.e., a seed is involved when generating a map using the given MapGenerationKind
+    pub fn is_seeded(&self) -> bool {
+        match self {
+            WorldGenerationKind::Empty => false,
+            WorldGenerationKind::Border { .. } => false,
+            WorldGenerationKind::Filled { .. } => false,
+            WorldGenerationKind::Labyrinth { .. } => true,
+        }
+    }
+}
