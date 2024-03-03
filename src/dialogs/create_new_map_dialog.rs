@@ -14,7 +14,9 @@ use libexodus::tilesets::Tileset;
 use libexodus::world::GameWorld;
 use libexodus::worldgeneration::{WorldGenerationKind, WorldSize};
 use std::borrow::Cow;
+use std::cmp::min;
 use std::fmt::{Display, Formatter};
+use std::ops::RangeInclusive;
 use std::path::{Path, PathBuf};
 use strum::IntoEnumIterator;
 
@@ -220,7 +222,24 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
         WorldGenerationKind::Border {
             ref mut width,
             ref mut color,
-        } => {},
+        } => {
+            one_line_label_and_slider(
+                ui,
+                t!("map_selection_screen.dialog.create_new_map_dialog_border_width"),
+                width,
+                0..=32,
+                t!("map_selection_screen.dialog.create_new_map_dialog_border_width_tooltip"),
+            );
+            heading_label(
+                ui,
+                t!("map_selection_screen.dialog.create_new_map_dialog_border_color"),
+            );
+            algorithm_color_selector(
+                ui,
+                color,
+                t!("map_selection_screen.dialog.create_new_map_dialog_border_color_tooltip"),
+            );
+        },
         WorldGenerationKind::Filled { ref mut color } => {
             heading_label(
                 ui,
@@ -236,6 +255,7 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
     }
 }
 
+/// Spawn a subheading label
 fn heading_label(ui: &mut Ui, translated_string: Cow<str>) -> InnerResponse<Response> {
     ui.scope(|ui| {
         ui.set_width(UIPANELCBWIDTH);
@@ -245,7 +265,7 @@ fn heading_label(ui: &mut Ui, translated_string: Cow<str>) -> InnerResponse<Resp
         )
     })
 }
-
+/// All selectable colors for the color selection dropdowns
 const ALL_COLORS: [Tile; 5] = [
     Tile::WALL,
     Tile::WALLCOBBLE,
@@ -253,7 +273,7 @@ const ALL_COLORS: [Tile; 5] = [
     Tile::WALLNATURE,
     Tile::WALLCHISELED,
 ];
-
+/// Spawn a Color Selector ComboBox
 fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
     ui.scope(|ui| {
         ui.set_width(UIPANELCBWIDTH);
@@ -270,7 +290,39 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
             .on_hover_text(tooltip);
     });
 }
-
+/// Format the given tile using the current locale
 fn TileToString(tile: &Tile) -> String {
     t!(format!("tile.{}", tile.str_id()).as_str()).to_string()
+}
+/// Add one label and one slider, with the label taking up two thirds of the available space
+/// and the numeric slider one third
+fn one_line_label_and_slider(
+    ui: &mut Ui,
+    heading: Cow<str>,
+    num: &mut u32,
+    range: RangeInclusive<u32>,
+    tooltip: Cow<str>,
+) -> InnerResponse<(Response, Response)> {
+    ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+        (
+            ui.add_sized(
+                (
+                    UIPANELCBWIDTH / 3. * 2. - ui.style().spacing.item_spacing.x / 2.,
+                    0.,
+                ),
+                egui::Label::new(
+                    egui::RichText::new(format!("{}:", heading))
+                        .text_style(egui::TextStyle::Name("Subheading".into())),
+                ),
+            ),
+            ui.add_sized(
+                (
+                    UIPANELCBWIDTH / 3. - ui.style().spacing.item_spacing.x / 2.,
+                    0.,
+                ),
+                egui::DragValue::new(num).clamp_range(range).speed(0.1),
+            )
+            .on_hover_text(tooltip),
+        )
+    })
 }

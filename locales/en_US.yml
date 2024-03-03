@@ -50,6 +50,10 @@ map_selection_screen:
     create_new_map_dialog_kind_tooltip: Select the map kind to generate
     create_new_map_dialog_filled_color: Fill with tile
     create_new_map_dialog_filled_color_tooltip: Select a tile to fill the whole map with
+    create_new_map_dialog_border_width: Thickness
+    create_new_map_dialog_border_width_tooltip: Set the thickness of the generated border
+    create_new_map_dialog_border_color: Surround with
+    create_new_map_dialog_border_color_tooltip: Set the tile the border should consist of
 credits_screen:
   title: Credits
 game_ui:

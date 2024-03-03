@@ -51,6 +51,10 @@ map_selection_screen:
     create_new_map_dialog_kind_tooltip: Art der erstellten Karte auswählen
     create_new_map_dialog_filled_color: Füllen mit
     create_new_map_dialog_filled_color_tooltip: Tile, mit welchem die komplette Karte ausgefüllt wird
+    create_new_map_dialog_border_width: Dicke
+    create_new_map_dialog_border_width_tooltip: Die Dicke des generierten Rahmens
+    create_new_map_dialog_border_color: Umgeben mit
+    create_new_map_dialog_border_color_tooltip: Tile, welches als Rahmen benutzt wird
 credits_screen:
   title: Über
 game_ui:
