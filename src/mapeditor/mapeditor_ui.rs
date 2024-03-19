@@ -494,14 +494,18 @@ fn mapeditor_dialog(
     mut worldwrapper: ResMut<MapWrapper>,
     directories: Res<GameDirectoriesWrapper>,
     return_to: Res<ReturnTo>,
+    mut commands: Commands,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
         .collapsible(false)
         .show(egui_ctx.ctx_mut(), |ui| {
-            dialog
-                .ui_dialog
-                .draw(ui, &egui_textures, &directories.game_directories);
+            dialog.ui_dialog.draw(
+                ui,
+                &egui_textures,
+                &directories.game_directories,
+                &mut commands,
+            );
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {

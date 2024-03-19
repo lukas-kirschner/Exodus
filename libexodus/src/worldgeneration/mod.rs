@@ -91,7 +91,7 @@ pub enum WorldGenerationError {
     InvalidBorderWidth { border_width: u32 },
 }
 
-pub trait WorldGenerationAlgorithm {
+pub trait WorldGenerationAlgorithm: Send {
     /// Generate the world using this algorithm.
     /// This may take a long time, depending on the algorithm.
     fn generate(&self) -> Result<GameWorld, WorldGenerationError>;

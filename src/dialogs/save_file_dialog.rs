@@ -5,6 +5,7 @@ use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
+use bevy::prelude::Commands;
 use bevy_egui::egui;
 use bevy_egui::egui::Ui;
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
@@ -99,6 +100,7 @@ impl UIDialog for SaveFileDialog {
         ui: &mut Ui,
         _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
         directories: &GameDirectories,
+        _commands: &mut Commands,
     ) {
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::Choosing, |ui| {

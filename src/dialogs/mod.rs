@@ -3,7 +3,7 @@ use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
-use bevy::prelude::Resource;
+use bevy::prelude::{Commands, Resource};
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 
@@ -19,6 +19,7 @@ pub trait UIDialog {
         ui: &mut Ui,
         egui_textures: &EguiButtonTextures,
         directories: &GameDirectories,
+        commands: &mut Commands,
     );
     fn is_done(&self) -> bool;
     fn is_cancelled(&self) -> bool;

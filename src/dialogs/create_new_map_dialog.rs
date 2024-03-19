@@ -1,23 +1,26 @@
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::dialogs::UIDialog;
+use crate::dialogs::{DialogResource, UIDialog};
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
-use bevy::log::{debug, warn};
+use bevy::prelude::*;
+use bevy::render::MainWorld;
 use bevy_egui::egui;
 use bevy_egui::egui::{Align, InnerResponse, Layout, Response, RichText, TextBuffer, Ui};
-use libexodus::config::Language;
-use libexodus::directories::{GameDirectories, InvalidMapNameError};
+use libexodus::directories::GameDirectories;
 use libexodus::tiles::Tile;
-use libexodus::tilesets::Tileset;
 use libexodus::world::GameWorld;
-use libexodus::worldgeneration::{WorldGenerationKind, WorldSize};
+use libexodus::worldgeneration::{
+    build_generator, WorldGenerationError, WorldGenerationKind, WorldSize,
+};
 use std::borrow::Cow;
 use std::cmp::min;
 use std::fmt::{Display, Formatter};
 use std::ops::RangeInclusive;
 use std::path::{Path, PathBuf};
+use std::thread;
+use std::thread::JoinHandle;
 use strum::IntoEnumIterator;
 
 #[derive(Eq, PartialEq, Default)]
@@ -74,6 +77,59 @@ fn KindToString(size: &WorldGenerationKind) -> Cow<str> {
         },
     }
 }
+#[derive(Resource)]
+struct CreateMapBackgroundWorkerThread {
+    job: JoinHandle<Result<GameWorld, WorldGenerationError>>,
+}
+/// Query all unfinished jobs and update the map generator dialog, if one job has finished.
+/// The generated preview will be displayed in full screen mode behind the map dialog,
+/// if the generation has been successful.
+/// Shall ONLY be run if a CreateMapBackgroundWorkerThread exists!
+pub fn bevy_job_handler(
+    mut dialog: ResMut<DialogResource>,
+    mut commands: Commands,
+    world: &mut World,
+) {
+    if matches!(
+        world
+            .get_resource::<CreateMapBackgroundWorkerThread>()
+            .map(|r| r.job.is_finished()),
+        Some(true)
+    ) {
+        if let Some(thread) = world.remove_resource::<CreateMapBackgroundWorkerThread>() {
+            let thread_result = thread.job.join(); //How to move?
+            match thread_result {
+                Ok(map_result) => {
+                    match map_result {
+                        Ok(map) => {
+                            if let Some(generate_map_dialog) =
+                                dialog.ui_dialog.as_create_new_map_dialog()
+                            {
+                                generate_map_dialog.state = CreateNewMapDialogState::Choosing;
+                                generate_map_dialog.preview = Some(map);
+                                // Generate a preview for the generated map
+                            } else {
+                                error!(
+                                "The current dialog resource did not contain a CreateNewMapDialog!"
+                            );
+                            }
+                        },
+                        Err(e) => {
+                            error!("Error while generating map! {:?}", e);
+                        },
+                    }
+                },
+                Err(thread_error) => {
+                    error!(
+                        "Error while joining map generator thread: {:?}",
+                        thread_error
+                    );
+                    return;
+                },
+            }
+        }
+    }
+}
 
 impl CreateNewMapDialog {
     /// Get the width of the new map
@@ -87,11 +143,11 @@ impl CreateNewMapDialog {
     /// Generate the map and return it, moving it out of this dialog.
     /// If the map has not been generated yet, this will return None and trigger a map generation.
     /// In this case, this method must be called again to obtain the generated map once it is generated.
-    pub fn generate_map(&mut self) -> Option<GameWorld> {
+    pub fn generate_map(&mut self, mut commands: &mut Commands) -> Option<GameWorld> {
         let ret = self.preview.take();
         match ret {
             None => {
-                self.trigger_generation();
+                self.trigger_generation(commands);
                 None
             },
             Some(map) => Some(map),
@@ -99,9 +155,12 @@ impl CreateNewMapDialog {
     }
 
     /// Trigger a generation
-    fn trigger_generation(&mut self) {
+    fn trigger_generation(&mut self, commands: &mut Commands) {
         self.state = CreateNewMapDialogState::GeneratingMap;
-        //TODO
+        let algo = build_generator(self.map_kind.clone(), self.get_width(), self.get_height());
+        commands.insert_resource(CreateMapBackgroundWorkerThread {
+            job: thread::spawn(move || algo.generate()),
+        });
     }
 }
 
@@ -115,6 +174,7 @@ impl UIDialog for CreateNewMapDialog {
         ui: &mut Ui,
         _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
         directories: &GameDirectories,
+        commands: &mut Commands,
     ) {
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == CreateNewMapDialogState::Choosing, |ui| {
@@ -180,12 +240,12 @@ impl UIDialog for CreateNewMapDialog {
                         ui.add_enabled_ui(self.preview.is_some(), |ui| {
                             let res = ui.button(t!("map_selection_screen.dialog.create_new_map_dialog_accept")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_accept_tooltip")).on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_cant_accept_tooltip"));
                             if res.clicked() {
-                                self.trigger_generation();
+                                self.trigger_generation(commands);
                             }
                         });
                         let res = ui.button(t!("map_selection_screen.dialog.create_new_map_dialog_generate")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_generate_tooltip"));
                         if res.clicked() {
-                            self.trigger_generation();
+                            self.trigger_generation(commands);
                         }
                         let res = ui.button(t!("common_buttons.cancel")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_cancel_tooltip"));
                         if res.clicked() {

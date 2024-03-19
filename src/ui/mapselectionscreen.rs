@@ -321,13 +321,16 @@ fn map_selection_screen_dialog(
         .resizable(false)
         .collapsible(false)
         .show(egui_ctx.ctx_mut(), |ui| {
-            dialog
-                .ui_dialog
-                .draw(ui, &egui_textures, &directories.game_directories);
+            dialog.ui_dialog.draw(
+                ui,
+                &egui_textures,
+                &directories.game_directories,
+                &mut commands,
+            );
         });
     if dialog.ui_dialog.is_done() {
         if let Some(create_map_dialog) = dialog.ui_dialog.as_create_new_map_dialog() {
-            if let Some(world) = create_map_dialog.generate_map() {
+            if let Some(world) = create_map_dialog.generate_map(&mut commands) {
                 commands.insert_resource(MapWrapper {
                     world,
                     previous_best: None,
