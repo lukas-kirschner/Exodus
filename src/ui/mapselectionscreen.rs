@@ -1,10 +1,16 @@
+use crate::dialogs::create_new_map_dialog::{
+    bevy_job_handler, CreateMapBackgroundWorkerThread, CreateNewMapDialog,
+};
+use crate::dialogs::DialogResource;
+use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::player::ReturnTo;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::world::destroy_world;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::uicontrols::{add_navbar_with_extra_buttons, menu_esc_control, WindowUiOverlayInfo};
+use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, Ui};
@@ -184,13 +190,31 @@ fn map_selection_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
-    add_navbar(
+    add_navbar_with_extra_buttons(
         egui_ctx.ctx_mut(),
         &mut state,
         &egui_textures,
         &t!("map_selection_screen.title"),
+        |ui, state| {
+            let new_button = image_button(
+                ui,
+                &egui_textures,
+                &UITiles::CREATENEWBUTTON,
+                "map_selection_screen.create_new_map",
+            );
+            if new_button.clicked() {
+                commands.insert_resource(DialogResource {
+                    ui_dialog: Box::<CreateNewMapDialog>::default(),
+                });
+                state.set(AppState::MapSelectionScreenDialog);
+            }
+        },
+        1,
     );
-
+    let spacing = (
+        egui_ctx.ctx_mut().style().spacing.item_spacing.x,
+        egui_ctx.ctx_mut().style().spacing.item_spacing.y,
+    );
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         egui::ScrollArea::new([false, true])
             .auto_shrink([false; 2])
@@ -206,7 +230,7 @@ fn map_selection_screen_ui(
                                     ui.set_height(BUTTON_HEIGHT * 1.);
                                     ui.set_width(ui.available_width());
                                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                                        buttons(ui, &egui_textures, &mut commands, i);
+                                        buttons(spacing, ui, &egui_textures, &mut commands, i);
                                         ui.scope(|ui| {
                                             ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
                                             ui.style_mut().spacing.indent = 0.0;
@@ -235,43 +259,42 @@ fn map_selection_screen_ui(
 }
 
 fn buttons(
+    spacing: (f32, f32),
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
     commands: &mut Commands,
     map_index: usize,
 ) {
-    ui.scope(|ui| {
-        ui.set_width(3. * BUTTON_HEIGHT);
-        ui.set_height(BUTTON_HEIGHT);
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            let play_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::PLAYBUTTON,
-                "map_selection_screen.play_map",
-            );
-            if play_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Play { map_index });
-            }
-            let edit_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::EDITBUTTON,
-                "map_selection_screen.edit_map",
-            );
-            if edit_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
-            }
-            let delete_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::DELETEBUTTON,
-                "map_selection_screen.delete_map",
-            );
-            if delete_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
-            }
-        });
+    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        ui.set_width(3. * (BUTTON_HEIGHT + spacing.0));
+        ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
+        let play_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::PLAYBUTTON,
+            "map_selection_screen.play_map",
+        );
+        if play_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Play { map_index });
+        }
+        let edit_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::EDITBUTTON,
+            "map_selection_screen.edit_map",
+        );
+        if edit_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
+        }
+        let delete_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::DELETEBUTTON,
+            "map_selection_screen.delete_map",
+        );
+        if delete_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
+        }
     });
 }
 
@@ -290,6 +313,53 @@ fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
             );
         });
     });
+}
+/// Handle all possible kinds of dialogs that can occur in the Map Selection Screen
+fn map_selection_screen_dialog(
+    mut egui_ctx: EguiContexts,
+    egui_textures: Res<EguiButtonTextures>,
+    mut dialog: ResMut<DialogResource>,
+    mut state: ResMut<NextState<AppState>>,
+    directories: Res<GameDirectoriesWrapper>,
+    mut commands: Commands,
+    current_size: ResMut<WindowUiOverlayInfo>,
+    mut event_writer: EventWriter<UiSizeChangedEvent>,
+) {
+    egui::Window::new(dialog.ui_dialog.dialog_title())
+        .resizable(false)
+        .collapsible(false)
+        .show(egui_ctx.ctx_mut(), |ui| {
+            dialog.ui_dialog.draw(
+                ui,
+                &egui_textures,
+                &directories.game_directories,
+                &mut commands,
+            );
+        });
+    check_ui_size_changed(
+        &WindowUiOverlayInfo {
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
+        },
+        current_size,
+        &mut event_writer,
+    );
+    if dialog.ui_dialog.is_done() {
+        if let Some(create_map_dialog) = dialog.ui_dialog.as_create_new_map_dialog() {
+            if let Some(world) = create_map_dialog.generate_map(&mut commands) {
+                commands.insert_resource(MapWrapper {
+                    world,
+                    previous_best: None,
+                });
+                commands.insert_resource(ReturnTo(AppState::MapSelectionScreen));
+                state.set(AppState::MapEditor);
+            }
+        }
+    } else if dialog.ui_dialog.is_cancelled() {
+        state.set(AppState::MapSelectionScreen);
+    }
 }
 
 pub struct MapSelectionScreenPlugin;
@@ -314,6 +384,26 @@ impl Plugin for MapSelectionScreenPlugin {
             .add_systems(
                 Update,
                 menu_esc_control.run_if(in_state(AppState::MapSelectionScreen)),
-            );
+            )
+            // Map Selection Screen Dialog Logic:
+            .add_systems(
+                Update,
+                map_selection_screen_dialog.run_if(
+                    in_state(AppState::MapSelectionScreenDialog)
+                        .and_then(resource_exists::<DialogResource>),
+                ),
+            )
+            .add_systems(
+                Update,
+                bevy_job_handler.run_if(
+                    in_state(AppState::MapSelectionScreenDialog)
+                        .and_then(resource_exists::<DialogResource>)
+                        .and_then(resource_exists::<CreateMapBackgroundWorkerThread>),
+                ),
+            )
+            .add_systems(OnEnter(AppState::MapSelectionScreenDialog), setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_systems(Update, handle_ui_resize.run_if(in_state(AppState::MapSelectionScreenDialog)))
+            .add_systems(OnExit(AppState::MapSelectionScreenDialog), destroy_camera)
+            .add_systems(OnExit(AppState::MapSelectionScreenDialog), destroy_world);
     }
 }

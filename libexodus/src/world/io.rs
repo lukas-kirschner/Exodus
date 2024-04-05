@@ -62,7 +62,11 @@ impl GameWorld {
     }
     /// Save the map to the given file. The hash MUST be recomputed before saving the map - else, the next load will fail!
     pub fn save_to_file(&self, path: &Path) -> Result<(), GameWorldParseError> {
-        let file: File = OpenOptions::new().create(true).write(true).open(path)?;
+        let file: File = OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(path)?;
         let mut buf = BufWriter::new(file);
         self.serialize(&mut buf)?;
         println!(

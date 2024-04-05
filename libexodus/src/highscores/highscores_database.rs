@@ -91,7 +91,11 @@ impl HighscoresDatabase {
     }
     /// Save a HighscoreDatabase to the given file
     pub fn save_to_file(&self, path: &Path) -> Result<(), HighscoreParseError> {
-        let file: File = OpenOptions::new().create(true).write(true).open(path)?;
+        let file: File = OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(path)?;
         let mut buf = BufWriter::new(file);
         self.serialize(&mut buf)?;
         Ok(())

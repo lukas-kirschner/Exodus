@@ -1,8 +1,8 @@
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
+use crate::dialogs::DialogResource;
 use crate::game::camera::{LayerCamera, MainCamera};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{spawn_tile, WorldTile};
-use crate::mapeditor::mapeditor_ui::MapEditorDialogResource;
 use crate::mapeditor::player_spawn::PlayerSpawnComponent;
 use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
 use crate::{AppState, GameConfig, TilesetManager};
@@ -173,7 +173,7 @@ fn mouse_down_handler(
             );
             if let Some(Tile::MESSAGE { message_id }) = map.world.get(world_x, world_y) {
                 // The new tile is a message with the given ID. Open the Editor and allow the user to set or edit the message. Setting an appropriate ID has been taken care of by the replace_world_tile_at function.
-                commands.insert_resource(MapEditorDialogResource {
+                commands.insert_resource(DialogResource {
                     ui_dialog: Box::new(EditMessageDialog::new(
                         *message_id,
                         map.world.get_message(*message_id).unwrap_or("").to_string(),

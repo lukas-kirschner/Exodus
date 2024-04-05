@@ -1,7 +1,9 @@
+use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
+use bevy::prelude::Commands;
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 
@@ -46,6 +48,7 @@ impl UIDialog for EditMessageDialog {
         ui: &mut Ui,
         _egui_textures: &EguiButtonTextures,
         _directories: &GameDirectories,
+        _commands: &mut Commands,
     ) {
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == EditMessageDialogState::Typing, |ui| {
@@ -76,5 +79,9 @@ impl UIDialog for EditMessageDialog {
 
     fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog> {
         Some(self)
+    }
+
+    fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
+        None
     }
 }

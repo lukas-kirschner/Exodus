@@ -105,9 +105,10 @@ impl TeleportId {
 }
 
 // Tiles Definitions
-#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro)]
+#[derive(Clone, Debug, Eq, PartialEq, EnumIter, EnumCountMacro, Default)]
 pub enum Tile {
     /// An air tile without a texture
+    #[default]
     AIR,
     /// A tile of Wall, a solid block that cannot be destroyed
     WALL,
@@ -506,6 +507,8 @@ pub enum UITiles {
     REPLAYBUTTON,
     /// Texture for the Discard Highscore Button
     DISCARDBUTTON,
+    /// Texture for the Create new Map Button
+    CREATENEWBUTTON,
 }
 
 impl UITiles {
@@ -516,6 +519,7 @@ impl UITiles {
             UITiles::DELETEBUTTON => 20,
             UITiles::BACKBUTTON => 19,
             UITiles::SAVEBUTTON => 31,
+            UITiles::CREATENEWBUTTON => 63,
             UITiles::REPLAYBUTTON => 47,
             UITiles::DISCARDBUTTON => 15,
         })

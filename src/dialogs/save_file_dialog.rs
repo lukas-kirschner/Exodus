@@ -1,9 +1,11 @@
+use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
+use bevy::prelude::Commands;
 use bevy_egui::egui;
 use bevy_egui::egui::Ui;
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
@@ -98,6 +100,7 @@ impl UIDialog for SaveFileDialog {
         ui: &mut Ui,
         _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
         directories: &GameDirectories,
+        _commands: &mut Commands,
     ) {
         ui.vertical_centered_justified(|ui| {
             ui.add_enabled_ui(self.state == SaveFileDialogState::Choosing, |ui| {
@@ -115,7 +118,6 @@ impl UIDialog for SaveFileDialog {
                         });
                         let save = ui.button(t!("common_buttons.save"));
                         if save.clicked() {
-                            // TODO Support Subfolders like "campaign/map.exm" -> ~/.local/share/.../maps/campaign/map.exm
                             let map_dir = directories.path_from_userinput(self.file_name.as_str());
                             debug!("{:?}", map_dir);
                             match map_dir {
@@ -248,6 +250,10 @@ impl UIDialog for SaveFileDialog {
     }
 
     fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog> {
+        None
+    }
+
+    fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
         None
     }
 }

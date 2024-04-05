@@ -1,7 +1,9 @@
+use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
+use bevy::prelude::Commands;
 use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 
@@ -33,7 +35,13 @@ impl UIDialog for UnsavedChangesDialog {
         t!("map_editor.dialog.unsaved_changes_dialog_title").to_string()
     }
 
-    fn draw(&mut self, ui: &mut Ui, _egui_textures: &EguiButtonTextures, _: &GameDirectories) {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        _egui_textures: &EguiButtonTextures,
+        _: &GameDirectories,
+        _commands: &mut Commands,
+    ) {
         ui.vertical_centered(|ui| {
             ui.label(self.message.as_str());
             ui.scope(|ui| {
@@ -68,6 +76,10 @@ impl UIDialog for UnsavedChangesDialog {
     }
 
     fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog> {
+        None
+    }
+
+    fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
         None
     }
 }

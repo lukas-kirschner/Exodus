@@ -9,3 +9,4 @@ pub mod player;
 pub mod tiles;
 pub mod tilesets;
 pub mod world;
+pub mod worldgeneration;

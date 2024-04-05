@@ -1,6 +1,6 @@
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::dialogs::UIDialog;
+use crate::dialogs::DialogResource;
 use crate::game::constants::MAPEDITOR_BUTTON_SIZE;
 use crate::game::player::ReturnTo;
 use crate::game::tilewrapper::MapWrapper;
@@ -44,14 +44,11 @@ impl Plugin for MapEditorUiPlugin {
             )
             .add_systems(
                 Update,
-                mapeditor_dialog.run_if(in_state(AppState::MapEditorDialog)),
+                mapeditor_dialog.run_if(
+                    in_state(AppState::MapEditorDialog).and_then(resource_exists::<DialogResource>),
+                ),
             );
     }
-}
-
-#[derive(Resource)]
-pub struct MapEditorDialogResource {
-    pub ui_dialog: Box<dyn UIDialog + Send + Sync>,
 }
 
 /// Create an egui button to select a tile that can currently be placed
@@ -122,7 +119,7 @@ fn mapeditor_ui(
                                 );
                                 if xbutton.clicked() {
                                     if worldwrapper.world.is_dirty() {
-                                        commands.insert_resource(MapEditorDialogResource {
+                                        commands.insert_resource(DialogResource {
                                             ui_dialog: Box::new(UnsavedChangesDialog::new(
                                                 t!("map_editor.dialog.unsaved_changes_dialog_text")
                                                     .as_str(),
@@ -148,7 +145,7 @@ fn mapeditor_ui(
                                 );
                                 if sbutton.clicked() {
                                     worldwrapper.world.recompute_hash();
-                                    commands.insert_resource(MapEditorDialogResource {
+                                    commands.insert_resource(DialogResource {
                                         ui_dialog: Box::new(SaveFileDialog::new(
                                             worldwrapper.world.get_filename(),
                                             worldwrapper.world.get_name(),
@@ -492,19 +489,23 @@ fn mapeditor_ui(
 fn mapeditor_dialog(
     mut egui_ctx: EguiContexts,
     egui_textures: Res<EguiButtonTextures>,
-    mut dialog: ResMut<MapEditorDialogResource>,
+    mut dialog: ResMut<DialogResource>,
     mut state: ResMut<NextState<AppState>>,
     mut worldwrapper: ResMut<MapWrapper>,
     directories: Res<GameDirectoriesWrapper>,
     return_to: Res<ReturnTo>,
+    mut commands: Commands,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
         .collapsible(false)
         .show(egui_ctx.ctx_mut(), |ui| {
-            dialog
-                .ui_dialog
-                .draw(ui, &egui_textures, &directories.game_directories);
+            dialog.ui_dialog.draw(
+                ui,
+                &egui_textures,
+                &directories.game_directories,
+                &mut commands,
+            );
         });
     if dialog.ui_dialog.is_done() {
         if let Some(save_dialog) = dialog.ui_dialog.as_save_file_dialog() {
