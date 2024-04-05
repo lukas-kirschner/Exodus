@@ -2,11 +2,12 @@ use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::{DialogResource, UIDialog};
+use crate::game::camera::rescale_main_camera;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{despawn_world, setup_game_world, WorldTile};
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::textures::tileset_manager::TilesetManager;
-use crate::ui::UIPANELCBWIDTH;
+use crate::ui::{UiSizeChangedEvent, UIPANELCBWIDTH};
 use bevy::ecs::system::{CommandQueue, SystemState};
 use bevy::prelude::*;
 use bevy::render::MainWorld;
@@ -110,6 +111,8 @@ pub fn bevy_job_handler(world: &mut World) {
                         let (mut commands, atlas_handle, tiles_query) = state.get_mut(world);
                         generate_preview(&mut commands, &map, atlas_handle, &tiles_query);
                         state.apply(world);
+                        // Rescale the camera
+                        world.send_event(UiSizeChangedEvent);
                         // Update the Dialog
                         if let Some(generate_map_dialog) = world
                             .resource_mut::<DialogResource>()
@@ -315,7 +318,7 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
                 ui,
                 t!("map_selection_screen.dialog.create_new_map_dialog_border_width"),
                 width,
-                0..=32,
+                1..=32,
                 t!("map_selection_screen.dialog.create_new_map_dialog_border_width_tooltip"),
             );
             heading_label(
@@ -364,8 +367,8 @@ fn heading_label(ui: &mut Ui, translated_string: Cow<str>) -> InnerResponse<Resp
     })
 }
 /// All selectable colors for the color selection dropdowns
-const ALL_COLORS: [Tile; 5] = [
-    Tile::WALL,
+const ALL_COLORS: [Tile; 4] = [
+    // Tile::WALL,
     Tile::WALLCOBBLE,
     Tile::WALLSMOOTH,
     Tile::WALLNATURE,
@@ -373,6 +376,9 @@ const ALL_COLORS: [Tile; 5] = [
 ];
 /// Spawn a Color Selector ComboBox
 fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
+    if let Tile::AIR = color {
+        *color = ALL_COLORS[0].clone();
+    }
     ui.scope(|ui| {
         ui.set_width(UIPANELCBWIDTH);
         let selected_kind = TileToString(color);

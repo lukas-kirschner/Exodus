@@ -3,13 +3,15 @@ use crate::dialogs::create_new_map_dialog::{
 };
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::DialogResource;
+use crate::game::camera::{destroy_camera, handle_ui_resize, rescale_main_camera, setup_camera};
 use crate::game::player::ReturnTo;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::world::destroy_world;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control};
-use crate::ui::{image_button, BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
+use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, Ui};
@@ -318,6 +320,8 @@ fn map_selection_screen_dialog(
     mut state: ResMut<NextState<AppState>>,
     directories: Res<GameDirectoriesWrapper>,
     mut commands: Commands,
+    current_size: ResMut<WindowUiOverlayInfo>,
+    mut event_writer: EventWriter<UiSizeChangedEvent>,
 ) {
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
@@ -330,6 +334,16 @@ fn map_selection_screen_dialog(
                 &mut commands,
             );
         });
+    check_ui_size_changed(
+        &WindowUiOverlayInfo {
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
+        },
+        current_size,
+        &mut event_writer,
+    );
     if dialog.ui_dialog.is_done() {
         if let Some(create_map_dialog) = dialog.ui_dialog.as_create_new_map_dialog() {
             if let Some(world) = create_map_dialog.generate_map(&mut commands) {
@@ -337,6 +351,7 @@ fn map_selection_screen_dialog(
                     world,
                     previous_best: None,
                 });
+                commands.insert_resource(ReturnTo(AppState::MapSelectionScreen));
                 state.set(AppState::MapEditor);
             }
         }
@@ -368,6 +383,7 @@ impl Plugin for MapSelectionScreenPlugin {
                 Update,
                 menu_esc_control.run_if(in_state(AppState::MapSelectionScreen)),
             )
+            // Map Selection Screen Dialog Logic:
             .add_systems(
                 Update,
                 map_selection_screen_dialog.run_if(
@@ -382,6 +398,10 @@ impl Plugin for MapSelectionScreenPlugin {
                         .and_then(resource_exists::<DialogResource>)
                         .and_then(resource_exists::<CreateMapBackgroundWorkerThread>),
                 ),
-            );
+            )
+            .add_systems(OnEnter(AppState::MapSelectionScreenDialog), setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))
+            .add_systems(Update, handle_ui_resize.run_if(in_state(AppState::MapSelectionScreenDialog)))
+            .add_systems(OnExit(AppState::MapSelectionScreenDialog), destroy_camera)
+            .add_systems(OnExit(AppState::MapSelectionScreenDialog), destroy_world);
     }
 }
