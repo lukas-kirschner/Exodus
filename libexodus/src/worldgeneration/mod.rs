@@ -21,7 +21,7 @@ pub enum WorldGenerationKind {
     Filled {
         color: Tile,
     },
-    Labyrinth {
+    Maze {
         color: Tile,
     },
 }
@@ -78,7 +78,7 @@ impl WorldGenerationKind {
             WorldGenerationKind::Empty => false,
             WorldGenerationKind::Border { .. } => false,
             WorldGenerationKind::Filled { .. } => false,
-            WorldGenerationKind::Labyrinth { .. } => true,
+            WorldGenerationKind::Maze { .. } => true,
         }
     }
 }
@@ -125,7 +125,7 @@ pub fn build_generator(
             width,
             height,
         }),
-        WorldGenerationKind::Labyrinth { .. } => Box::new(Empty { width, height }),
+        WorldGenerationKind::Maze { .. } => Box::new(Empty { width, height }),
     }
 }
 

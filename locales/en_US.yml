@@ -46,7 +46,7 @@ map_selection_screen:
     create_new_map_dialog_kind_empty: Empty Map
     create_new_map_dialog_kind_border: Map with Border
     create_new_map_dialog_kind_filled: Filled Map
-    create_new_map_dialog_kind_labyrinth: Labyrinth
+    create_new_map_dialog_kind_maze: Maze
     create_new_map_dialog_kind_tooltip: Select the map kind to generate
     create_new_map_dialog_filled_color: Fill with tile
     create_new_map_dialog_filled_color_tooltip: Select a tile to fill the whole map with
@@ -54,8 +54,8 @@ map_selection_screen:
     create_new_map_dialog_border_width_tooltip: Set the thickness of the generated border
     create_new_map_dialog_border_color: Surround with
     create_new_map_dialog_border_color_tooltip: Set the tile the border should consist of
-    create_new_map_dialog_labyrinth_color: Wall Tile
-    create_new_map_dialog_labyrinth_color_tooltip: Set the tile that will be used for the inner and outer walls of the maze
+    create_new_map_dialog_maze_color: Wall Tile
+    create_new_map_dialog_maze_color_tooltip: Set the tile that will be used for the inner and outer walls of the maze
     create_new_map_dialog_seed: Seed
     create_new_map_dialog_seed_tooltip: Set a seed for the map generation. Equal seeds will produce equal maps, if all parameters match the previous generation.
     create_new_map_dialog_no_seed_tooltip: The selected map kind does not involve any randomness. Setting a seed would have no impact over map generation.

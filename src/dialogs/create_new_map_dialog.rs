@@ -72,8 +72,8 @@ fn kind_to_string(size: &WorldGenerationKind) -> Cow<str> {
         WorldGenerationKind::Filled { .. } => {
             t!("map_selection_screen.dialog.create_new_map_dialog_kind_filled")
         },
-        WorldGenerationKind::Labyrinth { .. } => {
-            t!("map_selection_screen.dialog.create_new_map_dialog_kind_labyrinth")
+        WorldGenerationKind::Maze { .. } => {
+            t!("map_selection_screen.dialog.create_new_map_dialog_kind_maze")
         },
     }
 }
@@ -356,15 +356,15 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
                 t!("map_selection_screen.dialog.create_new_map_dialog_filled_color_tooltip"),
             );
         },
-        WorldGenerationKind::Labyrinth { ref mut color } => {
+        WorldGenerationKind::Maze { ref mut color } => {
             heading_label(
                 ui,
-                t!("map_selection_screen.dialog.create_new_map_dialog_labyrinth_color"),
+                t!("map_selection_screen.dialog.create_new_map_dialog_maze_color"),
             );
             algorithm_color_selector(
                 ui,
                 color,
-                t!("map_selection_screen.dialog.create_new_map_dialog_labyrinth_color_tooltip"),
+                t!("map_selection_screen.dialog.create_new_map_dialog_maze_color_tooltip"),
             );
         },
     }
