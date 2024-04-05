@@ -2,8 +2,12 @@ use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::{DialogResource, UIDialog};
+use crate::game::tilewrapper::MapWrapper;
+use crate::game::world::{despawn_world, setup_game_world, WorldTile};
 use crate::textures::egui_textures::EguiButtonTextures;
+use crate::textures::tileset_manager::TilesetManager;
 use crate::ui::UIPANELCBWIDTH;
+use bevy::ecs::system::{CommandQueue, SystemState};
 use bevy::prelude::*;
 use bevy::render::MainWorld;
 use bevy_egui::egui;
@@ -78,18 +82,14 @@ fn KindToString(size: &WorldGenerationKind) -> Cow<str> {
     }
 }
 #[derive(Resource)]
-struct CreateMapBackgroundWorkerThread {
+pub struct CreateMapBackgroundWorkerThread {
     job: JoinHandle<Result<GameWorld, WorldGenerationError>>,
 }
 /// Query all unfinished jobs and update the map generator dialog, if one job has finished.
 /// The generated preview will be displayed in full screen mode behind the map dialog,
 /// if the generation has been successful.
 /// Shall ONLY be run if a CreateMapBackgroundWorkerThread exists!
-pub fn bevy_job_handler(
-    mut dialog: ResMut<DialogResource>,
-    mut commands: Commands,
-    world: &mut World,
-) {
+pub fn bevy_job_handler(world: &mut World) {
     if matches!(
         world
             .get_resource::<CreateMapBackgroundWorkerThread>()
@@ -99,25 +99,34 @@ pub fn bevy_job_handler(
         if let Some(thread) = world.remove_resource::<CreateMapBackgroundWorkerThread>() {
             let thread_result = thread.job.join(); //How to move?
             match thread_result {
-                Ok(map_result) => {
-                    match map_result {
-                        Ok(map) => {
-                            if let Some(generate_map_dialog) =
-                                dialog.ui_dialog.as_create_new_map_dialog()
-                            {
-                                generate_map_dialog.state = CreateNewMapDialogState::Choosing;
-                                generate_map_dialog.preview = Some(map);
-                                // Generate a preview for the generated map
-                            } else {
-                                error!(
+                Ok(map_result) => match map_result {
+                    Ok(map) => {
+                        // Generate the preview of the new map and emit all tiles onto the game board
+                        let mut state: SystemState<(
+                            Commands,
+                            Res<TilesetManager>,
+                            Query<Entity, With<WorldTile>>,
+                        )> = SystemState::new(world);
+                        let (mut commands, atlas_handle, tiles_query) = state.get_mut(world);
+                        generate_preview(&mut commands, &map, atlas_handle, &tiles_query);
+                        state.apply(world);
+                        // Update the Dialog
+                        if let Some(generate_map_dialog) = world
+                            .resource_mut::<DialogResource>()
+                            .ui_dialog
+                            .as_create_new_map_dialog()
+                        {
+                            generate_map_dialog.state = CreateNewMapDialogState::Choosing;
+                            generate_map_dialog.preview = Some(map);
+                        } else {
+                            error!(
                                 "The current dialog resource did not contain a CreateNewMapDialog!"
                             );
-                            }
-                        },
-                        Err(e) => {
-                            error!("Error while generating map! {:?}", e);
-                        },
-                    }
+                        }
+                    },
+                    Err(e) => {
+                        error!("Error while generating map! {:?}", e);
+                    },
                 },
                 Err(thread_error) => {
                     error!(
@@ -129,6 +138,16 @@ pub fn bevy_job_handler(
             }
         }
     }
+}
+/// Generate a preview of the given map and show it in the background
+fn generate_preview(
+    commands: &mut Commands,
+    map: &GameWorld,
+    atlas_handle: Res<TilesetManager>,
+    tiles_query: &Query<Entity, With<WorldTile>>,
+) {
+    despawn_world(commands, tiles_query);
+    setup_game_world(commands, map, &*atlas_handle);
 }
 
 impl CreateNewMapDialog {
@@ -240,7 +259,8 @@ impl UIDialog for CreateNewMapDialog {
                         ui.add_enabled_ui(self.preview.is_some(), |ui| {
                             let res = ui.button(t!("map_selection_screen.dialog.create_new_map_dialog_accept")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_accept_tooltip")).on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_cant_accept_tooltip"));
                             if res.clicked() {
-                                self.trigger_generation(commands);
+                                self.state = CreateNewMapDialogState::Done;
+                                // The caller is now responsible for taking the generated map and changing the state
                             }
                         });
                         let res = ui.button(t!("map_selection_screen.dialog.create_new_map_dialog_generate")).on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_generate_tooltip"));

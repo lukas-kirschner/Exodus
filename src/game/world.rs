@@ -95,12 +95,8 @@ pub fn spawn_tile(
     insert_wrappers(tile, &mut bundle);
     insert_door_wrappers(tile, &mut bundle);
 }
-
-pub fn setup_game_world(
-    mut commands: Commands,
-    mut worldwrapper: ResMut<MapWrapper>,
-    atlas_handle: Res<TilesetManager>,
-) {
+/// Spawn the world
+pub fn setup_game_world(commands: &mut Commands, world: &GameWorld, atlas_handle: &TilesetManager) {
     let layer: RenderLayers = RenderLayers::layer(LAYER_ID);
     // Set Background Color
     let bg_color = atlas_handle.current_tileset.background_color();
@@ -108,31 +104,29 @@ pub fn setup_game_world(
         bg_color.r, bg_color.g, bg_color.b,
     )));
     // Load the world
-    let world: &mut GameWorld = &mut worldwrapper.world;
 
-    for row in 0..world.height() {
-        for col in 0..world.width() {
+    for row in 0..(&world).height() {
+        for col in 0..(&world).width() {
             let tile_position = Vec2::new(col as f32, row as f32);
-            let tile = world.get(col as i32, row as i32).unwrap_or_else(|| {
+            let tile = (&world).get(col as i32, row as i32).unwrap_or_else(|| {
                 panic!(
                     "Coordinate {},{} not accessible in world of size {},{}",
                     col,
                     row,
-                    world.width(),
-                    world.height()
+                    (&world).width(),
+                    (&world).height()
                 )
             });
             if let Some(index) = tile.atlas_index() {
-                spawn_tile(
-                    &mut commands,
-                    &atlas_handle,
-                    index,
-                    &tile_position,
-                    tile,
-                    &layer,
-                );
+                spawn_tile(commands, &atlas_handle, index, &tile_position, tile, &layer);
             }
         }
+    }
+}
+/// Despawn the world that is currently displayed.
+pub fn despawn_world(commands: &mut Commands, tiles_query: &Query<Entity, With<WorldTile>>) {
+    for entity in tiles_query.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
 
@@ -144,14 +138,12 @@ pub fn reset_world(
     tiles_query: Query<Entity, With<WorldTile>>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    for entity in tiles_query.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
+    despawn_world(&mut commands, &tiles_query);
     worldwrapper.world.reset_game_state();
     debug!(
         "Setting up Game World with size {}x{}",
         worldwrapper.world.width(),
         worldwrapper.world.height(),
     );
-    setup_game_world(commands, worldwrapper, atlas_handle);
+    setup_game_world(&mut commands, &worldwrapper.world, &*atlas_handle);
 }

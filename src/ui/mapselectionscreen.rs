@@ -1,4 +1,6 @@
-use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
+use crate::dialogs::create_new_map_dialog::{
+    bevy_job_handler, CreateMapBackgroundWorkerThread, CreateNewMapDialog,
+};
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::DialogResource;
 use crate::game::player::ReturnTo;
@@ -334,9 +336,9 @@ fn map_selection_screen_dialog(
                 commands.insert_resource(MapWrapper {
                     world,
                     previous_best: None,
-                })
+                });
+                state.set(AppState::MapEditor);
             }
-            state.set(AppState::MapEditor);
         }
     } else if dialog.ui_dialog.is_cancelled() {
         state.set(AppState::MapSelectionScreen);
@@ -371,6 +373,14 @@ impl Plugin for MapSelectionScreenPlugin {
                 map_selection_screen_dialog.run_if(
                     in_state(AppState::MapSelectionScreenDialog)
                         .and_then(resource_exists::<DialogResource>),
+                ),
+            )
+            .add_systems(
+                Update,
+                bevy_job_handler.run_if(
+                    in_state(AppState::MapSelectionScreenDialog)
+                        .and_then(resource_exists::<DialogResource>)
+                        .and_then(resource_exists::<CreateMapBackgroundWorkerThread>),
                 ),
             );
     }
