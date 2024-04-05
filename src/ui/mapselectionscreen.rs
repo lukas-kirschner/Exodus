@@ -9,7 +9,7 @@ use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::destroy_world;
 use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
+use crate::ui::uicontrols::{add_navbar_with_extra_buttons, menu_esc_control, WindowUiOverlayInfo};
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
@@ -190,11 +190,26 @@ fn map_selection_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
     maps: Res<Maps>,
 ) {
-    add_navbar(
+    add_navbar_with_extra_buttons(
         egui_ctx.ctx_mut(),
         &mut state,
         &egui_textures,
         &t!("map_selection_screen.title"),
+        |ui, state| {
+            let new_button = image_button(
+                ui,
+                &egui_textures,
+                &UITiles::CREATENEWBUTTON,
+                "map_selection_screen.create_new_map",
+            );
+            if new_button.clicked() {
+                commands.insert_resource(DialogResource {
+                    ui_dialog: Box::<CreateNewMapDialog>::default(),
+                });
+                state.set(AppState::MapSelectionScreenDialog);
+            }
+        },
+        1,
     );
 
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
@@ -202,18 +217,6 @@ fn map_selection_screen_ui(
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
             .show(ui, |ui| {
-                let new_button = image_button(
-                    ui,
-                    &egui_textures,
-                    &UITiles::CREATENEWBUTTON,
-                    "map_selection_screen.create_new_map",
-                );
-                if new_button.clicked() {
-                    commands.insert_resource(DialogResource {
-                        ui_dialog: Box::<CreateNewMapDialog>::default(),
-                    });
-                    state.set(AppState::MapSelectionScreenDialog);
-                }
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     egui::Grid::new("maps_grid")
                         .striped(true)

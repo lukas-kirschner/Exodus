@@ -102,7 +102,6 @@ impl Maze {
                 }
             }
         }
-        println!("Found Frontier Cells {:?} {:?}", matches_air, ret);
         ret
     }
     fn connecting_walls(&self, map: &GameWorld, cell: (usize, usize)) -> Vec<(usize, usize)> {
