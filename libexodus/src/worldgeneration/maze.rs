@@ -129,8 +129,8 @@ impl Maze {
 impl WorldGenerationAlgorithm for Maze {
     fn generate(&self) -> Result<GameWorld, WorldGenerationError> {
         match (self.width, self.height) {
-            (0, _) => Err(WorldGenerationError::InvalidWidth { width: self.width }),
-            (_, 0) => Err(WorldGenerationError::InvalidHeight {
+            (0..=1, _) => Err(WorldGenerationError::InvalidWidth { width: self.width }),
+            (_, 0..=1) => Err(WorldGenerationError::InvalidHeight {
                 height: self.height,
             }),
             (w_u32, h_u32) => match usize::try_from(w_u32) {
@@ -155,107 +155,15 @@ impl WorldGenerationAlgorithm for Maze {
 #[cfg(test)]
 mod tests {
     use crate::tiles::Tile;
-    use crate::worldgeneration::tests::assert_map_content_matches;
     use crate::worldgeneration::{build_generator, WorldGenerationKind};
 
     #[test]
     fn test_generate_2x2_map() {
-        let algo = build_generator(
-            WorldGenerationKind::Border {
-                width: 1,
-                color: Tile::WALL,
-            },
-            2,
-            2,
-            0,
-        );
+        let algo = build_generator(WorldGenerationKind::Maze { color: Tile::WALL }, 2, 2, 0);
         let result = algo.generate();
         assert!(result.is_ok());
         let map = result.unwrap();
-        assert_map_content_matches("WW\nWW", &map);
-    }
-
-    #[test]
-    fn test_generate_3x3_map() {
-        let algo = build_generator(
-            WorldGenerationKind::Border {
-                width: 1,
-                color: Tile::WALL,
-            },
-            3,
-            3,
-            0,
-        );
-        let result = algo.generate();
-        assert!(result.is_ok());
-        let map = result.unwrap();
-        assert_map_content_matches("WWW\nW W\nWWW", &map);
-    }
-
-    #[test]
-    fn test_generate_4x4_map() {
-        let algo = build_generator(
-            WorldGenerationKind::Border {
-                width: 1,
-                color: Tile::WALL,
-            },
-            4,
-            4,
-            0,
-        );
-        let result = algo.generate();
-        assert!(result.is_ok());
-        let map = result.unwrap();
-        assert_map_content_matches("WWWW\nW  W\nW  W\nWWWW", &map);
-    }
-
-    #[test]
-    fn test_generate_10x3_map() {
-        let algo = build_generator(
-            WorldGenerationKind::Border {
-                width: 1,
-                color: Tile::WALLNATURE,
-            },
-            10,
-            3,
-            0,
-        );
-        let result = algo.generate();
-        assert!(result.is_ok());
-        let map = result.unwrap();
-        assert_map_content_matches(
-            "
-NNNNNNNNNN
-N        N
-NNNNNNNNNN
-",
-            &map,
-        );
-    }
-
-    #[test]
-    fn test_generate_10x5_map() {
-        let algo = build_generator(
-            WorldGenerationKind::Border {
-                width: 2,
-                color: Tile::WALLNATURE,
-            },
-            10,
-            5,
-            0,
-        );
-        let result = algo.generate();
-        assert!(result.is_ok());
-        let map = result.unwrap();
-        assert_map_content_matches(
-            "
-NNNNNNNNNN
-NNNNNNNNNN
-NN      NN
-NNNNNNNNNN
-NNNNNNNNNN
-",
-            &map,
-        );
+        assert_eq!(2, map.height());
+        assert_eq!(2, map.width());
     }
 }
