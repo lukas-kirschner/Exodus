@@ -1,10 +1,12 @@
 mod border;
 mod empty;
+mod filled;
 
 use crate::tiles::Tile;
 use crate::world::GameWorld;
 use crate::worldgeneration::border::Border;
 use crate::worldgeneration::empty::Empty;
+use crate::worldgeneration::filled::Filled;
 use std::num::TryFromIntError;
 use strum_macros::EnumIter;
 
@@ -118,7 +120,11 @@ pub fn build_generator(
             color,
             border_width,
         }),
-        WorldGenerationKind::Filled { .. } => Box::new(Empty { width, height }),
+        WorldGenerationKind::Filled { color } => Box::new(Filled {
+            color,
+            width,
+            height,
+        }),
         WorldGenerationKind::Labyrinth { .. } => Box::new(Empty { width, height }),
     }
 }
