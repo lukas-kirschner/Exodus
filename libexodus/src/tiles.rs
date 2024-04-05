@@ -507,6 +507,8 @@ pub enum UITiles {
     REPLAYBUTTON,
     /// Texture for the Discard Highscore Button
     DISCARDBUTTON,
+    /// Texture for the Create new Map Button
+    CREATENEWBUTTON,
 }
 
 impl UITiles {
@@ -517,6 +519,7 @@ impl UITiles {
             UITiles::DELETEBUTTON => 20,
             UITiles::BACKBUTTON => 19,
             UITiles::SAVEBUTTON => 31,
+            UITiles::CREATENEWBUTTON => 63,
             UITiles::REPLAYBUTTON => 47,
             UITiles::DISCARDBUTTON => 15,
         })

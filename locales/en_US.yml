@@ -19,6 +19,7 @@ map_selection_screen:
   play_map: Play Map
   edit_map: Edit Map
   delete_map: Delete map
+  create_new_map: Create new map
   highscore_heading: "Previous best:"
   no_highscore: No highscore
   moves_fmt: "%{moves}"

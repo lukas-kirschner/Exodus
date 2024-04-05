@@ -202,20 +202,18 @@ fn map_selection_screen_ui(
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
             .show(ui, |ui| {
-                //TODO
-                let sbutton = image_button(
+                let new_button = image_button(
                     ui,
                     &egui_textures,
-                    &UITiles::SAVEBUTTON,
-                    "map_editor.dialog.save_tooltip",
+                    &UITiles::CREATENEWBUTTON,
+                    "map_selection_screen.create_new_map",
                 );
-                if sbutton.clicked() {
+                if new_button.clicked() {
                     commands.insert_resource(DialogResource {
                         ui_dialog: Box::<CreateNewMapDialog>::default(),
                     });
                     state.set(AppState::MapSelectionScreenDialog);
                 }
-                //TODO
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     egui::Grid::new("maps_grid")
                         .striped(true)

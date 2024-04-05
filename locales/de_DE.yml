@@ -20,6 +20,7 @@ map_selection_screen:
   play_map: Karte spielen
   edit_map: Karte bearbeiten
   delete_map: Karte löschen
+  create_new_map: Neue Karte erstellen
   highscore_heading: "Bester Highscore:"
   no_highscore: Noch kein Highscore
   moves_fmt: "%{moves}"
