@@ -1,9 +1,8 @@
 use crate::dialogs::create_new_map_dialog::{
     bevy_job_handler, CreateMapBackgroundWorkerThread, CreateNewMapDialog,
 };
-use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::DialogResource;
-use crate::game::camera::{destroy_camera, handle_ui_resize, rescale_main_camera, setup_camera};
+use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::player::ReturnTo;
 use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
@@ -212,7 +211,7 @@ fn map_selection_screen_ui(
                 );
                 if sbutton.clicked() {
                     commands.insert_resource(DialogResource {
-                        ui_dialog: Box::new(CreateNewMapDialog::default()),
+                        ui_dialog: Box::<CreateNewMapDialog>::default(),
                     });
                     state.set(AppState::MapSelectionScreenDialog);
                 }

@@ -89,7 +89,11 @@ impl Tileset {
 // Serialization/Deserialization
 impl Config {
     pub fn save_to_file(&self, path: &Path) -> Result<(), ConfigParseError> {
-        let file: File = OpenOptions::new().create(true).write(true).open(path)?;
+        let file: File = OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(path)?;
         let mut buf = BufWriter::new(file);
         self.serialize(&mut buf)?;
         Ok(())

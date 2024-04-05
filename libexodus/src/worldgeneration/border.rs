@@ -3,7 +3,6 @@ use crate::world::GameWorld;
 use crate::worldgeneration::WorldGenerationError::InvalidBorderWidth;
 use crate::worldgeneration::{WorldGenerationAlgorithm, WorldGenerationError};
 use std::cmp::min;
-use std::num::TryFromIntError;
 
 #[derive(Clone)]
 pub(super) struct Border {
@@ -14,7 +13,9 @@ pub(super) struct Border {
 }
 
 impl Border {
-    fn new(&self) -> Result<GameWorld, WorldGenerationError> {
+    /// Generate a new map with border.
+    /// All Values must be already validated before calling this function.
+    fn generate_validated(&self) -> Result<GameWorld, WorldGenerationError> {
         let mut ret = GameWorld::new(self.width as usize, self.height as usize);
         if self.border_width == 0 || self.border_width > min(self.width, self.height) / 2 {
             return Err(InvalidBorderWidth {
@@ -39,7 +40,7 @@ impl Border {
                 ret.set(dist as usize, y as usize, self.color.clone());
             }
         }
-        return Ok(ret);
+        Ok(ret)
     }
 }
 
@@ -51,8 +52,8 @@ impl WorldGenerationAlgorithm for Border {
                 height: self.height,
             }),
             (w_u32, h_u32) => match usize::try_from(w_u32) {
-                Ok(w) => match usize::try_from(h_u32) {
-                    Ok(h) => self.new(),
+                Ok(..) => match usize::try_from(h_u32) {
+                    Ok(..) => self.generate_validated(),
                     Err(e) => Err(WorldGenerationError::HeightOutOfRange { e }),
                 },
                 Err(e) => Err(WorldGenerationError::WidthOutOfRange { e }),

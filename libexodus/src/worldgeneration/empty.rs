@@ -1,6 +1,5 @@
 use crate::world::GameWorld;
 use crate::worldgeneration::{WorldGenerationAlgorithm, WorldGenerationError};
-use std::num::TryFromIntError;
 
 #[derive(Clone)]
 pub(super) struct Empty {
@@ -35,7 +34,6 @@ impl WorldGenerationAlgorithm for Empty {
 }
 #[cfg(test)]
 mod tests {
-    use crate::tiles::{TeleportId, Tile};
     use crate::worldgeneration::tests::assert_map_content_matches;
     use crate::worldgeneration::{build_generator, WorldGenerationKind};
 

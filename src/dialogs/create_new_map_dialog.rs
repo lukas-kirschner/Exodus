@@ -2,17 +2,15 @@ use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::{DialogResource, UIDialog};
-use crate::game::camera::rescale_main_camera;
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::{despawn_world, setup_game_world, WorldTile};
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::textures::tileset_manager::TilesetManager;
 use crate::ui::{UiSizeChangedEvent, UIPANELCBWIDTH};
-use bevy::ecs::system::{CommandQueue, SystemState};
+use bevy::ecs::system::SystemState;
 use bevy::prelude::*;
-use bevy::render::MainWorld;
 use bevy_egui::egui;
-use bevy_egui::egui::{Align, InnerResponse, Layout, Response, RichText, TextBuffer, Ui};
+use bevy_egui::egui::{Align, InnerResponse, Layout, Response, RichText, Ui};
 use libexodus::directories::GameDirectories;
 use libexodus::tiles::Tile;
 use libexodus::world::GameWorld;
@@ -20,10 +18,7 @@ use libexodus::worldgeneration::{
     build_generator, WorldGenerationError, WorldGenerationKind, WorldSize,
 };
 use std::borrow::Cow;
-use std::cmp::min;
-use std::fmt::{Display, Formatter};
 use std::ops::RangeInclusive;
-use std::path::{Path, PathBuf};
 use std::thread;
 use std::thread::JoinHandle;
 use strum::IntoEnumIterator;
@@ -54,7 +49,7 @@ pub struct CreateNewMapDialog {
     error_text: Option<String>,
 }
 
-fn SizeToString(size: &WorldSize) -> Cow<str> {
+fn size_to_string(size: &WorldSize) -> Cow<str> {
     match size {
         WorldSize::Classic5mx => t!("map_selection_screen.dialog.create_new_map_dialog_size_5mx"),
         WorldSize::Small => t!("map_selection_screen.dialog.create_new_map_dialog_size_small"),
@@ -66,7 +61,7 @@ fn SizeToString(size: &WorldSize) -> Cow<str> {
         },
     }
 }
-fn KindToString(size: &WorldGenerationKind) -> Cow<str> {
+fn kind_to_string(size: &WorldGenerationKind) -> Cow<str> {
     match size {
         WorldGenerationKind::Empty => {
             t!("map_selection_screen.dialog.create_new_map_dialog_kind_empty")
@@ -112,6 +107,10 @@ pub fn bevy_job_handler(world: &mut World) {
                         generate_preview(&mut commands, &map, atlas_handle, &tiles_query);
                         state.apply(world);
                         // Rescale the camera
+                        world.insert_resource(MapWrapper {
+                            world: map.clone(),
+                            previous_best: None,
+                        });
                         world.send_event(UiSizeChangedEvent);
                         // Update the Dialog
                         if let Some(generate_map_dialog) = world
@@ -129,6 +128,14 @@ pub fn bevy_job_handler(world: &mut World) {
                     },
                     Err(e) => {
                         error!("Error while generating map! {:?}", e);
+                        if let Some(generate_map_dialog) = world
+                            .resource_mut::<DialogResource>()
+                            .ui_dialog
+                            .as_create_new_map_dialog()
+                        {
+                            generate_map_dialog.state = CreateNewMapDialogState::Error;
+                            generate_map_dialog.error_text = Some(format!("{:?}", e));
+                        }
                     },
                 },
                 Err(thread_error) => {
@@ -136,7 +143,14 @@ pub fn bevy_job_handler(world: &mut World) {
                         "Error while joining map generator thread: {:?}",
                         thread_error
                     );
-                    return;
+                    if let Some(generate_map_dialog) = world
+                        .resource_mut::<DialogResource>()
+                        .ui_dialog
+                        .as_create_new_map_dialog()
+                    {
+                        generate_map_dialog.state = CreateNewMapDialogState::Error;
+                        generate_map_dialog.error_text = Some(format!("{:?}", thread_error));
+                    }
                 },
             }
         }
@@ -150,7 +164,7 @@ fn generate_preview(
     tiles_query: &Query<Entity, With<WorldTile>>,
 ) {
     despawn_world(commands, tiles_query);
-    setup_game_world(commands, map, &*atlas_handle);
+    setup_game_world(commands, map, &atlas_handle);
 }
 
 impl CreateNewMapDialog {
@@ -165,7 +179,7 @@ impl CreateNewMapDialog {
     /// Generate the map and return it, moving it out of this dialog.
     /// If the map has not been generated yet, this will return None and trigger a map generation.
     /// In this case, this method must be called again to obtain the generated map once it is generated.
-    pub fn generate_map(&mut self, mut commands: &mut Commands) -> Option<GameWorld> {
+    pub fn generate_map(&mut self, commands: &mut Commands) -> Option<GameWorld> {
         let ret = self.preview.take();
         match ret {
             None => {
@@ -195,7 +209,7 @@ impl UIDialog for CreateNewMapDialog {
         &mut self,
         ui: &mut Ui,
         _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
-        directories: &GameDirectories,
+        _directories: &GameDirectories,
         commands: &mut Commands,
     ) {
         ui.vertical_centered_justified(|ui| {
@@ -204,13 +218,13 @@ impl UIDialog for CreateNewMapDialog {
                 ui.scope(|ui| {
                     ui.scope(|ui| {
                         ui.set_width(UIPANELCBWIDTH);
-                        let selected_width_kind = SizeToString(&self.size);
+                        let selected_width_kind = size_to_string(&self.size);
                         egui::ComboBox::from_id_source("size_box").width(UIPANELCBWIDTH).selected_text(selected_width_kind).show_ui(ui, |ui| {
                             for size in WorldSize::iter() {
                                 ui.selectable_value(
                                     &mut self.size,
                                     size,
-                                    SizeToString(&size),
+                                    size_to_string(&size),
                                 );
                             }
                         }).response.on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_size_tooltip"));
@@ -218,7 +232,7 @@ impl UIDialog for CreateNewMapDialog {
                     ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                         ui.add_enabled_ui(matches!(self.size,WorldSize::Custom {..}), |ui| {
                             let (mut fix_width,mut fix_height) = (self.size.width(), self.size.height());
-                            let (mut width, mut height) = match self.size {
+                            let (width, height) = match self.size {
                                 WorldSize::Custom { ref mut width, ref mut height } => (width, height),
                                 _ => (&mut fix_width,&mut fix_height)
                             };
@@ -234,13 +248,13 @@ impl UIDialog for CreateNewMapDialog {
                     heading_label(ui,t!("map_selection_screen.dialog.create_new_map_dialog_kind_selector"));
                     ui.scope(|ui| {
                         ui.set_width(UIPANELCBWIDTH);
-                        let selected_kind = KindToString(&self.map_kind);
+                        let selected_kind = kind_to_string(&self.map_kind);
                         egui::ComboBox::from_id_source("kind_box").width(UIPANELCBWIDTH).selected_text(selected_kind).show_ui(ui, |ui| {
                             for kind in WorldGenerationKind::iter() {
                                 ui.selectable_value(
                                     &mut self.map_kind,
                                     kind.clone(),
-                                    KindToString(&kind),
+                                    kind_to_string(&kind),
                                 );
                             }
                         }).response.on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_kind_tooltip"));
@@ -367,8 +381,8 @@ fn heading_label(ui: &mut Ui, translated_string: Cow<str>) -> InnerResponse<Resp
     })
 }
 /// All selectable colors for the color selection dropdowns
-const ALL_COLORS: [Tile; 4] = [
-    // Tile::WALL,
+const ALL_COLORS: [Tile; 5] = [
+    Tile::WALL,
     Tile::WALLCOBBLE,
     Tile::WALLSMOOTH,
     Tile::WALLNATURE,
@@ -381,13 +395,13 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
     }
     ui.scope(|ui| {
         ui.set_width(UIPANELCBWIDTH);
-        let selected_kind = TileToString(color);
+        let selected_kind = tile_to_string(color);
         egui::ComboBox::from_id_source(tooltip.to_string())
             .width(UIPANELCBWIDTH)
             .selected_text(selected_kind)
             .show_ui(ui, |ui| {
                 for tile in ALL_COLORS {
-                    ui.selectable_value(color, tile.clone(), TileToString(&tile));
+                    ui.selectable_value(color, tile.clone(), tile_to_string(&tile));
                 }
             })
             .response
@@ -395,7 +409,7 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
     });
 }
 /// Format the given tile using the current locale
-fn TileToString(tile: &Tile) -> String {
+fn tile_to_string(tile: &Tile) -> String {
     t!(format!("tile.{}", tile.str_id()).as_str()).to_string()
 }
 /// Add one label and one slider, with the label taking up two thirds of the available space
