@@ -211,7 +211,10 @@ fn map_selection_screen_ui(
         },
         1,
     );
-
+    let spacing = (
+        egui_ctx.ctx_mut().style().spacing.item_spacing.x,
+        egui_ctx.ctx_mut().style().spacing.item_spacing.y,
+    );
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         egui::ScrollArea::new([false, true])
             .auto_shrink([false; 2])
@@ -227,7 +230,7 @@ fn map_selection_screen_ui(
                                     ui.set_height(BUTTON_HEIGHT * 1.);
                                     ui.set_width(ui.available_width());
                                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                                        buttons(ui, &egui_textures, &mut commands, i);
+                                        buttons(spacing, ui, &egui_textures, &mut commands, i);
                                         ui.scope(|ui| {
                                             ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
                                             ui.style_mut().spacing.indent = 0.0;
@@ -256,43 +259,42 @@ fn map_selection_screen_ui(
 }
 
 fn buttons(
+    spacing: (f32, f32),
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
     commands: &mut Commands,
     map_index: usize,
 ) {
-    ui.scope(|ui| {
-        ui.set_width(3. * BUTTON_HEIGHT);
-        ui.set_height(BUTTON_HEIGHT);
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            let play_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::PLAYBUTTON,
-                "map_selection_screen.play_map",
-            );
-            if play_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Play { map_index });
-            }
-            let edit_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::EDITBUTTON,
-                "map_selection_screen.edit_map",
-            );
-            if edit_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
-            }
-            let delete_btn = image_button(
-                ui,
-                egui_textures,
-                &UITiles::DELETEBUTTON,
-                "map_selection_screen.delete_map",
-            );
-            if delete_btn.clicked() {
-                commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
-            }
-        });
+    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        ui.set_width(3. * (BUTTON_HEIGHT + spacing.0));
+        ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
+        let play_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::PLAYBUTTON,
+            "map_selection_screen.play_map",
+        );
+        if play_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Play { map_index });
+        }
+        let edit_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::EDITBUTTON,
+            "map_selection_screen.edit_map",
+        );
+        if edit_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Edit { map_index });
+        }
+        let delete_btn = image_button(
+            ui,
+            egui_textures,
+            &UITiles::DELETEBUTTON,
+            "map_selection_screen.delete_map",
+        );
+        if delete_btn.clicked() {
+            commands.insert_resource(MapSelectionScreenAction::Delete { map_index });
+        }
     });
 }
 
