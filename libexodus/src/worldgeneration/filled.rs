@@ -47,7 +47,7 @@ mod tests {
 
     #[test]
     fn test_generate_2x2_map() {
-        let algo = build_generator(WorldGenerationKind::Filled { color: Tile::WALL }, 2, 2);
+        let algo = build_generator(WorldGenerationKind::Filled { color: Tile::WALL }, 2, 2, 0);
         let result = algo.generate();
         assert!(result.is_ok());
         let map = result.unwrap();
@@ -55,7 +55,7 @@ mod tests {
     }
     #[test]
     fn test_generate_10x2_map() {
-        let algo = build_generator(WorldGenerationKind::Filled { color: Tile::WALL }, 10, 2);
+        let algo = build_generator(WorldGenerationKind::Filled { color: Tile::WALL }, 10, 2, 0);
         let result = algo.generate();
         assert!(result.is_ok());
         let map = result.unwrap();

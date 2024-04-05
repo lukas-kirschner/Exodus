@@ -193,7 +193,12 @@ impl CreateNewMapDialog {
     /// Trigger a generation
     fn trigger_generation(&mut self, commands: &mut Commands) {
         self.state = CreateNewMapDialogState::GeneratingMap;
-        let algo = build_generator(self.map_kind.clone(), self.get_width(), self.get_height());
+        let algo = build_generator(
+            self.map_kind.clone(),
+            self.get_width(),
+            self.get_height(),
+            self.seed,
+        );
         commands.insert_resource(CreateMapBackgroundWorkerThread {
             job: thread::spawn(move || algo.generate()),
         });

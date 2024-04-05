@@ -1,12 +1,14 @@
 mod border;
 mod empty;
 mod filled;
+mod maze;
 
 use crate::tiles::Tile;
 use crate::world::GameWorld;
 use crate::worldgeneration::border::Border;
 use crate::worldgeneration::empty::Empty;
 use crate::worldgeneration::filled::Filled;
+use crate::worldgeneration::maze::Maze;
 use std::num::TryFromIntError;
 use strum_macros::EnumIter;
 
@@ -108,6 +110,7 @@ pub fn build_generator(
     parameters: WorldGenerationKind,
     width: u32,
     height: u32,
+    seed: u32,
 ) -> Box<dyn WorldGenerationAlgorithm> {
     match parameters {
         WorldGenerationKind::Empty => Box::new(Empty { width, height }),
@@ -125,15 +128,19 @@ pub fn build_generator(
             width,
             height,
         }),
-        WorldGenerationKind::Maze { .. } => Box::new(Empty { width, height }),
+        WorldGenerationKind::Maze { color } => Box::new(Maze {
+            width,
+            height,
+            color,
+            seed,
+        }),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::tiles::{TeleportId, Tile};
+    use crate::tiles::Tile;
     use crate::world::GameWorld;
-    use crate::worldgeneration::{build_generator, WorldGenerationKind};
 
     /// Assert that the given map's content matches the given string.
     /// The string must be given as 2D-Map, with "W" being a Wall tile, "N" being a

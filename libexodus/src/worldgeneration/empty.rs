@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_generate_2x2_map() {
-        let algo = build_generator(WorldGenerationKind::Empty, 2, 2);
+        let algo = build_generator(WorldGenerationKind::Empty, 2, 2, 0);
         let result = algo.generate();
         assert!(result.is_ok());
         let map = result.unwrap();

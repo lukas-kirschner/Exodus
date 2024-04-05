@@ -84,6 +84,7 @@ mod tests {
             },
             2,
             2,
+            0,
         );
         let result = algo.generate();
         assert!(result.is_ok());
@@ -99,6 +100,7 @@ mod tests {
             },
             3,
             3,
+            0,
         );
         let result = algo.generate();
         assert!(result.is_ok());
@@ -114,6 +116,7 @@ mod tests {
             },
             4,
             4,
+            0,
         );
         let result = algo.generate();
         assert!(result.is_ok());
@@ -129,6 +132,7 @@ mod tests {
             },
             10,
             3,
+            0,
         );
         let result = algo.generate();
         assert!(result.is_ok());
@@ -151,6 +155,7 @@ NNNNNNNNNN
             },
             10,
             5,
+            0,
         );
         let result = algo.generate();
         assert!(result.is_ok());
