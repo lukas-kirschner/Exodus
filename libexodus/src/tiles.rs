@@ -176,6 +176,10 @@ pub enum Tile {
     WALLSPIKESRLT,
     /// Spikes placed on a wall, pointing to the top, left and bottom. Not deadly if approached from the right.
     WALLSPIKESLTB,
+    /// A decorative Cobblestone Roof Tile, with a 45 degrees angle on the left.
+    COBBLEROOFSLOPEL,
+    /// A decorative Cobblestone Roof Tile, with a 45 degrees angle on the right.
+    COBBLEROOFSLOPER,
     /// An arrow that points to the right
     ARROWRIGHT,
     /// An arrow that points to the left
@@ -294,6 +298,8 @@ impl Tile {
                 },
             },
             Tile::TELEPORTEXIT { .. } => TileKind::AIR,
+            Tile::COBBLEROOFSLOPEL => TileKind::AIR,
+            Tile::COBBLEROOFSLOPER => TileKind::AIR,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -348,6 +354,8 @@ impl Tile {
             Tile::TELEPORTEXIT { teleport_id } => {
                 Some(2 + (u8::from(teleport_id) * 2) as AtlasIndex)
             },
+            Tile::COBBLEROOFSLOPEL => Some(124),
+            Tile::COBBLEROOFSLOPER => Some(125),
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -430,6 +438,8 @@ impl Tile {
             Tile::MESSAGE { .. } => "message",
             Tile::TELEPORTENTRY { .. } => "teleport_entry",
             Tile::TELEPORTEXIT { .. } => "teleport_exit",
+            Tile::COBBLEROOFSLOPEL => "cobblestone_roof_l",
+            Tile::COBBLEROOFSLOPER => "cobblestone_roof_r",
         }
     }
 }
@@ -487,6 +497,8 @@ impl fmt::Display for Tile {
                 Tile::MESSAGE { .. } => "Message",
                 Tile::TELEPORTENTRY { .. } => "Teleport Entry",
                 Tile::TELEPORTEXIT { .. } => "Teleport Exit",
+                Tile::COBBLEROOFSLOPEL => "Cobblestone Roof L",
+                Tile::COBBLEROOFSLOPER => "Cobblestone Roof R",
             }
         )
     }

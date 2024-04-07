@@ -292,6 +292,21 @@ fn mapeditor_ui(
                             player_it,
                         );
                         ui.separator();
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::COBBLEROOFSLOPEL,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::COBBLEROOFSLOPER,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        ui.separator();
 
                         tile_kind_selector_button_for(
                             ui,

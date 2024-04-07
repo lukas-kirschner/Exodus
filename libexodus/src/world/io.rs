@@ -443,6 +443,8 @@ impl Tile {
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { .. } => 0xf1,
             Tile::CAMPAIGNTRAILBORDER => 0xf2,
             Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => 0xf3,
+            Tile::COBBLEROOFSLOPEL => 0x80,
+            Tile::COBBLEROOFSLOPER => 0x81,
         }
     }
 
@@ -506,6 +508,8 @@ impl Tile {
                     map_name: String::new(),
                 },
             }),
+            0x80 => Some(Tile::COBBLEROOFSLOPEL),
+            0x81 => Some(Tile::COBBLEROOFSLOPER),
             _ => None,
         }
     }
