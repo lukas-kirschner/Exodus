@@ -137,6 +137,8 @@ tile:
   message: Nachricht
   teleport_entry: Teleporter
   teleport_exit: Teleporter-Ziel
+  cobblestone_roof_l: Linkes Pflasterstein-Dach
+  cobblestone_roof_r: Rechtes Pflasterstein-Dach
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX
