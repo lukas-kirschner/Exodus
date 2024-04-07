@@ -60,6 +60,9 @@ map_selection_screen:
     create_new_map_dialog_seed: Seed
     create_new_map_dialog_seed_tooltip: Set a seed for the map generation. Equal seeds will produce equal maps, if all parameters match the previous generation.
     create_new_map_dialog_no_seed_tooltip: The selected map kind does not involve any randomness. Setting a seed would have no impact over map generation.
+    delete_map_dialog_title: Delete map
+    delete_map_dialog_question: Would you really like to delete this map? This action cannot be undone!
+    delete_map_dialog_hint: All your highscores will be kept in case you re-add the deleted map later.
 credits_screen:
   title: Credits
 game_ui:
