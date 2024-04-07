@@ -275,6 +275,7 @@ pub fn player_movement(
                         // Handle special collision events here
                         TileKind::AIR => {},
                         TileKind::SOLID => {},
+                        TileKind::SOLIDINTERACTABLE { .. } => {},
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(player_entity).despawn_recursive();
@@ -307,6 +308,8 @@ pub fn player_movement(
                         TileKind::SPECIAL { interaction } => {
                             match interaction {
                                 InteractionKind::LaunchMap { .. } => { // Only applicable in Campaign Trail
+                                },
+                                InteractionKind::VendingMachine { .. } => { // Handled elsewhere in Collision Detection
                                 },
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location

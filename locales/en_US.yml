@@ -138,6 +138,8 @@ tile:
   teleport_exit: Teleport Exit
   cobblestone_roof_l: L Cobblestone Roof
   cobblestone_roof_r: R Cobblestone Roof
+  vending_machine_l: L Vending Machine
+  vending_machine_r: R Vending Machine
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map

@@ -461,6 +461,21 @@ fn mapeditor_ui(
                             &mut selected_tile,
                             player_it,
                         );
+                        ui.separator();
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::VENDINGMACHINEL,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::VENDINGMACHINER,
+                            &mut selected_tile,
+                            player_it,
+                        );
                     })
                 });
             });

@@ -4,15 +4,20 @@ use std::fmt;
 use std::fmt::Formatter;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
-pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning heir back to the camera
+pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning their back to the camera
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum InteractionKind {
     /// When interacting with this tile, the player may decide to play a map.
     /// This interaction kind is mainly used for tile-based Campaign Trails
-    LaunchMap { map_name: String },
+    LaunchMap {
+        map_name: String,
+    },
     /// When interacting with this tile, the player should be teleported
     /// to the given teleport exit.
-    TeleportTo { teleport_id: TeleportId },
+    TeleportTo {
+        teleport_id: TeleportId,
+    },
+    VendingMachine,
 }
 impl Default for InteractionKind {
     fn default() -> Self {
@@ -30,6 +35,12 @@ pub enum TileKind {
     ///
     /// A solid tile
     SOLID,
+    ///
+    /// A solid tile that can be interacted with from the given directions
+    SOLIDINTERACTABLE {
+        from: Vec<FromDirection>,
+        kind: InteractionKind,
+    },
     ///
     /// A tile that kills the player on impact
     DEADLY { from: Vec<FromDirection> },
@@ -204,6 +215,10 @@ pub enum Tile {
     TELEPORTENTRY { teleport_id: TeleportId },
     /// The exit of a teleport, there may be only one on each map
     TELEPORTEXIT { teleport_id: TeleportId },
+    /// A vending machine facing to the left which the player can interact with from the left or top
+    VENDINGMACHINEL,
+    /// A vending machine facing to the right which the player can interact with from the right or top
+    VENDINGMACHINER,
 }
 
 impl Tile {
@@ -300,6 +315,14 @@ impl Tile {
             Tile::TELEPORTEXIT { .. } => TileKind::AIR,
             Tile::COBBLEROOFSLOPEL => TileKind::AIR,
             Tile::COBBLEROOFSLOPER => TileKind::AIR,
+            Tile::VENDINGMACHINEL => TileKind::SOLIDINTERACTABLE {
+                from: vec![FROMWEST, FROMNORTH],
+                kind: InteractionKind::VendingMachine,
+            },
+            Tile::VENDINGMACHINER => TileKind::SOLIDINTERACTABLE {
+                from: vec![FROMEAST, FROMNORTH],
+                kind: InteractionKind::VendingMachine,
+            },
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -356,12 +379,15 @@ impl Tile {
             },
             Tile::COBBLEROOFSLOPEL => Some(124),
             Tile::COBBLEROOFSLOPER => Some(125),
+            Tile::VENDINGMACHINEL => Some(74),
+            Tile::VENDINGMACHINER => Some(75),
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
         match self.kind() {
             TileKind::AIR => false,
             TileKind::SOLID => true,
+            TileKind::SOLIDINTERACTABLE { .. } => true,
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
@@ -377,6 +403,7 @@ impl Tile {
         match self.kind() {
             TileKind::AIR => false,
             TileKind::SOLID => false,
+            TileKind::SOLIDINTERACTABLE { .. } => false,
             TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
@@ -440,6 +467,8 @@ impl Tile {
             Tile::TELEPORTEXIT { .. } => "teleport_exit",
             Tile::COBBLEROOFSLOPEL => "cobblestone_roof_l",
             Tile::COBBLEROOFSLOPER => "cobblestone_roof_r",
+            Tile::VENDINGMACHINEL => "vending_machine_l",
+            Tile::VENDINGMACHINER => "vending_machine_r",
         }
     }
 }
@@ -499,6 +528,8 @@ impl fmt::Display for Tile {
                 Tile::TELEPORTEXIT { .. } => "Teleport Exit",
                 Tile::COBBLEROOFSLOPEL => "Cobblestone Roof L",
                 Tile::COBBLEROOFSLOPER => "Cobblestone Roof R",
+                Tile::VENDINGMACHINEL => "L Vending Machine",
+                Tile::VENDINGMACHINER => "R Vending Machine",
             }
         )
     }

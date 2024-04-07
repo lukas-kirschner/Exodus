@@ -445,6 +445,8 @@ impl Tile {
             Tile::CAMPAIGNTRAILLOCKEDMAPENTRYPOINT { .. } => 0xf3,
             Tile::COBBLEROOFSLOPEL => 0x80,
             Tile::COBBLEROOFSLOPER => 0x81,
+            Tile::VENDINGMACHINEL => 0x12,
+            Tile::VENDINGMACHINER => 0x13,
         }
     }
 
@@ -460,6 +462,8 @@ impl Tile {
             0x0f => Some(Tile::PILLAR),
             0x10 => Some(Tile::PLAYERSPAWN),
             0x11 => Some(Tile::EXIT),
+            0x12 => Some(Tile::VENDINGMACHINEL),
+            0x13 => Some(Tile::VENDINGMACHINER),
             0x20 => Some(Tile::DOOR),
             0x21 => Some(Tile::OPENDOOR),
             0x30 => Some(Tile::COIN),

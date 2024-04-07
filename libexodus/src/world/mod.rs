@@ -167,6 +167,7 @@ impl GameWorld {
                 match &tile.kind() {
                     TileKind::AIR => {},
                     TileKind::SOLID => {},
+                    TileKind::SOLIDINTERACTABLE { .. } => {},
                     TileKind::DEADLY { from: _ } => {},
                     TileKind::SPECIAL { interaction: _ } => {},
                     TileKind::PLAYERSPAWN => {

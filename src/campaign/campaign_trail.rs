@@ -300,6 +300,7 @@ fn campaign_screen_ui(
                     }
                 },
                 InteractionKind::TeleportTo { .. } => (false, None, "".to_string()),
+                InteractionKind::VendingMachine { .. } => (false, None, "".to_string()),
             },
             _ => (false, None, "".to_string()),
         };
@@ -421,6 +422,7 @@ pub fn play_map_keyboard_controls(
                     ));
                 },
                 InteractionKind::TeleportTo { .. } => {},
+                InteractionKind::VendingMachine { .. } => {},
             }
         };
     }
