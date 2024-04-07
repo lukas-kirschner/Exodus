@@ -358,7 +358,24 @@ fn map_selection_screen_dialog(
                 state.set(AppState::MapEditor);
             }
         } else if let Some(delete_map_dialog) = dialog.ui_dialog.as_delete_map_dialog() {
-            //TODO delete map (move to system trash)
+            // Delete the map by moving it to system trash
+            if let Some(path) = delete_map_dialog.map().world.get_filename() {
+                trash::delete(path)
+                    .map(|_| {
+                        info!(
+                            "Successfully moved map {} to system trash bin.",
+                            path.display()
+                        )
+                    })
+                    .unwrap_or_else(|e| error!("Could not delete map! {}", e));
+            } else {
+                error!(
+                    "Tried to delete a map that did not have a path! \
+                Hint: In Debug Mode, some of the maps do not have a path and \
+                are re-generated on map selection screen launch. Thus, \
+                debug maps cannot be deleted!"
+                );
+            }
             state.set(AppState::MapSelectionScreen);
         }
     } else if dialog.ui_dialog.is_cancelled() {

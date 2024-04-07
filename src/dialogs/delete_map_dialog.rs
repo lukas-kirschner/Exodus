@@ -32,6 +32,9 @@ impl DeleteMapDialog {
             state: DeleteMapDialogState::Choosing,
         }
     }
+    pub fn map(&self) -> &MapWrapper {
+        &self.map
+    }
 }
 
 impl UIDialog for DeleteMapDialog {
@@ -53,7 +56,7 @@ impl UIDialog for DeleteMapDialog {
             );
             ui.separator();
             crate::ui::mapselectionscreen::labels_name_author(ui, &self.map.world);
-            egui_highscore_label(ui, &self.map.previous_best, &egui_textures);
+            egui_highscore_label(ui, &self.map.previous_best, egui_textures);
             ui.separator();
             ui.label(
                 RichText::new(t!("map_selection_screen.dialog.delete_map_dialog_hint"))
