@@ -1,4 +1,5 @@
 use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
+use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
@@ -8,6 +9,7 @@ use bevy_egui::egui::Ui;
 use libexodus::directories::GameDirectories;
 
 pub mod create_new_map_dialog;
+pub mod delete_map_dialog;
 pub mod edit_message_dialog;
 pub mod save_file_dialog;
 pub mod unsaved_changes_dialog;
@@ -27,6 +29,7 @@ pub trait UIDialog {
     fn as_unsaved_changes_dialog(&mut self) -> Option<&mut UnsavedChangesDialog>;
     fn as_edit_message_dialog(&mut self) -> Option<&mut EditMessageDialog>;
     fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog>;
+    fn as_delete_map_dialog(&mut self) -> Option<&mut DeleteMapDialog>;
 }
 #[derive(Resource)]
 pub struct DialogResource {

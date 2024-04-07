@@ -1,4 +1,5 @@
 use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
+use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::UIDialog;
@@ -7,7 +8,7 @@ use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
 use bevy::prelude::Commands;
 use bevy_egui::egui;
-use bevy_egui::egui::Ui;
+use bevy_egui::egui::{RichText, Ui};
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
 use libexodus::tilesets::Tileset;
 use std::path::{Path, PathBuf};
@@ -209,7 +210,10 @@ impl UIDialog for SaveFileDialog {
                             } else {
                                 t!("map_editor.dialog.save_dialog_overwrite").to_string()
                             };
-                            ui.label(etext.as_str());
+                            ui.label(
+                                RichText::new(etext.as_str())
+                                    .text_style(egui::TextStyle::Name("DialogText".into())),
+                            );
                             if self.state == SaveFileDialogState::Error {
                                 let res = ui.button(t!("common_buttons.ok"));
                                 if res.clicked() {
@@ -254,6 +258,10 @@ impl UIDialog for SaveFileDialog {
     }
 
     fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
+        None
+    }
+
+    fn as_delete_map_dialog(&mut self) -> Option<&mut DeleteMapDialog> {
         None
     }
 }

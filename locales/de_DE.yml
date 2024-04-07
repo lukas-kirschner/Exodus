@@ -61,6 +61,9 @@ map_selection_screen:
     create_new_map_dialog_seed: Seed
     create_new_map_dialog_seed_tooltip: Seed, der für die Kartenerstellung genutzt wird. Gleiche Seeds erzeugen die gleiche Karte, wenn alle Parameter übereinstimmen.
     create_new_map_dialog_no_seed_tooltip: Diese Art der Karte nutzt keine Zufallsvariablen für die Kartenerstellung.
+    delete_map_dialog_title: Karte löschen?
+    delete_map_dialog_question: Soll diese Karte wirklich gelöscht werden? Dies kann nicht rückgängig gemacht werden!
+    delete_map_dialog_hint: Alle Highscores werden beibehalten, falls diese Karte später erneut hinzugefügt wird.
 credits_screen:
   title: Über
 game_ui:
