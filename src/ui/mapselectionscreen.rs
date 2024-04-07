@@ -14,7 +14,7 @@ use crate::ui::uicontrols::{add_navbar_with_extra_buttons, menu_esc_control, Win
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Color32, Layout, Ui, Visuals};
+use bevy_egui::egui::{Align, Layout, Ui};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
@@ -218,7 +218,6 @@ fn map_selection_screen_ui(
         egui_ctx.ctx_mut().style().spacing.item_spacing.y,
     );
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
-        let bg_color = ui.style().visuals.panel_fill;
         egui::ScrollArea::new([false, true])
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
@@ -231,10 +230,12 @@ fn map_selection_screen_ui(
                             for (i, map) in maps.maps.iter().enumerate() {
                                 ui.scope(|ui| {
                                     ui.set_width(ui.available_width());
+                                    ui.set_height(BUTTON_HEIGHT * 1.8);
                                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                                         ui.add_space(ui.spacing().item_spacing.x);
                                         buttons(spacing, ui, &egui_textures, &mut commands, i);
                                         ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
+                                            ui.add_space(UIMARGIN);
                                             labels_name_author(ui, &map.world);
                                             ui.add_space(UIMARGIN);
                                             egui_highscore_label(
@@ -253,17 +254,16 @@ fn map_selection_screen_ui(
             });
     });
 }
-
 fn buttons(
-    spacing: (f32, f32),
+    _spacing: (f32, f32),
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
     commands: &mut Commands,
     map_index: usize,
 ) {
     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-        ui.set_width(3. * (BUTTON_HEIGHT + spacing.0));
-        ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
+        ui.set_height(ui.available_height());
+        // ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
         let play_btn = image_button(
             ui,
             egui_textures,
