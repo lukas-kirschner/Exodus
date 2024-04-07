@@ -229,25 +229,21 @@ fn map_selection_screen_ui(
                         .show(ui, |ui| {
                             for (i, map) in maps.maps.iter().enumerate() {
                                 ui.scope(|ui| {
-                                    ui.set_height(BUTTON_HEIGHT * 1.);
                                     ui.set_width(ui.available_width());
+                                    ui.set_height(BUTTON_HEIGHT * 1.8);
                                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                                         ui.add_space(ui.spacing().item_spacing.x);
                                         buttons(spacing, ui, &egui_textures, &mut commands, i);
-                                        ui.scope(|ui| {
-                                            ui.set_max_size(ui.available_size());
-                                            ui.with_layout(
-                                                egui::Layout::top_down(Align::LEFT),
-                                                |ui| {
-                                                    labels_name_author(ui, &map.world);
-                                                    ui.add_space(UIMARGIN);
-                                                    egui_highscore_label(
-                                                        ui,
-                                                        &map.previous_best,
-                                                        &egui_textures,
-                                                    );
-                                                },
+                                        ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
+                                            ui.add_space(UIMARGIN);
+                                            labels_name_author(ui, &map.world);
+                                            ui.add_space(UIMARGIN);
+                                            egui_highscore_label(
+                                                ui,
+                                                &map.previous_best,
+                                                &egui_textures,
                                             );
+                                            ui.add_space(UIMARGIN);
                                         });
                                     });
                                 });
@@ -258,17 +254,16 @@ fn map_selection_screen_ui(
             });
     });
 }
-
 fn buttons(
-    spacing: (f32, f32),
+    _spacing: (f32, f32),
     ui: &mut Ui,
     egui_textures: &EguiButtonTextures,
     commands: &mut Commands,
     map_index: usize,
 ) {
     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-        ui.set_width(3. * (BUTTON_HEIGHT + spacing.0));
-        ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
+        ui.set_height(ui.available_height());
+        // ui.set_height(BUTTON_HEIGHT + 2. * spacing.1);
         let play_btn = image_button(
             ui,
             egui_textures,

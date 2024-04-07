@@ -68,10 +68,7 @@ pub fn add_navbar_with_extra_buttons<R>(
                     - (BUTTON_HEIGHT * num_extra_buttons as f32)
                     - (ctx.style().spacing.item_spacing.x * num_extra_buttons as f32),
             );
-            // ui.scope(|ui| {
             extra_buttons(ui, state);
-            // });
-            // ui.scope(|ui| {
             let back_button = image_button(
                 ui,
                 egui_textures,
@@ -81,7 +78,6 @@ pub fn add_navbar_with_extra_buttons<R>(
             if back_button.clicked() {
                 state.set(AppState::MainMenu);
             }
-            // });
         });
     })
 }
