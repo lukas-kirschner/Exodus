@@ -69,6 +69,9 @@ game_ui:
   coins: Coins
   moves: Moves
   keys: Keys
+  vending_machine:
+    dialog_title: Vending Machine
+    button_close: Exit
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen

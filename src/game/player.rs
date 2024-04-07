@@ -2,6 +2,7 @@ use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpr
 use crate::game::constants::*;
 use crate::game::scoreboard::{GameOverEvent, GameOverState, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::vending_machine::VendingMachineTriggered;
 use crate::game::world::DoorWrapper;
 use crate::{AppLabels, AppState, GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
@@ -89,6 +90,7 @@ fn handle_collision_interaction(
     scoreboard: &mut Scoreboard,
     atlas_handle: &TilesetManager,
     movement: &Movement,
+    vending_machine_trigger: &mut EventWriter<VendingMachineTriggered>,
 ) -> bool {
     let (target_x_px, target_y_px) = (
         target_x_coord * config.texture_size() as i32,
@@ -113,7 +115,7 @@ fn handle_collision_interaction(
             debug!("A vending machine might be triggered, if the movement was manual");
             if (movement.is_manual) {
                 // Trigger Vending Machine
-                debug!("A vending machine has been triggered!");
+                vending_machine_trigger.send(VendingMachineTriggered);
             }
             false
         },
@@ -199,6 +201,7 @@ pub fn player_movement(
     config: Res<GameConfig>,
     time: Res<Time>,
     atlas_handle: Res<TilesetManager>,
+    mut vending_machine_trigger: EventWriter<VendingMachineTriggered>,
 ) {
     for (mut _player, sprite, player_entity, mut transform, mut atlas) in
         player_positions.iter_mut()
@@ -237,6 +240,7 @@ pub fn player_movement(
                         &mut scoreboard,
                         atlas_handle.as_ref(),
                         movement,
+                        &mut vending_machine_trigger,
                     ) {
                         debug!(
                             "Dropped movement {:?} to {},{} because a collision was detected.",
