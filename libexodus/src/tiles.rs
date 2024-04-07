@@ -387,7 +387,7 @@ impl Tile {
         match self.kind() {
             TileKind::AIR => false,
             TileKind::SOLID => true,
-            TileKind::SOLIDINTERACTABLE { .. } => true,
+            TileKind::SOLIDINTERACTABLE { from, .. } => true,
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,

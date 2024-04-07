@@ -102,14 +102,18 @@ fn handle_collision_interaction(
         TileKind::AIR => false,
         TileKind::SOLID => false,
         TileKind::SOLIDINTERACTABLE { from, kind } => {
-            let collision = tile
-                .unwrap()
-                .can_collide_from(&FromDirection::from(movement.direction()));
-            if collision {
+            let from_direction = FromDirection::from(movement.direction());
+            if !from.iter().any(|fromdir| *fromdir == from_direction) {
+                debug!(
+                    "A Collision with a Vending Machine from {:?} was detected",
+                    FromDirection::from(movement.direction())
+                );
                 return false;
             }
+            debug!("A vending machine might be triggered, if the movement was manual");
             if (movement.is_manual) {
-                // TODO Trigger Vending Machine
+                // Trigger Vending Machine
+                debug!("A vending machine has been triggered!");
             }
             false
         },
