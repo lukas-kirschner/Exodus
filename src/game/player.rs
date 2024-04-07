@@ -73,9 +73,13 @@ fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlas, right: b
 #[derive(Resource)]
 pub struct ReturnTo(pub AppState);
 
-/// Open the door at the new player position and return true if the door has been opened.
-/// Fail, if the player does not have enough keys
-fn door_opened(
+/// Handle events that occur when the player would normally collide with the target tile.
+/// This happens e.g. with Doors and Vending Machines.
+/// For vending machines, the vending machine will be triggered if the player approached it from the right direction.
+/// For doors, open the door at the new player position and return true if the door has been opened.
+/// Fail, if the player does not have enough keys.
+/// If true is returned, the player does not collide with the tile, e.g., because the door has been opened.
+fn handle_collision_interaction(
     doors: &mut Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
     commands: &mut Commands,
     target_x_coord: i32,
@@ -84,65 +88,93 @@ fn door_opened(
     world: &mut GameWorld,
     scoreboard: &mut Scoreboard,
     atlas_handle: &TilesetManager,
+    movement: &Movement,
 ) -> bool {
     let (target_x_px, target_y_px) = (
         target_x_coord * config.texture_size() as i32,
         target_y_coord * config.texture_size() as i32,
     );
-    if !world
-        .get(target_x_coord, target_y_coord)
-        .map(|t| t.kind() == TileKind::DOOR)
-        .unwrap_or(false)
-    {
+    let tile = world.get(target_x_coord, target_y_coord);
+    if tile.is_none() {
         return false;
     }
-    if scoreboard.keys > 0 {
-        for (entity, transform, mut atlas, texture) in doors.iter_mut() {
-            if transform.translation.x == target_x_px as f32
-                && transform.translation.y == target_y_px as f32
-            {
-                // Found the door. Despawn it and change its texture to an open door
-                commands.entity(entity).remove::<DoorWrapper>();
-                world.set(
-                    target_x_coord as usize,
-                    target_y_coord as usize,
-                    Tile::OPENDOOR,
-                );
-                atlas.index = Tile::OPENDOOR.atlas_index().unwrap();
-                scoreboard.keys -= 1;
-                // Spawn a "Key Used" Animation:
-                commands.spawn((
-                    SpriteSheetBundle {
-                        sprite: Sprite::default(),
-                        atlas: TextureAtlas {
-                            layout: atlas_handle.current_atlas_handle(),
-                            index: Tile::KEY.atlas_index().unwrap(),
-                        },
-                        texture: texture.clone(),
-                        transform: Transform {
-                            translation: (target_x_px as f32, target_y_px as f32, PLAYER_Z - 0.1)
-                                .into(),
-                            ..default()
-                        },
-                        ..Default::default()
-                    },
-                    AnimatedActionSprite::from_ascend_and_zoom(
-                        KEY_OPEN_ANIMATION_DECAY_SPEED,
-                        KEY_OPEN_ANIMATION_ASCEND_SPEED,
-                        KEY_OPEN_ANIMATION_ZOOM_SPEED,
-                        AnimatedSpriteAction::None,
-                    ), // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
-                    RenderLayers::layer(LAYER_ID),
-                ));
-                return true;
+    match tile.unwrap().kind() {
+        TileKind::AIR => false,
+        TileKind::SOLID => false,
+        TileKind::SOLIDINTERACTABLE { from, kind } => {
+            let collision = tile
+                .unwrap()
+                .can_collide_from(&FromDirection::from(movement.direction()));
+            if collision {
+                return false;
             }
-        }
-        panic!(
-            "There was no DoorWrapper spawned for the door at {},{}",
-            target_x_coord, target_y_coord
-        );
+            if (movement.is_manual) {
+                // TODO Trigger Vending Machine
+            }
+            false
+        },
+        TileKind::DEADLY { .. } => false,
+        TileKind::SPECIAL { .. } => false,
+        TileKind::PLAYERSPAWN => false,
+        TileKind::COIN => false,
+        TileKind::KEY => false,
+        TileKind::COLLECTIBLE => false,
+        TileKind::DOOR => {
+            if scoreboard.keys > 0 {
+                for (entity, transform, mut atlas, texture) in doors.iter_mut() {
+                    if transform.translation.x == target_x_px as f32
+                        && transform.translation.y == target_y_px as f32
+                    {
+                        // Found the door. Despawn it and change its texture to an open door
+                        commands.entity(entity).remove::<DoorWrapper>();
+                        world.set(
+                            target_x_coord as usize,
+                            target_y_coord as usize,
+                            Tile::OPENDOOR,
+                        );
+                        atlas.index = Tile::OPENDOOR.atlas_index().unwrap();
+                        scoreboard.keys -= 1;
+                        // Spawn a "Key Used" Animation:
+                        commands.spawn((
+                            SpriteSheetBundle {
+                                sprite: Sprite::default(),
+                                atlas: TextureAtlas {
+                                    layout: atlas_handle.current_atlas_handle(),
+                                    index: Tile::KEY.atlas_index().unwrap(),
+                                },
+                                texture: texture.clone(),
+                                transform: Transform {
+                                    translation: (
+                                        target_x_px as f32,
+                                        target_y_px as f32,
+                                        PLAYER_Z - 0.1,
+                                    )
+                                        .into(),
+                                    ..default()
+                                },
+                                ..Default::default()
+                            },
+                            AnimatedActionSprite::from_ascend_and_zoom(
+                                KEY_OPEN_ANIMATION_DECAY_SPEED,
+                                KEY_OPEN_ANIMATION_ASCEND_SPEED,
+                                KEY_OPEN_ANIMATION_ZOOM_SPEED,
+                                AnimatedSpriteAction::None,
+                            ), // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
+                            RenderLayers::layer(LAYER_ID),
+                        ));
+                        return true;
+                    }
+                }
+                panic!(
+                    "There was no DoorWrapper spawned for the door at {},{}",
+                    target_x_coord, target_y_coord
+                );
+            }
+            false
+        },
+        TileKind::LADDER => false,
+        TileKind::EXIT => false,
     }
-    false
 }
 
 pub fn player_movement(
@@ -191,7 +223,7 @@ pub fn player_movement(
             if let Some(block) = worldwrapper.world.get(target_x_coord, target_y_coord) {
                 let collision = block.can_collide_from(&FromDirection::from(movement.direction()));
                 if collision {
-                    if !door_opened(
+                    if !handle_collision_interaction(
                         &mut doors,
                         &mut commands,
                         target_x_coord,
@@ -200,6 +232,7 @@ pub fn player_movement(
                         &mut worldwrapper.world,
                         &mut scoreboard,
                         atlas_handle.as_ref(),
+                        movement,
                     ) {
                         debug!(
                             "Dropped movement {:?} to {},{} because a collision was detected.",
@@ -309,7 +342,7 @@ pub fn player_movement(
                             match interaction {
                                 InteractionKind::LaunchMap { .. } => { // Only applicable in Campaign Trail
                                 },
-                                InteractionKind::VendingMachine { .. } => { // Handled elsewhere in Collision Detection
+                                InteractionKind::VendingMachine { .. } => { // Handled already in Collision Detection
                                 },
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location
