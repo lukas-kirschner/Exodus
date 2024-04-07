@@ -1,4 +1,4 @@
-use bevy_egui::egui::{Context, FontData, FontFamily, FontId, Visuals};
+use bevy_egui::egui::{Color32, Context, FontData, FontFamily, FontId, Rounding, Visuals};
 use bevy_egui::{egui, EguiContexts};
 use font_kit::family_name::FamilyName;
 use font_kit::properties::{Properties, Style, Weight};
@@ -173,7 +173,15 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
     ]
     .into();
     ctx.ctx_mut().set_style(style);
+}
+pub fn egui_visuals(mut ctx: EguiContexts) {
     let mut visuals = Visuals::dark();
     visuals.striped = true;
+    visuals.window_rounding = Rounding::same(0.);
+    visuals.faint_bg_color = Color32::from_rgb(
+        visuals.panel_fill.r() + 15,
+        visuals.panel_fill.g() + 15,
+        visuals.panel_fill.b() + 15,
+    );
     ctx.ctx_mut().set_visuals(visuals);
 }

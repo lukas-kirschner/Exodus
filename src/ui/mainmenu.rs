@@ -7,14 +7,6 @@ use bevy::prelude::*;
 use bevy_egui::egui::{Align, Frame, Layout, TextStyle};
 use bevy_egui::{egui, EguiContexts};
 
-/// Set up the UI for the Main Menu
-fn configure_visuals(mut egui_ctx: EguiContexts) {
-    egui_ctx.ctx_mut().set_visuals(egui::Visuals {
-        window_rounding: 0.0.into(),
-        ..Default::default()
-    });
-}
-
 /// Draw the Main Menu Buttons
 fn mainmenu_buttons(
     ui: &mut egui::Ui,
@@ -123,8 +115,7 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::MainMenu), configure_visuals)
-            .add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
+        app.add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
             .add_systems(
                 OnEnter(AppState::MainMenu),
                 (load_texture_pack_from_config, atlas_to_egui_textures).chain(),

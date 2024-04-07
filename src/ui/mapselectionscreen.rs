@@ -14,12 +14,11 @@ use crate::ui::uicontrols::{add_navbar_with_extra_buttons, menu_esc_control, Win
 use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{emath, Align, Color32, Id, LayerId, Layout, Order, Pos2, Stroke, Ui};
+use bevy_egui::egui::{Align, Color32, Layout, Ui, Visuals};
 use bevy_egui::{egui, EguiContexts};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{presets, GameWorld};
-use std::ops::Sub;
 
 #[derive(Resource)]
 struct Maps {
@@ -219,48 +218,23 @@ fn map_selection_screen_ui(
         egui_ctx.ctx_mut().style().spacing.item_spacing.y,
     );
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
+        let bg_color = ui.style().visuals.panel_fill;
         egui::ScrollArea::new([false, true])
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
             .show(ui, |ui| {
-                ui.style_mut().visuals.faint_bg_color = Color32::from_gray(100);
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     egui::Grid::new("maps_grid")
                         .striped(true)
                         .num_columns(1)
                         .show(ui, |ui| {
                             for (i, map) in maps.maps.iter().enumerate() {
-                                ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                                    let height = BUTTON_HEIGHT * 1.8;
-                                    let width = ui.available_width();
-                                    // ui.with_layer_id(LayerId::background(), |ui| {
-                                    let next_pos: Pos2 = ui
-                                        .next_widget_position()
-                                        .sub(Pos2::from((width, 0.0)))
-                                        .to_pos2();
-                                    let rect = egui::Rect::from_two_pos(
-                                        next_pos,
-                                        (next_pos.x + width, next_pos.y + height).into(),
-                                    )
-                                    .expand2(ui.style().spacing.item_spacing);
-                                    ui.painter().rect_filled(
-                                        rect,
-                                        0.,
-                                        if (i % 2) == 0 {
-                                            ui.style().visuals.widgets.noninteractive.bg_fill
-                                        } else {
-                                            ui.style().visuals.faint_bg_color
-                                        },
-                                    );
-                                    // });
-                                    ui.set_height(height);
-                                    ui.set_width(width);
-                                    // ui.style_mut().visuals.widgets.noninteractive.bg_fill =;
-                                    ui.add_space(ui.spacing().item_spacing.x);
-                                    buttons(spacing, ui, &egui_textures, &mut commands, i);
-                                    ui.scope(|ui| {
-                                        ui.set_max_size(ui.available_size());
-                                        ui.with_layout(egui::Layout::top_down(Align::LEFT), |ui| {
+                                ui.scope(|ui| {
+                                    ui.set_width(ui.available_width());
+                                    ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
+                                        ui.add_space(ui.spacing().item_spacing.x);
+                                        buttons(spacing, ui, &egui_textures, &mut commands, i);
+                                        ui.with_layout(Layout::top_down(Align::LEFT), |ui| {
                                             labels_name_author(ui, &map.world);
                                             ui.add_space(UIMARGIN);
                                             egui_highscore_label(
@@ -268,6 +242,7 @@ fn map_selection_screen_ui(
                                                 &map.previous_best,
                                                 &egui_textures,
                                             );
+                                            ui.add_space(UIMARGIN);
                                         });
                                     });
                                 });

@@ -1,4 +1,4 @@
-use crate::textures::fonts::egui_fonts;
+use crate::textures::fonts::{egui_fonts, egui_visuals};
 use crate::textures::tileset_manager::{file_name_for_tileset, ImageHandles, TilesetManager};
 use crate::{AllAssetHandles, AppState};
 use bevy::asset::{LoadedFolder, RecursiveDependencyLoadState};
@@ -18,6 +18,7 @@ impl Plugin for Textures {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::Loading), load_textures)
             .add_systems(OnEnter(AppState::Loading), egui_fonts)
+            .add_systems(OnEnter(AppState::Loading), egui_visuals)
             .add_systems(
                 Update,
                 check_and_init_textures.run_if(in_state(AppState::Loading)),
