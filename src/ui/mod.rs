@@ -15,7 +15,7 @@ mod configscreen;
 mod creditsscreen;
 pub mod game_over_screen;
 pub mod mainmenu;
-mod mapselectionscreen;
+pub(crate) mod mapselectionscreen;
 pub mod uicontrols;
 
 /// The height of the bottom info panel in the campaign screen

@@ -1,3 +1,4 @@
+use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
@@ -321,6 +322,10 @@ impl UIDialog for CreateNewMapDialog {
 
     fn as_create_new_map_dialog(&mut self) -> Option<&mut CreateNewMapDialog> {
         Some(self)
+    }
+
+    fn as_delete_map_dialog(&mut self) -> Option<&mut DeleteMapDialog> {
+        None
     }
 }
 

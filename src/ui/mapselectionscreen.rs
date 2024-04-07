@@ -1,6 +1,7 @@
 use crate::dialogs::create_new_map_dialog::{
     bevy_job_handler, CreateMapBackgroundWorkerThread, CreateNewMapDialog,
 };
+use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::DialogResource;
 use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::player::ReturnTo;
@@ -166,9 +167,10 @@ fn map_selection_screen_execute_event_queue(
             commands.insert_resource(MapSelectionScreenAction::None)
         },
         MapSelectionScreenAction::Delete { map_index } => {
-            //TODO Delete Map
-            //TODO there is no need for locking here? Avoid deleting more maps than necessary
-            maps.maps.remove(map_index);
+            commands.insert_resource(DialogResource {
+                ui_dialog: Box::new(DeleteMapDialog::new(maps.maps.remove(map_index))),
+            });
+            state.set(AppState::MapSelectionScreenDialog);
             commands.insert_resource(MapSelectionScreenAction::None)
         },
         MapSelectionScreenAction::Edit { map_index } => {
@@ -230,10 +232,9 @@ fn map_selection_screen_ui(
                                     ui.set_height(BUTTON_HEIGHT * 1.);
                                     ui.set_width(ui.available_width());
                                     ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
+                                        ui.add_space(ui.spacing().item_spacing.x);
                                         buttons(spacing, ui, &egui_textures, &mut commands, i);
                                         ui.scope(|ui| {
-                                            ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
-                                            ui.style_mut().spacing.indent = 0.0;
                                             ui.set_max_size(ui.available_size());
                                             ui.with_layout(
                                                 egui::Layout::top_down(Align::LEFT),
@@ -298,7 +299,7 @@ fn buttons(
     });
 }
 
-fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
+pub fn labels_name_author(ui: &mut Ui, world: &GameWorld) {
     ui.with_layout(egui::Layout::left_to_right(Align::TOP), |ui| {
         ui.label(
             egui::RichText::new(world.get_name())
@@ -356,6 +357,9 @@ fn map_selection_screen_dialog(
                 commands.insert_resource(ReturnTo(AppState::MapSelectionScreen));
                 state.set(AppState::MapEditor);
             }
+        } else if let Some(delete_map_dialog) = dialog.ui_dialog.as_delete_map_dialog() {
+            //TODO delete map (move to system trash)
+            state.set(AppState::MapSelectionScreen);
         }
     } else if dialog.ui_dialog.is_cancelled() {
         state.set(AppState::MapSelectionScreen);
