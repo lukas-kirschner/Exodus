@@ -183,11 +183,9 @@ impl GameWorld {
                         // Set the new player spawn
                         self.playerspawn = (x, y);
                     },
-                    TileKind::COIN => {},
                     TileKind::LADDER => {},
-                    TileKind::KEY => {},
                     TileKind::DOOR => {},
-                    TileKind::COLLECTIBLE => {},
+                    TileKind::COLLECTIBLE { .. } => {},
                     TileKind::EXIT => {},
                 }
             },

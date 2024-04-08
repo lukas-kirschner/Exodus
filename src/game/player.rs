@@ -122,9 +122,7 @@ fn handle_collision_interaction(
         TileKind::DEADLY { .. } => false,
         TileKind::SPECIAL { .. } => false,
         TileKind::PLAYERSPAWN => false,
-        TileKind::COIN => false,
-        TileKind::KEY => false,
-        TileKind::COLLECTIBLE => false,
+        TileKind::COLLECTIBLE { .. } => false,
         TileKind::DOOR => {
             if scoreboard.keys > 0 {
                 for (entity, transform, mut atlas, texture) in doors.iter_mut() {
@@ -383,16 +381,14 @@ pub fn player_movement(
                             }
                         },
                         TileKind::PLAYERSPAWN => {},
-                        TileKind::COIN => {},
                         TileKind::LADDER => {
                             // On a ladder, the movement queue is cleared after every step!
                             // This way, the player is unable to jump on a double ladder and ascends instead of jumping.
                             // For players with empty movement queues, this case is handled below as well.
                             player.clear_movement_queue();
                         },
-                        TileKind::KEY => {},
                         TileKind::DOOR => {},
-                        TileKind::COLLECTIBLE => {},
+                        TileKind::COLLECTIBLE { .. } => {},
                         TileKind::EXIT => {
                             commands.entity(player_entity).despawn_recursive();
                             atlas.index = EXITING_PLAYER_SPRITE;

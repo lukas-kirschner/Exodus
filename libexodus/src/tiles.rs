@@ -51,14 +51,8 @@ pub enum TileKind {
     ///
     PLAYERSPAWN,
     ///
-    /// A collectible coin
-    COIN,
-    ///
-    /// A collectible key
-    KEY,
-    ///
-    /// A collectible that does not change any counter when collected
-    COLLECTIBLE,
+    /// A collectible the player may collect by stepping onto it
+    COLLECTIBLE { kind: CollectibleKind },
     ///
     /// A door that can be opened (removed) using a key
     DOOR,
@@ -68,6 +62,13 @@ pub enum TileKind {
     ///
     /// The map exit
     EXIT,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum CollectibleKind {
+    Decorative,
+    Coins { amount: usize },
+    Keys { amount: usize },
+    StarCrystals { amount: usize },
 }
 
 pub type AtlasIndex = usize;
@@ -236,7 +237,9 @@ impl Tile {
             Tile::SLOPE => TileKind::SOLID,
             Tile::PILLAR => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
-            Tile::COIN => TileKind::COIN,
+            Tile::COIN => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Coins { amount: 1 },
+            },
             Tile::LADDER => TileKind::LADDER,
             Tile::LADDERNATURE => TileKind::LADDER,
             Tile::LADDERSLOPE => TileKind::LADDER,
@@ -295,13 +298,25 @@ impl Tile {
                 from: vec![FROMNORTH, FROMEAST, FROMWEST],
             },
             Tile::DOOR => TileKind::DOOR,
-            Tile::KEY => TileKind::KEY,
+            Tile::KEY => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Keys { amount: 1 },
+            },
             Tile::OPENDOOR => TileKind::AIR,
-            Tile::ARROWRIGHT => TileKind::COLLECTIBLE,
-            Tile::ARROWLEFT => TileKind::COLLECTIBLE,
-            Tile::ARROWUP => TileKind::COLLECTIBLE,
-            Tile::ARROWDOWN => TileKind::COLLECTIBLE,
-            Tile::MESSAGE { .. } => TileKind::COLLECTIBLE,
+            Tile::ARROWRIGHT => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWLEFT => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWUP => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWDOWN => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::MESSAGE { .. } => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
             Tile::EXIT => TileKind::EXIT,
             Tile::CAMPAIGNTRAILWALKWAY => TileKind::LADDER,
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction } => TileKind::SPECIAL {
@@ -325,7 +340,9 @@ impl Tile {
                 from: vec![FROMEAST, FROMNORTH],
                 kind: InteractionKind::VendingMachine,
             },
-            Tile::STARCRYSTAL => TileKind::COIN,
+            Tile::STARCRYSTAL => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::StarCrystals { amount: 1 },
+            },
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -395,11 +412,9 @@ impl Tile {
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
-            TileKind::COIN => false,
+            TileKind::COLLECTIBLE { .. } => false,
             TileKind::LADDER => false,
-            TileKind::KEY => false,
             TileKind::DOOR => true,
-            TileKind::COLLECTIBLE => false,
             TileKind::EXIT => false,
         }
     }
@@ -411,11 +426,9 @@ impl Tile {
             TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
-            TileKind::COIN => false,
             TileKind::LADDER => false,
-            TileKind::KEY => false,
             TileKind::DOOR => false,
-            TileKind::COLLECTIBLE => false,
+            TileKind::COLLECTIBLE { .. } => false,
             TileKind::EXIT => false,
         }
     }

@@ -9,7 +9,7 @@ use crate::util::dist_2d;
 use crate::{AppLabels, AppState};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
-use libexodus::tiles::{Tile, TileKind};
+use libexodus::tiles::{CollectibleKind, Tile, TileKind};
 
 #[derive(Component)]
 pub struct PickupItem;
@@ -36,7 +36,7 @@ trait CollectibleWrapperTrait {
 #[derive(Component)]
 pub struct CoinWrapper {
     /// The value of this coin, i.e. the score a player gets for collecting the coin
-    pub coin_value: i32,
+    pub coin_value: usize,
 }
 
 impl CollectibleWrapperTrait for CoinWrapper {
@@ -130,17 +130,16 @@ fn collectible_collected_event(
 
 /// Insert the appropriate wrapper when a tile is set up in the game world.
 /// Must be called from the game board setup routine
+/// TODO Implement support for collecting more than one crystal or key?
+/// TODO do we actually need to remove wrapper types?
 pub fn insert_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
     match tile.kind() {
-        TileKind::COIN => {
-            bundle.insert(CoinWrapper { coin_value: 1 });
+        TileKind::COLLECTIBLE { kind } => match kind {
+            CollectibleKind::Decorative => bundle.insert(CollectibleWrapper),
+            CollectibleKind::Coins { amount } => bundle.insert(CoinWrapper { coin_value: amount }),
+            CollectibleKind::Keys { .. } => bundle.insert(KeyWrapper),
+            CollectibleKind::StarCrystals { .. } => bundle.insert(KeyWrapper),
         },
-        TileKind::KEY => {
-            bundle.insert(KeyWrapper);
-        },
-        TileKind::COLLECTIBLE => {
-            bundle.insert(CollectibleWrapper);
-        },
-        _ => {},
-    }
+        _ => bundle,
+    };
 }
