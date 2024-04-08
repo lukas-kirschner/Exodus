@@ -288,11 +288,7 @@ fn campaign_screen_ui(
                     if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
                         (
                             true,
-                            Some(Scoreboard {
-                                coins: score.coins() as i32,
-                                moves: score.moves() as usize,
-                                keys: 0,
-                            }),
+                            Some(Scoreboard::from(*score)),
                             map.get_name().to_string(),
                         )
                     } else {
@@ -381,11 +377,7 @@ pub fn play_map_keyboard_controls(
                             .highscores
                             .get_best(map.hash(), &config.config.player_id)
                         {
-                            Some((_, score)) => Some(Scoreboard {
-                                coins: score.coins() as i32,
-                                moves: score.moves() as usize,
-                                keys: 0,
-                            }),
+                            Some((_, score)) => Some(Scoreboard::from(*score)),
                             _ => None,
                         },
                     });

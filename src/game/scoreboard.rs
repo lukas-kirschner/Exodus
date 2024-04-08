@@ -26,6 +26,7 @@ pub struct GameOverEvent {
 }
 #[derive(Resource, Clone, Debug)]
 pub struct Scoreboard {
+    pub crystals: usize,
     pub coins: i32,
     pub moves: usize,
     pub keys: usize,
@@ -34,6 +35,7 @@ pub struct Scoreboard {
 impl FromWorld for Scoreboard {
     fn from_world(_: &mut World) -> Self {
         Scoreboard {
+            crystals: 0,
             coins: 0,
             moves: 0,
             keys: 0,
@@ -42,14 +44,19 @@ impl FromWorld for Scoreboard {
 }
 
 impl Scoreboard {
-    pub fn new(coins: i32, moves: usize, keys: usize) -> Self {
-        Scoreboard { coins, moves, keys }
+    pub fn new(coins: i32, crystals: usize, moves: usize, keys: usize) -> Self {
+        Scoreboard {
+            coins,
+            crystals,
+            moves,
+            keys,
+        }
     }
 }
 
 impl From<&Highscore> for Scoreboard {
     fn from(value: &Highscore) -> Self {
-        Scoreboard::new(value.coins() as i32, value.moves() as usize, 0usize)
+        Scoreboard::new(value.coins() as i32, 0usize, value.moves() as usize, 0usize)
     }
 }
 /// Create a EGUI Scoreboard Label that shows a previous highscore
