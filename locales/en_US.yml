@@ -116,6 +116,7 @@ tile:
   opendoor: Open Door
   coin: Coin
   key: Key
+  star_crystal: Star Crystal
   ladder: Ladder
   ladderslope: Ladder with trapdoor
   laddernature: Ladder with nature trapdoor

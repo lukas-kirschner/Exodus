@@ -145,6 +145,8 @@ pub enum Tile {
     COIN,
     /// A collectible key
     KEY,
+    /// A collectible star crystal
+    STARCRYSTAL,
     /// A ladder
     LADDER,
     /// A decorated ladder with a Nature-Themed slope
@@ -323,6 +325,7 @@ impl Tile {
                 from: vec![FROMEAST, FROMNORTH],
                 kind: InteractionKind::VendingMachine,
             },
+            Tile::STARCRYSTAL => TileKind::COIN,
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -381,6 +384,7 @@ impl Tile {
             Tile::COBBLEROOFSLOPER => Some(125),
             Tile::VENDINGMACHINEL => Some(74),
             Tile::VENDINGMACHINER => Some(75),
+            Tile::STARCRYSTAL => Some(202),
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
@@ -469,6 +473,7 @@ impl Tile {
             Tile::COBBLEROOFSLOPER => "cobblestone_roof_r",
             Tile::VENDINGMACHINEL => "vending_machine_l",
             Tile::VENDINGMACHINER => "vending_machine_r",
+            Tile::STARCRYSTAL => "star_crystal",
         }
     }
 }
@@ -530,6 +535,7 @@ impl fmt::Display for Tile {
                 Tile::COBBLEROOFSLOPER => "Cobblestone Roof R",
                 Tile::VENDINGMACHINEL => "L Vending Machine",
                 Tile::VENDINGMACHINER => "R Vending Machine",
+                Tile::STARCRYSTAL => "Star Crystal",
             }
         )
     }
