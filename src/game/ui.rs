@@ -64,7 +64,7 @@ fn game_ui_system(
                             ));
                             ui.label(format!("{}", scoreboard.coins));
 
-                            if (scoreboard.keys > 0) {
+                            if scoreboard.keys > 0 {
                                 ui.separator();
                             }
                             // ui.label(t!("game_ui.keys"));
@@ -79,7 +79,7 @@ fn game_ui_system(
                                     (h, h),
                                 ));
                             }
-                            if (scoreboard.crystals > 0) {
+                            if scoreboard.crystals > 0 {
                                 ui.separator();
                             }
                             for _ in 0..scoreboard.crystals {

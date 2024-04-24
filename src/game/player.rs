@@ -106,16 +106,22 @@ fn handle_collision_interaction(
         TileKind::SOLIDINTERACTABLE { from, kind } => {
             let from_direction = FromDirection::from(movement.direction());
             if !from.iter().any(|fromdir| *fromdir == from_direction) {
-                debug!(
-                    "A Collision with a Vending Machine from {:?} was detected",
-                    FromDirection::from(movement.direction())
-                );
+                // debug!(
+                //     "A Collision with an interactable solid from {:?} was detected",
+                //     FromDirection::from(movement.direction())
+                // );
                 return false;
             }
-            debug!("A vending machine might be triggered, if the movement was manual");
-            if (movement.is_manual) {
-                // Trigger Vending Machine
-                vending_machine_trigger.send(VendingMachineTriggered);
+            // debug!("A vending machine might be triggered, if the movement was manual");
+            if movement.is_manual {
+                match kind {
+                    InteractionKind::LaunchMap { .. } => {},
+                    InteractionKind::TeleportTo { .. } => {},
+                    InteractionKind::VendingMachine => {
+                        // Trigger Vending Machine
+                        vending_machine_trigger.send(VendingMachineTriggered);
+                    },
+                }
             }
             false
         },

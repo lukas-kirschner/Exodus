@@ -132,9 +132,29 @@ impl AnimatedActionSprite {
         zoom_speed: f32,
         action_after_despawn: AnimatedSpriteAction,
     ) -> Self {
+        AnimatedActionSprite::from_ascend_angle_and_zoom(
+            delta_alpha,
+            ascend_speed,
+            0.0,
+            zoom_speed,
+            action_after_despawn,
+        )
+    }
+    pub fn from_ascend_angle_and_zoom(
+        delta_alpha: f32,
+        ascend_speed: f32,
+        angle: f32,
+        zoom_speed: f32,
+        action_after_despawn: AnimatedSpriteAction,
+    ) -> Self {
         AnimatedActionSprite::from_translation_scale(
             delta_alpha,
-            (0.0, ascend_speed, 0.0).into(),
+            (
+                -angle.to_radians().sin() * ascend_speed,
+                angle.to_radians().cos() * ascend_speed,
+                0.0,
+            )
+                .into(),
             (zoom_speed, zoom_speed, 0.0).into(),
             action_after_despawn,
         )

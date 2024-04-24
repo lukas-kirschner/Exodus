@@ -3,25 +3,18 @@ use crate::game::constants::{
     MENU_SQUARE_BUTTON_SIZE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
     PICKUP_ITEM_ZOOM_SPEED, PLAYER_Z,
 };
-use crate::game::player::{PlayerComponent, ReturnTo};
-use crate::game::scoreboard::{GameOverEvent, Scoreboard};
-use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::DoorWrapper;
-use crate::mapeditor::SelectedTile;
-use crate::textures::egui_textures::EguiButtonTextures;
+use crate::game::player::PlayerComponent;
+use crate::game::scoreboard::Scoreboard;
 use crate::textures::tileset_manager::TilesetManager;
-use crate::ui::uicontrols::WindowUiOverlayInfo;
-use crate::ui::{UiSizeChangedEvent, VENDINGMACHINEWIDTH};
-use crate::{AppState, GameConfig, GameDirectoriesWrapper, LAYER_ID};
+use crate::ui::VENDINGMACHINEWIDTH;
+use crate::{AppState, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
-use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::WidgetText;
 use bevy_egui::{egui, EguiContexts};
-use libexodus::tiles::{Tile, UITiles};
+use libexodus::tiles::Tile;
 use std::borrow::Cow;
 use std::cmp::max;
-use std::sync::Arc;
 
 const COST_COINS: usize = 1;
 const COST_KEY: usize = 3;
@@ -90,16 +83,14 @@ fn vending_machine_key_handler(
     let player_pos = player_positions.single();
     for (i, item) in items.items.iter().enumerate() {
         let keycode = index_to_keycode(i + 1);
-        if keyboard_input.just_pressed(keycode) {
-            if scoreboard.crystals >= item.cost() {
-                item.purchase(
-                    &mut commands,
-                    &mut scoreboard,
-                    &atlas_handle,
-                    (player_pos.translation.x, player_pos.translation.y),
-                );
-                click_close_button(&mut commands);
-            }
+        if keyboard_input.just_pressed(keycode) && scoreboard.crystals >= item.cost() {
+            item.purchase(
+                &mut commands,
+                &mut scoreboard,
+                &atlas_handle,
+                (player_pos.translation.x, player_pos.translation.y),
+            );
+            click_close_button(&mut commands);
         }
     }
     let exit_key = index_to_keycode(items.items.len() + 1);
@@ -111,9 +102,9 @@ fn vending_machine_triggered_event_listener(
     mut reader: EventReader<VendingMachineTriggered>,
     mut commands: Commands,
 ) {
-    if let Some(_) = reader.read().next() {
+    if reader.read().next().is_some() {
         reader.clear();
-        debug!("A vending machine has been triggered!");
+        // debug!("A vending machine has been triggered!");
         commands.insert_resource(HasVendingMachine);
     }
 }
@@ -125,10 +116,6 @@ fn vending_machine_triggered_event_clearer(mut events: ResMut<Events<VendingMach
 fn vending_machine_ui(
     mut commands: Commands,
     mut egui_ctx: EguiContexts,
-    mut selected_tile: ResMut<SelectedTile>,
-    egui_textures: Res<EguiButtonTextures>,
-    mut state: ResMut<NextState<AppState>>,
-    mut worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
     items: Res<VendingMachineItems>,
     player_positions: Query<&Transform, With<PlayerComponent>>,
@@ -249,17 +236,33 @@ impl VendingMachineItem for KeysItem {
         player_pos_px: (f32, f32),
     ) {
         scoreboard.crystals = max(0i32, scoreboard.crystals as i32 - COST_KEY as i32) as usize;
-        scoreboard.keys = scoreboard.keys + 1;
+        scoreboard.keys += 1;
+        // Animate the purchase:
+        let mut action = AnimatedActionSprite::from_ascend_and_zoom(
+            PICKUP_ITEM_DECAY_SPEED,
+            -PICKUP_ITEM_ASCEND_SPEED,
+            PICKUP_ITEM_ZOOM_SPEED,
+            AnimatedSpriteAction::None,
+        );
+        action.set_repeat(2, player_pos_px);
+        spawn_animation(
+            commands,
+            atlas_handle,
+            player_pos_px,
+            action,
+            &Tile::STARCRYSTAL,
+        );
         spawn_animation(
             commands,
             atlas_handle,
             player_pos_px,
             AnimatedActionSprite::from_ascend_and_zoom(
                 PICKUP_ITEM_DECAY_SPEED,
-                -PICKUP_ITEM_ASCEND_SPEED,
+                PICKUP_ITEM_ASCEND_SPEED,
                 PICKUP_ITEM_ZOOM_SPEED,
                 AnimatedSpriteAction::None,
             ),
+            &Tile::KEY,
         );
     }
 }
@@ -269,13 +272,14 @@ fn spawn_animation(
     atlas_handle: &TilesetManager,
     player_pos_px: (f32, f32),
     animation: AnimatedActionSprite,
+    tile: &Tile,
 ) {
     commands.spawn((
         SpriteSheetBundle {
             sprite: Sprite::default(),
             atlas: TextureAtlas {
                 layout: atlas_handle.current_atlas_handle(),
-                index: Tile::STARCRYSTAL.atlas_index().unwrap(),
+                index: tile.atlas_index().unwrap(),
             },
             texture: atlas_handle.current_texture_handle().clone(),
             transform: Transform {
@@ -314,12 +318,41 @@ impl VendingMachineItem for CoinsItem {
 
     fn purchase(
         &self,
-        _commands: &mut Commands,
+        commands: &mut Commands,
         scoreboard: &mut Scoreboard,
-        _atlas_handle: &TilesetManager,
-        _player_pos_px: (f32, f32),
+        atlas_handle: &TilesetManager,
+        player_pos_px: (f32, f32),
     ) {
         scoreboard.crystals = max(0i32, scoreboard.crystals as i32 - COST_COINS as i32) as usize;
-        scoreboard.coins = scoreboard.coins + 5; //TODO Animation
+        scoreboard.coins += 5;
+        // Animate Star Crystal
+        spawn_animation(
+            commands,
+            atlas_handle,
+            player_pos_px,
+            AnimatedActionSprite::from_ascend_and_zoom(
+                PICKUP_ITEM_DECAY_SPEED,
+                -PICKUP_ITEM_ASCEND_SPEED,
+                PICKUP_ITEM_ZOOM_SPEED,
+                AnimatedSpriteAction::None,
+            ),
+            &Tile::STARCRYSTAL,
+        );
+        // Animate five coins in different angles
+        for angle in [-60., -30., 0., 30., 60.] {
+            spawn_animation(
+                commands,
+                atlas_handle,
+                player_pos_px,
+                AnimatedActionSprite::from_ascend_angle_and_zoom(
+                    PICKUP_ITEM_DECAY_SPEED,
+                    PICKUP_ITEM_ASCEND_SPEED,
+                    angle,
+                    PICKUP_ITEM_ZOOM_SPEED,
+                    AnimatedSpriteAction::None,
+                ),
+                &Tile::COIN,
+            );
+        }
     }
 }
