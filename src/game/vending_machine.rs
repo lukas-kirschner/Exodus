@@ -1,17 +1,24 @@
-use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
+use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
+use crate::game::constants::{
+    MENU_SQUARE_BUTTON_SIZE, PICKUP_ITEM_ASCEND_SPEED, PICKUP_ITEM_DECAY_SPEED,
+    PICKUP_ITEM_ZOOM_SPEED, PLAYER_Z,
+};
 use crate::game::player::{PlayerComponent, ReturnTo};
 use crate::game::scoreboard::{GameOverEvent, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
+use crate::game::world::DoorWrapper;
 use crate::mapeditor::SelectedTile;
 use crate::textures::egui_textures::EguiButtonTextures;
+use crate::textures::tileset_manager::TilesetManager;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{UiSizeChangedEvent, VENDINGMACHINEWIDTH};
-use crate::{AppState, GameConfig, GameDirectoriesWrapper};
+use crate::{AppState, GameConfig, GameDirectoriesWrapper, LAYER_ID};
 use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::WidgetText;
 use bevy_egui::{egui, EguiContexts};
-use libexodus::tiles::UITiles;
+use libexodus::tiles::{Tile, UITiles};
 use std::borrow::Cow;
 use std::cmp::max;
 use std::sync::Arc;
@@ -77,12 +84,20 @@ fn vending_machine_key_handler(
     mut scoreboard: ResMut<Scoreboard>,
     items: Res<VendingMachineItems>,
     mut commands: Commands,
+    player_positions: Query<&Transform, With<PlayerComponent>>,
+    atlas_handle: Res<TilesetManager>,
 ) {
+    let player_pos = player_positions.single();
     for (i, item) in items.items.iter().enumerate() {
         let keycode = index_to_keycode(i + 1);
         if keyboard_input.just_pressed(keycode) {
             if scoreboard.crystals >= item.cost() {
-                item.purchase(&mut commands, &mut scoreboard);
+                item.purchase(
+                    &mut commands,
+                    &mut scoreboard,
+                    &atlas_handle,
+                    (player_pos.translation.x, player_pos.translation.y),
+                );
                 click_close_button(&mut commands);
             }
         }
@@ -116,6 +131,8 @@ fn vending_machine_ui(
     mut worldwrapper: ResMut<MapWrapper>,
     mut scoreboard: ResMut<Scoreboard>,
     items: Res<VendingMachineItems>,
+    player_positions: Query<&Transform, With<PlayerComponent>>,
+    atlas_handle: Res<TilesetManager>,
 ) {
     // TODO Idea: If the player is at the left of the map center, put the window on the right.
     // If the player is at the right, put the window left
@@ -136,7 +153,13 @@ fn vending_machine_ui(
                     scoreboard.crystals,
                 );
                 if response.clicked() {
-                    item.purchase(&mut commands, &mut scoreboard);
+                    let player_pos = player_positions.single();
+                    item.purchase(
+                        &mut commands,
+                        &mut scoreboard,
+                        &atlas_handle,
+                        (player_pos.translation.x, player_pos.translation.y),
+                    );
                     click_close_button(&mut commands);
                 }
             }
@@ -186,7 +209,13 @@ trait VendingMachineItem: Sync + Send {
     fn cost(&self) -> usize;
     fn button_text(&self, index: usize) -> Cow<str>;
     fn button_tooltip(&self, index: usize) -> Cow<str>;
-    fn purchase(&self, commands: &mut Commands, scoreboard: &mut Scoreboard);
+    fn purchase(
+        &self,
+        commands: &mut Commands,
+        scoreboard: &mut Scoreboard,
+        atlas_handle: &TilesetManager,
+        player_pos_px: (f32, f32),
+    );
 }
 
 struct KeysItem;
@@ -212,11 +241,54 @@ impl VendingMachineItem for KeysItem {
         )
     }
 
-    fn purchase(&self, _commands: &mut Commands, scoreboard: &mut Scoreboard) {
+    fn purchase(
+        &self,
+        commands: &mut Commands,
+        scoreboard: &mut Scoreboard,
+        atlas_handle: &TilesetManager,
+        player_pos_px: (f32, f32),
+    ) {
         scoreboard.crystals = max(0i32, scoreboard.crystals as i32 - COST_KEY as i32) as usize;
-        scoreboard.keys = scoreboard.keys + 1; //TODO Animation
+        scoreboard.keys = scoreboard.keys + 1;
+        spawn_animation(
+            commands,
+            atlas_handle,
+            player_pos_px,
+            AnimatedActionSprite::from_ascend_and_zoom(
+                PICKUP_ITEM_DECAY_SPEED,
+                -PICKUP_ITEM_ASCEND_SPEED,
+                PICKUP_ITEM_ZOOM_SPEED,
+                AnimatedSpriteAction::None,
+            ),
+        );
     }
 }
+
+fn spawn_animation(
+    commands: &mut Commands,
+    atlas_handle: &TilesetManager,
+    player_pos_px: (f32, f32),
+    animation: AnimatedActionSprite,
+) {
+    commands.spawn((
+        SpriteSheetBundle {
+            sprite: Sprite::default(),
+            atlas: TextureAtlas {
+                layout: atlas_handle.current_atlas_handle(),
+                index: Tile::STARCRYSTAL.atlas_index().unwrap(),
+            },
+            texture: atlas_handle.current_texture_handle().clone(),
+            transform: Transform {
+                translation: (player_pos_px.0, player_pos_px.1, PLAYER_Z - 0.1).into(),
+                ..default()
+            },
+            ..Default::default()
+        },
+        animation,
+        RenderLayers::layer(LAYER_ID),
+    ));
+}
+
 struct CoinsItem;
 
 impl VendingMachineItem for CoinsItem {
@@ -240,7 +312,13 @@ impl VendingMachineItem for CoinsItem {
         )
     }
 
-    fn purchase(&self, _commands: &mut Commands, scoreboard: &mut Scoreboard) {
+    fn purchase(
+        &self,
+        _commands: &mut Commands,
+        scoreboard: &mut Scoreboard,
+        _atlas_handle: &TilesetManager,
+        _player_pos_px: (f32, f32),
+    ) {
         scoreboard.crystals = max(0i32, scoreboard.crystals as i32 - COST_COINS as i32) as usize;
         scoreboard.coins = scoreboard.coins + 5; //TODO Animation
     }

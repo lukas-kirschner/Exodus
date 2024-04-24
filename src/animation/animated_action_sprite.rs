@@ -22,14 +22,29 @@ impl Plugin for AnimatedActionSpritePlugin {
 }
 
 /// A enum of possible changes that may be triggered after a AnimatedActionSprite has decayed
+#[derive(Clone)]
 pub enum AnimatedSpriteAction {
-    StateChange { state: AppState },
-    GameOverTrigger { state: GameOverState },
-    Teleport { location: (usize, usize) },
+    /// Change the application state to the given state
+    StateChange {
+        state: AppState,
+    },
+    /// Trigger a Game Over Event
+    GameOverTrigger {
+        state: GameOverState,
+    },
+    /// Teleport the player to the given location
+    Teleport {
+        location: (usize, usize),
+    },
+    /// Respawn this animation at the given location once it has finished
+    RespawnAnimation {
+        animation: Box<AnimatedActionSprite>,
+        location: (f32, f32),
+    },
     // TODO State for arbitrary scoreboard change: Pass a FnOnce which will be executed when animated sprite decays?
     None,
 }
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct AnimatedActionSprite {
     /// The amount of transparency that is added per second. Must be <0
     delta_alpha: f32,
@@ -58,6 +73,16 @@ impl AnimatedActionSprite {
     }
     pub fn action(&self) -> &AnimatedSpriteAction {
         &self.action_after_despawn
+    }
+    /// Set this action to repeat itself before executing the previously set action
+    pub fn set_repeat(&mut self, times: usize, location: (f32, f32)) {
+        for _ in 0..times {
+            let new_action = AnimatedSpriteAction::RespawnAnimation {
+                animation: Box::new(self.clone()),
+                location,
+            };
+            self.action_after_despawn = new_action;
+        }
     }
     pub fn new(
         delta_alpha: f32,
@@ -130,8 +155,27 @@ fn animated_action_sprite_handler(
         let new_a: f32 = sprite.color.a() + (animated_sprite.alpha() * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned.
-            sprite.color.set_a(0.0);
-            commands.entity(entity).despawn_recursive();
+            match animated_sprite.action() {
+                AnimatedSpriteAction::RespawnAnimation {
+                    animation,
+                    location,
+                } => {
+                    // Change the location, alpha and metadata of the animated sprite
+                    commands
+                        .entity(entity)
+                        .remove::<AnimatedActionSprite>()
+                        .insert((**animation).clone());
+                    transform.translation.x = location.0;
+                    transform.translation.y = location.1;
+                    sprite.color.set_a(1.0);
+                    return;
+                },
+                _ => {
+                    // Despawn the sprite completely
+                    sprite.color.set_a(0.0);
+                    commands.entity(entity).despawn_recursive();
+                },
+            }
             match animated_sprite.action() {
                 AnimatedSpriteAction::StateChange { state } => {
                     debug!(
@@ -141,6 +185,7 @@ fn animated_action_sprite_handler(
                     app_state.set(*state);
                 },
                 AnimatedSpriteAction::None => {},
+                AnimatedSpriteAction::RespawnAnimation { .. } => {},
                 AnimatedSpriteAction::GameOverTrigger { state } => {
                     debug!(
                         "Sending GameOverEvent {:?}, triggered by AnimatedActionSprite",
