@@ -71,6 +71,7 @@ game_ui:
   keys: Keys
   vending_machine:
     dialog_title: Vending Machine
+    dialog_greeting: Please select a purchasable item from the provided list below by clicking the button or pressing the number on your keyboard
     button_purchase_five_coins: (%{key}) Five Coins
     button_purchase_five_coins_tooltip: Purchase five coins in exchange for 1 star crystal. Quick access this by pressing the %{key} key.
     button_purchase_key: (%{key}) Key

@@ -10,8 +10,9 @@ use crate::ui::VENDINGMACHINEWIDTH;
 use crate::{AppState, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
-use bevy_egui::egui::WidgetText;
+use bevy_egui::egui::{RichText, WidgetText};
 use bevy_egui::{egui, EguiContexts};
+use egui::Label;
 use libexodus::tiles::Tile;
 use std::borrow::Cow;
 use std::cmp::max;
@@ -69,7 +70,7 @@ fn index_to_keycode(index: usize) -> KeyCode {
         7 => KeyCode::Digit7,
         8 => KeyCode::Digit8,
         9 => KeyCode::Digit9,
-        _ => panic!("Unsupported number of vending machine items!"),
+        _ => panic!("Unsupported number of vending machine items: {}!", index),
     }
 }
 fn vending_machine_key_handler(
@@ -140,6 +141,14 @@ fn vending_machine_ui(
         .max_width(VENDINGMACHINEWIDTH)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.set_width(VENDINGMACHINEWIDTH);
+            ui.add_sized(
+                (VENDINGMACHINEWIDTH, 0.0),
+                Label::new(
+                    RichText::new(t!("game_ui.vending_machine.dialog_greeting"))
+                        .text_style(egui::TextStyle::Name("Description".into())),
+                )
+                .wrap(true),
+            );
             for (i, item) in items.items.iter().enumerate() {
                 let response = vending_machine_button(
                     ui,
