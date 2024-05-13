@@ -5,11 +5,13 @@ use crate::game::constants::{
 };
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
+use crate::textures::egui_textures::EguiButtonTextures;
 use crate::textures::tileset_manager::TilesetManager;
 use crate::ui::VENDINGMACHINEWIDTH;
 use crate::{AppState, LAYER_ID};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{RichText, WidgetText};
 use bevy_egui::{egui, EguiContexts};
 use egui::Label;
@@ -130,6 +132,7 @@ fn vending_machine_ui(
     items: Res<VendingMachineItems>,
     player_positions: Query<&Transform, With<PlayerComponent>>,
     atlas_handle: Res<TilesetManager>,
+    egui_textures: Res<EguiButtonTextures>,
 ) {
     // TODO Idea: If the player is at the left of the map center, put the window on the right.
     // If the player is at the right, put the window left
@@ -156,6 +159,8 @@ fn vending_machine_ui(
                     item.button_tooltip(i + 1),
                     item.cost(),
                     scoreboard.crystals,
+                    &egui_textures,
+                    Some(Tile::STARCRYSTAL),
                 );
                 if response.clicked() {
                     let player_pos = player_positions.single();
@@ -178,6 +183,8 @@ fn vending_machine_ui(
                 ),
                 0,
                 0,
+                &egui_textures,
+                None,
             );
             if exit_response.clicked() {
                 click_close_button(&mut commands);
@@ -194,11 +201,32 @@ fn vending_machine_button(
     tooltip: impl Into<WidgetText> + std::fmt::Display + Clone,
     cost: usize,
     balance: usize,
+    egui_textures: &EguiButtonTextures,
+    thumbnail_tile: Option<Tile>,
 ) -> egui::Response {
     ui.add_enabled_ui(cost <= balance, |ui| {
         ui.add_sized(
             [VENDINGMACHINEWIDTH, MENU_SQUARE_BUTTON_SIZE],
-            egui::Button::new(text),
+            egui::Button::opt_image_and_text(
+                thumbnail_tile
+                    .map(|tile| {
+                        let (id, size, _) = egui_textures
+                            .textures
+                            .get(&tile.atlas_index().unwrap())
+                            .unwrap_or_else(|| {
+                                panic!("Textures for {:?} were not loaded as Egui textures!", tile)
+                            });
+                        SizedTexture::new(*id, *size)
+                    })
+                    .map(|i| i.into()),
+                Some(text.into()),
+            )
+            .shortcut_text(if cost > 0 {
+                t!("game_ui.vending_machine.currency", cost = cost)
+            } else {
+                Cow::from(" ")
+            })
+            .wrap(false),
         )
     })
     .inner
@@ -328,7 +356,7 @@ impl VendingMachineItem for CoinsItem {
 
     fn button_tooltip(&self, index: usize) -> Cow<str> {
         t!(
-            "game_ui.vending_machine.button_purchase_five_coins",
+            "game_ui.vending_machine.button_purchase_five_coins_tooltip",
             key = index,
             cost = self.cost()
         )

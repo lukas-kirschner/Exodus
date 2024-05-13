@@ -79,6 +79,7 @@ game_ui:
     button_close: (%{key}) Exit
     button_close_tooltip: Exit the vending machine interface. You may also exit by pressing the %{key} key.
     not_enough_funds: More Star Crystals needed!
+    currency: "%{cost} crystals"
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen
