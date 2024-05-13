@@ -91,6 +91,15 @@ fn vending_machine_key_handler(
                 (player_pos.translation.x, player_pos.translation.y),
             );
             click_close_button(&mut commands);
+        } else if keyboard_input.just_pressed(KeyCode::ArrowDown)
+            || keyboard_input.just_pressed(KeyCode::ArrowUp)
+            || keyboard_input.just_pressed(KeyCode::ArrowLeft)
+            || keyboard_input.just_pressed(KeyCode::ArrowRight)
+            || keyboard_input.just_pressed(KeyCode::KeyQ)
+            || keyboard_input.just_pressed(KeyCode::KeyW)
+        {
+            // Close the interface if any other key has been pressed
+            click_close_button(&mut commands);
         }
     }
     let exit_key = index_to_keycode(items.items.len() + 1);

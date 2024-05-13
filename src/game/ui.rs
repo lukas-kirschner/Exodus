@@ -30,9 +30,6 @@ impl Plugin for GameUIPlugin {
     }
 }
 
-#[derive(Component)]
-pub struct ScoreboardUICounter;
-
 fn game_ui_system(
     mut egui_ctx: EguiContexts,
     scoreboard: Res<Scoreboard>,

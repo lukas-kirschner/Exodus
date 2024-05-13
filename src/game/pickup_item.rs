@@ -11,9 +11,6 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use libexodus::tiles::{CollectibleKind, Tile, TileKind};
 
-#[derive(Component)]
-pub struct PickupItem;
-
 pub struct PickupItemPlugin;
 
 impl Plugin for PickupItemPlugin {
