@@ -26,7 +26,6 @@ i18n!("locales");
 
 mod animation;
 mod campaign;
-mod controls;
 mod dialogs;
 mod game;
 mod mapeditor;

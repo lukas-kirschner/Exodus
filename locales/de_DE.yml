@@ -70,6 +70,17 @@ game_ui:
   coins: Münzen
   moves: Züge
   keys: Schlüssel
+  vending_machine:
+    dialog_title: Automat
+    dialog_greeting: Hier können verschiedene Dinge gekauft werden. Klicke dazu den entsprechenden Button an oder drücke den Zahlenknopf auf der Tastatur.
+    button_purchase_five_coins: (%{key}) Fünf Münzen
+    button_purchase_five_coins_tooltip: Kaufe fünf Münzen für einen Kristall. Dies kann auch durch das Drücken der %{key}-Taste erfolgen.
+    button_purchase_key: (%{key}) Ein Schlüssel
+    button_purchase_key_tooltip: Kaufe einen Schlüssel für drei Kristalle. Kann auch durch Drücken der %{key}-Taste erfolgen.
+    button_close: (%{key}) Verlassen
+    button_close_tooltip: Den Automat verlassen, ohne etwas zu kaufen. Alternativ kann auch die %{key}-Taste gedrückt werden.
+    not_enough_funds: Du hast nicht genug Kristalle!
+    currency: "%{cost} Kristalle"
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren
