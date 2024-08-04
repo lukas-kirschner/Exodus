@@ -221,8 +221,10 @@ fn vending_machine_button(
                     .map(|i| i.into()),
                 Some(text.into()),
             )
-            .shortcut_text(if cost > 0 {
+            .shortcut_text(if cost > 1 {
                 t!("game_ui.vending_machine.currency", cost = cost)
+            } else if cost == 1 {
+                t!("game_ui.vending_machine.currency_one", cost = cost)
             } else {
                 Cow::from(" ")
             })

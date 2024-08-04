@@ -81,6 +81,7 @@ game_ui:
     button_close_tooltip: Den Automat verlassen, ohne etwas zu kaufen. Alternativ kann auch die %{key}-Taste gedrückt werden.
     not_enough_funds: Du hast nicht genug Kristalle!
     currency: "%{cost} Kristalle"
+    currency_one: "%{cost} Kristall"
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren
