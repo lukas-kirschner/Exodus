@@ -179,6 +179,7 @@ campaign:
     tutorial_jumping: "Tutorial: Jumping"
     tutorial_coins: "Tutorial: Coins"
     tutorial_doors: "Tutorial: Doors"
+    tutorial_vending_machines: "Tutorial: Vending Machines"
     space_exodus_the_quest_begins: "The Quest Begins"
     space_exodus_the_dungeon: "The Dungeon"
     space_exodus_camouflage: "Camouflage"
@@ -207,3 +208,5 @@ campaign:
     tutorial_doors_keys: "You can collect keys the same way as you collect coins on a map. Keys do not count to your high score."
     tutorial_doors_doors: "There are closed doors on the map which may be opened using a key by simply walking through."
     tutorial_doors_all_keys: "Always take care to collect enough keys to reach the exit of a map!"
+    tutorial_vending_machines_star_crystals: "On some maps, you can find valuable star crystals. Always take care of collecting those, as they might come in handy later!"
+    tutorial_vending_machines_vending_machine: "You can purchase useful items at vending machines by spending star crystals."

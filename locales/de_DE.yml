@@ -180,6 +180,7 @@ campaign:
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
     tutorial_doors: "Tutorial: Türen"
+    tutorial_vending_machines: "Tutorial: Verkaufsautomaten"
     space_exodus_the_quest_begins: "The Quest Begins"
     space_exodus_the_dungeon: "The Dungeon"
     space_exodus_camouflage: "Camouflage"
@@ -208,3 +209,5 @@ campaign:
     tutorial_doors_keys: "Schlüssel können in der Welt genau wie Münzen gesammelt werden, zählen aber nicht zur Punktzahl."
     tutorial_doors_doors: "Es gibt verschlossene Türen auf der Karte, welche mit einem Schlüssel geöffnet werden können."
     tutorial_doors_all_keys: "Sei vorsichtig und achte darauf, immer genug Schlüssel zu sammeln, um das Ziel zu erreichen!"
+    tutorial_vending_machines_star_crystals: "Auf manchen Karten kann man wertvolle Kristalle finden. Diese sollte man immer einsammeln, da man sie später noch brauchen kann!"
+    tutorial_vending_machines_vending_machine: "An Verkaufsautomaten kann man mit Kristallen nützliche Dinge kaufen."
