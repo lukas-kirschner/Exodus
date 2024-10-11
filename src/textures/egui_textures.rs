@@ -147,7 +147,7 @@ pub fn atlas_to_egui_textures(
     mut assets: ResMut<Assets<Image>>,
 ) {
     let texture_atlas: &TextureAtlasLayout = texture_atlases
-        .get(&tileset_manager.current_atlas_handle())
+        .get(tileset_manager.current_atlas_handle())
         .expect("The atlas layout of the tile set has not yet been loaded!");
     assert_eq!(
         texture_atlas.size.x / 16.,

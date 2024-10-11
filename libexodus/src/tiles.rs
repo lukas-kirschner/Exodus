@@ -48,7 +48,7 @@ pub enum TileKind {
     /// A special tile that the player can interact with
     SPECIAL { interaction: InteractionKind },
     ///
-    ///
+    /// A spawn point for a player
     PLAYERSPAWN,
     ///
     /// A collectible the player may collect by stepping onto it

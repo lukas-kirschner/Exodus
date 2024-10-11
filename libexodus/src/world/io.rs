@@ -299,10 +299,7 @@ impl GameWorld {
         // Write all messages
         for message_id in message_ids {
             let serialized_message_text =
-                bincode::serialize(match self.get_message(*message_id) {
-                    None => "",
-                    Some(text) => text,
-                })?;
+                bincode::serialize(self.get_message(*message_id).unwrap_or_default())?;
             file.write_all(&serialized_message_text)?;
         }
         Ok(())
