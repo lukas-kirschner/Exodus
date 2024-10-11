@@ -23,4 +23,5 @@ impl FromWorld for MapWrapper {
 pub fn reset_score(mut scoreboard: ResMut<Scoreboard>) {
     scoreboard.coins = 0;
     scoreboard.moves = 0;
+    scoreboard.crystals = 0;
 }
