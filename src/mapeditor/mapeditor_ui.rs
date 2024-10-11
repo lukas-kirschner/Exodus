@@ -73,8 +73,8 @@ fn tile_kind_selector_button_for(
                 ui.add_sized([MAPEDITOR_BUTTON_SIZE, MAPEDITOR_BUTTON_SIZE], egui::Button::new(""))
             }
 
-                .on_hover_text(t!(format!("tile.{}",tile.str_id()).as_str()))
-                .on_disabled_hover_text(format!("{} ({})", t!(format!("tile.{}",tile.str_id()).as_str()), t!("map_editor.buttons.currently_selected"))) // unfortunately there is no on_disabled_hover_text_at_pointer
+                .on_hover_text(t!(format!("tile.{}",tile.str_id())))
+                .on_disabled_hover_text(format!("{} ({})", t!(format!("tile.{}",tile.str_id())), t!("map_editor.buttons.currently_selected"))) // unfortunately there is no on_disabled_hover_text_at_pointer
             ;
         if button.clicked() {
             selected_tile.tile = tile.clone();

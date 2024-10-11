@@ -420,7 +420,7 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
 }
 /// Format the given tile using the current locale
 fn tile_to_string(tile: &Tile) -> String {
-    t!(format!("tile.{}", tile.str_id()).as_str()).to_string()
+    t!(format!("tile.{}", tile.str_id())).to_string()
 }
 /// Add one label and one slider, with the label taking up two thirds of the available space
 /// and the numeric slider one third

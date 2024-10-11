@@ -306,7 +306,7 @@ fn campaign_screen_ui(
             ui.vertical(|ui| {
                 ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
                     if in_map {
-                        ui.label(t!(format!("campaign.map.{}", map_name).as_str()));
+                        ui.label(t!(format!("campaign.map.{}", map_name)));
                     }
                 });
                 ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
