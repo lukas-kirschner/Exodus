@@ -70,6 +70,18 @@ game_ui:
   coins: Münzen
   moves: Züge
   keys: Schlüssel
+  vending_machine:
+    dialog_title: Automat
+    dialog_greeting: Hier können verschiedene Dinge gekauft werden. Klicke dazu den entsprechenden Button an oder drücke den Zahlenknopf auf der Tastatur.
+    button_purchase_five_coins: (%{key}) Fünf Münzen
+    button_purchase_five_coins_tooltip: Kaufe fünf Münzen für einen Kristall. Dies kann auch durch das Drücken der %{key}-Taste erfolgen.
+    button_purchase_key: (%{key}) Ein Schlüssel
+    button_purchase_key_tooltip: Kaufe einen Schlüssel für drei Kristalle. Kann auch durch Drücken der %{key}-Taste erfolgen.
+    button_close: (%{key}) Verlassen
+    button_close_tooltip: Den Automat verlassen, ohne etwas zu kaufen. Alternativ kann auch die %{key}-Taste gedrückt werden.
+    not_enough_funds: Du hast nicht genug Kristalle!
+    currency: "%{cost} Kristalle"
+    currency_one: "%{cost} Kristall"
 map_editor:
   dialog:
     exit_tooltip: Beenden und zur Kartenauswahl zurückkehren
@@ -108,6 +120,7 @@ tile:
   opendoor: Geöffnete Tür
   coin: Münze
   key: Schlüssel
+  star_crystal: Kristall
   ladder: Leiter
   ladderslope: Leiter mit Falltür
   laddernature: Leiter mit Falltür
@@ -139,6 +152,8 @@ tile:
   teleport_exit: Teleporter-Ziel
   cobblestone_roof_l: Linkes Pflasterstein-Dach
   cobblestone_roof_r: Rechtes Pflasterstein-Dach
+  vending_machine_l: Verkaufsautomat Links
+  vending_machine_r: Verkaufsautomat Rechts
 debug:
   map_presets:
     empty5mx: Leere Karte in Größe des 5MX
@@ -165,6 +180,7 @@ campaign:
     tutorial_jumping: "Tutorial: Springen"
     tutorial_coins: "Tutorial: Münzen"
     tutorial_doors: "Tutorial: Türen"
+    tutorial_vending_machines: "Tutorial: Verkaufsautomaten"
     space_exodus_the_quest_begins: "The Quest Begins"
     space_exodus_the_dungeon: "The Dungeon"
     space_exodus_camouflage: "Camouflage"
@@ -193,3 +209,5 @@ campaign:
     tutorial_doors_keys: "Schlüssel können in der Welt genau wie Münzen gesammelt werden, zählen aber nicht zur Punktzahl."
     tutorial_doors_doors: "Es gibt verschlossene Türen auf der Karte, welche mit einem Schlüssel geöffnet werden können."
     tutorial_doors_all_keys: "Sei vorsichtig und achte darauf, immer genug Schlüssel zu sammeln, um das Ziel zu erreichen!"
+    tutorial_vending_machines_star_crystals: "Auf manchen Karten kann man wertvolle Kristalle finden. Diese sollte man immer einsammeln, da man sie später noch brauchen kann!"
+    tutorial_vending_machines_vending_machine: "An Verkaufsautomaten kann man mit Kristallen nützliche Dinge kaufen."

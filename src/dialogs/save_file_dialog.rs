@@ -177,7 +177,7 @@ impl UIDialog for SaveFileDialog {
                                 ui.selectable_value(
                                     &mut self.texturepack,
                                     tileset,
-                                    &tileset.to_string(),
+                                    tileset.to_string(),
                                 );
                             }
                         });

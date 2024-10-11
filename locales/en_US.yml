@@ -69,6 +69,18 @@ game_ui:
   coins: Coins
   moves: Moves
   keys: Keys
+  vending_machine:
+    dialog_title: Vending Machine
+    dialog_greeting: Please select a purchasable item from the provided list below by clicking the button or pressing the number on your keyboard
+    button_purchase_five_coins: (%{key}) Five Coins
+    button_purchase_five_coins_tooltip: Purchase five coins in exchange for 1 star crystal. Quick access this by pressing the %{key} key.
+    button_purchase_key: (%{key}) One Key
+    button_purchase_key_tooltip: Purchase a key to open a door for 3 star crystals. Quick access via the %{key} key.
+    button_close: (%{key}) Exit
+    button_close_tooltip: Exit the vending machine interface. You may also exit by pressing the %{key} key.
+    not_enough_funds: More Star Crystals needed!
+    currency: "%{cost} crystals"
+    currency_one: "%{cost} crystal"
 map_editor:
   dialog:
     exit_tooltip: Exit and return to Map Selection Screen
@@ -107,6 +119,7 @@ tile:
   opendoor: Open Door
   coin: Coin
   key: Key
+  star_crystal: Star Crystal
   ladder: Ladder
   ladderslope: Ladder with trapdoor
   laddernature: Ladder with nature trapdoor
@@ -138,6 +151,8 @@ tile:
   teleport_exit: Teleport Exit
   cobblestone_roof_l: L Cobblestone Roof
   cobblestone_roof_r: R Cobblestone Roof
+  vending_machine_l: L Vending Machine
+  vending_machine_r: R Vending Machine
 debug:
   map_presets:
     empty5mx: Empty Psion 5mx-sized map
@@ -164,6 +179,7 @@ campaign:
     tutorial_jumping: "Tutorial: Jumping"
     tutorial_coins: "Tutorial: Coins"
     tutorial_doors: "Tutorial: Doors"
+    tutorial_vending_machines: "Tutorial: Vending Machines"
     space_exodus_the_quest_begins: "The Quest Begins"
     space_exodus_the_dungeon: "The Dungeon"
     space_exodus_camouflage: "Camouflage"
@@ -192,3 +208,5 @@ campaign:
     tutorial_doors_keys: "You can collect keys the same way as you collect coins on a map. Keys do not count to your high score."
     tutorial_doors_doors: "There are closed doors on the map which may be opened using a key by simply walking through."
     tutorial_doors_all_keys: "Always take care to collect enough keys to reach the exit of a map!"
+    tutorial_vending_machines_star_crystals: "On some maps, you can find valuable star crystals. Always take care of collecting those, as they might come in handy later!"
+    tutorial_vending_machines_vending_machine: "You can purchase useful items at vending machines by spending star crystals."

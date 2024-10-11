@@ -60,7 +60,7 @@ fn config_screen_ui(
                                         ui.selectable_value(
                                             &mut res_config.config.game_language,
                                             lang,
-                                            &lang.to_string(),
+                                            lang.to_string(),
                                         );
                                     }
                                 })
@@ -81,7 +81,7 @@ fn config_screen_ui(
                                         ui.selectable_value(
                                             &mut res_config.config.tile_set,
                                             tileset,
-                                            &tileset.to_string(),
+                                            tileset.to_string(),
                                         );
                                     }
                                 })

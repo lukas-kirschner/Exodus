@@ -288,11 +288,7 @@ fn campaign_screen_ui(
                     if let Some((_, score)) = &highscores.highscores.get_best(map.hash(), name) {
                         (
                             true,
-                            Some(Scoreboard {
-                                coins: score.coins() as i32,
-                                moves: score.moves() as usize,
-                                keys: 0,
-                            }),
+                            Some(Scoreboard::from(*score)),
                             map.get_name().to_string(),
                         )
                     } else {
@@ -300,6 +296,7 @@ fn campaign_screen_ui(
                     }
                 },
                 InteractionKind::TeleportTo { .. } => (false, None, "".to_string()),
+                InteractionKind::VendingMachine { .. } => (false, None, "".to_string()),
             },
             _ => (false, None, "".to_string()),
         };
@@ -380,11 +377,7 @@ pub fn play_map_keyboard_controls(
                             .highscores
                             .get_best(map.hash(), &config.config.player_id)
                         {
-                            Some((_, score)) => Some(Scoreboard {
-                                coins: score.coins() as i32,
-                                moves: score.moves() as usize,
-                                keys: 0,
-                            }),
+                            Some((_, score)) => Some(Scoreboard::from(*score)),
                             _ => None,
                         },
                     });
@@ -421,6 +414,7 @@ pub fn play_map_keyboard_controls(
                     ));
                 },
                 InteractionKind::TeleportTo { .. } => {},
+                InteractionKind::VendingMachine { .. } => {},
             }
         };
     }

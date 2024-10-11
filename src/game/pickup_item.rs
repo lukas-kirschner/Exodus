@@ -9,10 +9,7 @@ use crate::util::dist_2d;
 use crate::{AppLabels, AppState};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
-use libexodus::tiles::{Tile, TileKind};
-
-#[derive(Component)]
-pub struct PickupItem;
+use libexodus::tiles::{CollectibleKind, Tile, TileKind};
 
 pub struct PickupItemPlugin;
 
@@ -20,93 +17,55 @@ impl Plugin for PickupItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollectibleCollectedEvent>()
             // Collision Handlers
-            .add_systems(Update,setup_collectible_event::<CoinWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_systems(Update,setup_collectible_event::<KeyWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
-            .add_systems(Update,setup_collectible_event::<CollectibleWrapper>.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
+            .add_systems(Update,setup_collectible_event.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement))
             // Event Handlers
             .add_systems(Update,collectible_collected_event.run_if(in_state(AppState::Playing)).after(AppLabels::PlayerMovement));
     }
 }
-
-trait CollectibleWrapperTrait {
-    fn get_action(&self) -> CollectibleAction;
-}
-
-/// A wrapper for coins
-#[derive(Component)]
-pub struct CoinWrapper {
-    /// The value of this coin, i.e. the score a player gets for collecting the coin
-    pub coin_value: i32,
-}
-
-impl CollectibleWrapperTrait for CoinWrapper {
-    fn get_action(&self) -> CollectibleAction {
-        CollectibleAction::AddCoins { coins: 1 }
-    }
-}
-
-/// A wrapper for keys
-#[derive(Component)]
-pub struct KeyWrapper;
-
-impl CollectibleWrapperTrait for KeyWrapper {
-    fn get_action(&self) -> CollectibleAction {
-        CollectibleAction::AddKeys { keys: 1 }
-    }
-}
-
 /// A wrapper for Collectibles (Arrows,...)
 #[derive(Component)]
-pub struct CollectibleWrapper;
-
-impl CollectibleWrapperTrait for CollectibleWrapper {
-    fn get_action(&self) -> CollectibleAction {
-        CollectibleAction::None
-    }
+pub struct CollectibleWrapper {
+    kind: CollectibleKind,
 }
 
-enum CollectibleAction {
-    AddCoins { coins: u32 },
-    AddKeys { keys: u32 },
-    None,
-}
 #[derive(Event)]
 struct CollectibleCollectedEvent {
     player: Entity,
-    action: CollectibleAction,
+    action: CollectibleKind,
     collectible: Entity,
 }
 /// Set up a Collectible Event for the given Collectible type.
-fn setup_collectible_event<WrapperType: Component + CollectibleWrapperTrait>(
+fn setup_collectible_event(
     mut commands: Commands,
-    mut coin_query: Query<(Entity, &mut Transform, &WrapperType)>,
-    players: Query<(&PlayerComponent, &Transform, Entity), Without<WrapperType>>,
+    mut coin_query: Query<(Entity, &mut Transform, &CollectibleWrapper)>,
+    players: Query<(&PlayerComponent, &Transform, Entity), Without<CollectibleWrapper>>,
     mut ev_collectible_collected: EventWriter<CollectibleCollectedEvent>,
 ) {
     for (_player, player_trans, player_entity) in players.iter() {
         let player_pos: Vec3 = player_trans.translation;
-        for (coin_entity, mut coin_trans, coin) in coin_query.iter_mut() {
+        for (collectible_entity, mut coin_trans, collectible) in coin_query.iter_mut() {
             let coin_pos: &mut Vec3 = &mut coin_trans.translation;
             let dist = dist_2d(&player_pos, coin_pos);
             if dist <= COLLECTIBLE_PICKUP_DISTANCE {
                 // Fire event
                 ev_collectible_collected.send(CollectibleCollectedEvent {
                     player: player_entity,
-                    action: coin.get_action(),
-                    collectible: coin_entity,
+                    action: collectible.kind.clone(),
+                    collectible: collectible_entity,
                 });
                 // Set the z position of the animation to the z position of the player, such that
                 // animations will be rendered behind the player, but above solid tiles:
                 coin_pos.z = PLAYER_Z - 0.1;
                 // Clearing the collectible here, because the event might be triggered multiple times if we clear it in the event handler
-                commands.entity(coin_entity).remove::<WrapperType>().insert(
-                    AnimatedActionSprite::from_ascend_and_zoom(
+                commands
+                    .entity(collectible_entity)
+                    .remove::<CollectibleWrapper>()
+                    .insert(AnimatedActionSprite::from_ascend_and_zoom(
                         PICKUP_ITEM_DECAY_SPEED,
                         PICKUP_ITEM_ASCEND_SPEED,
                         PICKUP_ITEM_ZOOM_SPEED,
                         AnimatedSpriteAction::None,
-                    ),
-                );
+                    ));
             }
         }
     }
@@ -121,26 +80,20 @@ fn collectible_collected_event(
         let _player: Entity = ev.player;
         let _collectible: Entity = ev.collectible;
         match ev.action {
-            CollectibleAction::AddCoins { coins } => scoreboard.coins += coins as i32,
-            CollectibleAction::AddKeys { keys } => scoreboard.keys += keys as usize,
-            CollectibleAction::None => (),
+            CollectibleKind::Decorative => (),
+            CollectibleKind::Coins { amount } => scoreboard.coins += amount as i32,
+            CollectibleKind::Keys { amount } => scoreboard.keys += amount,
+            CollectibleKind::StarCrystals { amount } => scoreboard.crystals += amount,
         };
     }
 }
 
 /// Insert the appropriate wrapper when a tile is set up in the game world.
 /// Must be called from the game board setup routine
+/// TODO Implement support for collecting more than one crystal or key?
 pub fn insert_wrappers(tile: &Tile, bundle: &mut EntityCommands) {
     match tile.kind() {
-        TileKind::COIN => {
-            bundle.insert(CoinWrapper { coin_value: 1 });
-        },
-        TileKind::KEY => {
-            bundle.insert(KeyWrapper);
-        },
-        TileKind::COLLECTIBLE => {
-            bundle.insert(CollectibleWrapper);
-        },
-        _ => {},
-    }
+        TileKind::COLLECTIBLE { kind } => bundle.insert(CollectibleWrapper { kind }),
+        _ => bundle,
+    };
 }

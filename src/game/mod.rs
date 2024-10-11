@@ -11,11 +11,13 @@ pub mod player;
 pub mod scoreboard;
 pub mod tilewrapper;
 mod ui;
+mod vending_machine;
 pub(crate) mod world;
 
 use crate::game::player::{PlayerPlugin, ReturnTo};
 use crate::game::tilewrapper::{reset_score, MapWrapper};
 use crate::game::ui::GameUIPlugin;
+use crate::game::vending_machine::VendingMachinePlugin;
 use crate::game::world::WorldPlugin;
 use crate::textures::egui_textures::atlas_to_egui_textures;
 use crate::textures::tileset_manager::TilesetManager;
@@ -29,6 +31,7 @@ impl Plugin for GamePlugin {
             .add_plugins(GameUIPlugin)
             .add_plugins(PlayerPlugin)
             .add_plugins(PickupItemPlugin)
+            .add_plugins(VendingMachinePlugin)
             .add_systems(
                 Update,
                 back_with_esc_controls.run_if(in_state(AppState::Playing)),

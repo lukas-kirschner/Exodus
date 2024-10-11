@@ -4,15 +4,20 @@ use std::fmt;
 use std::fmt::Formatter;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
-pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning heir back to the camera
+pub const EXITING_PLAYER_SPRITE: usize = 247; // The player turning their back to the camera
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum InteractionKind {
     /// When interacting with this tile, the player may decide to play a map.
     /// This interaction kind is mainly used for tile-based Campaign Trails
-    LaunchMap { map_name: String },
+    LaunchMap {
+        map_name: String,
+    },
     /// When interacting with this tile, the player should be teleported
     /// to the given teleport exit.
-    TeleportTo { teleport_id: TeleportId },
+    TeleportTo {
+        teleport_id: TeleportId,
+    },
+    VendingMachine,
 }
 impl Default for InteractionKind {
     fn default() -> Self {
@@ -31,23 +36,23 @@ pub enum TileKind {
     /// A solid tile
     SOLID,
     ///
+    /// A solid tile that can be interacted with from the given directions
+    SOLIDINTERACTABLE {
+        from: Vec<FromDirection>,
+        kind: InteractionKind,
+    },
+    ///
     /// A tile that kills the player on impact
     DEADLY { from: Vec<FromDirection> },
     ///
     /// A special tile that the player can interact with
     SPECIAL { interaction: InteractionKind },
     ///
-    ///
+    /// A spawn point for a player
     PLAYERSPAWN,
     ///
-    /// A collectible coin
-    COIN,
-    ///
-    /// A collectible key
-    KEY,
-    ///
-    /// A collectible that does not change any counter when collected
-    COLLECTIBLE,
+    /// A collectible the player may collect by stepping onto it
+    COLLECTIBLE { kind: CollectibleKind },
     ///
     /// A door that can be opened (removed) using a key
     DOOR,
@@ -57,6 +62,13 @@ pub enum TileKind {
     ///
     /// The map exit
     EXIT,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum CollectibleKind {
+    Decorative,
+    Coins { amount: usize },
+    Keys { amount: usize },
+    StarCrystals { amount: usize },
 }
 
 pub type AtlasIndex = usize;
@@ -134,6 +146,8 @@ pub enum Tile {
     COIN,
     /// A collectible key
     KEY,
+    /// A collectible star crystal
+    STARCRYSTAL,
     /// A ladder
     LADDER,
     /// A decorated ladder with a Nature-Themed slope
@@ -204,6 +218,10 @@ pub enum Tile {
     TELEPORTENTRY { teleport_id: TeleportId },
     /// The exit of a teleport, there may be only one on each map
     TELEPORTEXIT { teleport_id: TeleportId },
+    /// A vending machine facing to the left which the player can interact with from the left or top
+    VENDINGMACHINEL,
+    /// A vending machine facing to the right which the player can interact with from the right or top
+    VENDINGMACHINER,
 }
 
 impl Tile {
@@ -219,7 +237,9 @@ impl Tile {
             Tile::SLOPE => TileKind::SOLID,
             Tile::PILLAR => TileKind::SOLID,
             Tile::PLAYERSPAWN => TileKind::PLAYERSPAWN,
-            Tile::COIN => TileKind::COIN,
+            Tile::COIN => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Coins { amount: 1 },
+            },
             Tile::LADDER => TileKind::LADDER,
             Tile::LADDERNATURE => TileKind::LADDER,
             Tile::LADDERSLOPE => TileKind::LADDER,
@@ -278,13 +298,25 @@ impl Tile {
                 from: vec![FROMNORTH, FROMEAST, FROMWEST],
             },
             Tile::DOOR => TileKind::DOOR,
-            Tile::KEY => TileKind::KEY,
+            Tile::KEY => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Keys { amount: 1 },
+            },
             Tile::OPENDOOR => TileKind::AIR,
-            Tile::ARROWRIGHT => TileKind::COLLECTIBLE,
-            Tile::ARROWLEFT => TileKind::COLLECTIBLE,
-            Tile::ARROWUP => TileKind::COLLECTIBLE,
-            Tile::ARROWDOWN => TileKind::COLLECTIBLE,
-            Tile::MESSAGE { .. } => TileKind::COLLECTIBLE,
+            Tile::ARROWRIGHT => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWLEFT => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWUP => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::ARROWDOWN => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
+            Tile::MESSAGE { .. } => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::Decorative,
+            },
             Tile::EXIT => TileKind::EXIT,
             Tile::CAMPAIGNTRAILWALKWAY => TileKind::LADDER,
             Tile::CAMPAIGNTRAILMAPENTRYPOINT { interaction } => TileKind::SPECIAL {
@@ -300,6 +332,17 @@ impl Tile {
             Tile::TELEPORTEXIT { .. } => TileKind::AIR,
             Tile::COBBLEROOFSLOPEL => TileKind::AIR,
             Tile::COBBLEROOFSLOPER => TileKind::AIR,
+            Tile::VENDINGMACHINEL => TileKind::SOLIDINTERACTABLE {
+                from: vec![FROMWEST, FROMNORTH],
+                kind: InteractionKind::VendingMachine,
+            },
+            Tile::VENDINGMACHINER => TileKind::SOLIDINTERACTABLE {
+                from: vec![FROMEAST, FROMNORTH],
+                kind: InteractionKind::VendingMachine,
+            },
+            Tile::STARCRYSTAL => TileKind::COLLECTIBLE {
+                kind: CollectibleKind::StarCrystals { amount: 1 },
+            },
         }
     }
     pub fn atlas_index(&self) -> Option<AtlasIndex> {
@@ -356,20 +399,22 @@ impl Tile {
             },
             Tile::COBBLEROOFSLOPEL => Some(124),
             Tile::COBBLEROOFSLOPER => Some(125),
+            Tile::VENDINGMACHINEL => Some(74),
+            Tile::VENDINGMACHINER => Some(75),
+            Tile::STARCRYSTAL => Some(202),
         }
     }
     pub fn can_collide_from(&self, from_direction: &FromDirection) -> bool {
         match self.kind() {
             TileKind::AIR => false,
             TileKind::SOLID => true,
+            TileKind::SOLIDINTERACTABLE { .. } => true,
             TileKind::DEADLY { from } => !from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
-            TileKind::COIN => false,
+            TileKind::COLLECTIBLE { .. } => false,
             TileKind::LADDER => false,
-            TileKind::KEY => false,
             TileKind::DOOR => true,
-            TileKind::COLLECTIBLE => false,
             TileKind::EXIT => false,
         }
     }
@@ -377,14 +422,13 @@ impl Tile {
         match self.kind() {
             TileKind::AIR => false,
             TileKind::SOLID => false,
+            TileKind::SOLIDINTERACTABLE { .. } => false,
             TileKind::DEADLY { from } => from.iter().any(|fromdir| *fromdir == *from_direction),
             TileKind::SPECIAL { .. } => false,
             TileKind::PLAYERSPAWN => false,
-            TileKind::COIN => false,
             TileKind::LADDER => false,
-            TileKind::KEY => false,
             TileKind::DOOR => false,
-            TileKind::COLLECTIBLE => false,
+            TileKind::COLLECTIBLE { .. } => false,
             TileKind::EXIT => false,
         }
     }
@@ -440,6 +484,9 @@ impl Tile {
             Tile::TELEPORTEXIT { .. } => "teleport_exit",
             Tile::COBBLEROOFSLOPEL => "cobblestone_roof_l",
             Tile::COBBLEROOFSLOPER => "cobblestone_roof_r",
+            Tile::VENDINGMACHINEL => "vending_machine_l",
+            Tile::VENDINGMACHINER => "vending_machine_r",
+            Tile::STARCRYSTAL => "star_crystal",
         }
     }
 }
@@ -499,6 +546,9 @@ impl fmt::Display for Tile {
                 Tile::TELEPORTEXIT { .. } => "Teleport Exit",
                 Tile::COBBLEROOFSLOPEL => "Cobblestone Roof L",
                 Tile::COBBLEROOFSLOPER => "Cobblestone Roof R",
+                Tile::VENDINGMACHINEL => "L Vending Machine",
+                Tile::VENDINGMACHINER => "R Vending Machine",
+                Tile::STARCRYSTAL => "Star Crystal",
             }
         )
     }

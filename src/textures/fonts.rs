@@ -157,6 +157,11 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
             FontId::new(16.0, FontFamily::Name(Arc::from(SANSSERIF_NORMAL))),
         ),
         (
+            // Style for Descriptive UI Texts
+            egui::TextStyle::Name("Description".into()),
+            FontId::new(16.0, FontFamily::Name(Arc::from(SANSSERIF_ITALIC))),
+        ),
+        (
             egui::TextStyle::Body,
             FontId::new(18.0, FontFamily::Name(Arc::from(SANSSERIF_NORMAL))),
         ),

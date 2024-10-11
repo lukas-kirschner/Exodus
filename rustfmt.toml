@@ -4,7 +4,7 @@ max_width = 100
 tab_spaces = 4
 
 fn_call_width = 60
-fn_args_layout = "Tall"
+fn_params_layout = "Tall"
 
 newline_style = "Unix"
 

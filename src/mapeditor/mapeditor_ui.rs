@@ -251,6 +251,14 @@ fn mapeditor_ui(
                         tile_kind_selector_button_for(
                             ui,
                             egui_textures.borrow(),
+                            &Tile::STARCRYSTAL,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        ui.separator();
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
                             &Tile::LADDER,
                             &mut selected_tile,
                             player_it,
@@ -458,6 +466,21 @@ fn mapeditor_ui(
                             ui,
                             egui_textures.borrow(),
                             &Tile::ARROWUP,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        ui.separator();
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::VENDINGMACHINEL,
+                            &mut selected_tile,
+                            player_it,
+                        );
+                        tile_kind_selector_button_for(
+                            ui,
+                            egui_textures.borrow(),
+                            &Tile::VENDINGMACHINER,
                             &mut selected_tile,
                             player_it,
                         );

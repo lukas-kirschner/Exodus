@@ -31,6 +31,8 @@ pub const UIMAINMENUMARGIN: f32 = 16.0;
 /// Big Margins to use as outer margins for boxes and sub-windows
 pub const UIBIGMARGIN: f32 = 50.0;
 /// The default width of a centered UI panel
+pub const VENDINGMACHINEWIDTH: f32 = 400.0;
+/// The default width of a centered UI panel
 pub const UIPANELWIDTH: f32 = 600.0;
 /// The default width of a ComboBox inside the centered UI panel
 pub const UIPANELCBWIDTH: f32 = 350.0;

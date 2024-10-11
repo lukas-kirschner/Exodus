@@ -30,9 +30,6 @@ impl Plugin for GameUIPlugin {
     }
 }
 
-#[derive(Component)]
-pub struct ScoreboardUICounter;
-
 fn game_ui_system(
     mut egui_ctx: EguiContexts,
     scoreboard: Res<Scoreboard>,
@@ -55,6 +52,7 @@ fn game_ui_system(
                                 (h, h),
                             ));
                             ui.label(format!("{}", scoreboard.moves));
+
                             ui.separator();
                             ui.label(t!("game_ui.coins"));
                             ui.image(SizedTexture::new(
@@ -62,13 +60,31 @@ fn game_ui_system(
                                 (h, h),
                             ));
                             ui.label(format!("{}", scoreboard.coins));
-                            ui.separator();
-                            ui.label(t!("game_ui.keys"));
-                            ui.image(SizedTexture::new(
-                                textures.textures[&Tile::KEY.atlas_index().unwrap()].0,
-                                (h, h),
-                            ));
-                            ui.label(format!("{}", scoreboard.keys));
+
+                            if scoreboard.keys > 0 {
+                                ui.separator();
+                            }
+                            // ui.label(t!("game_ui.keys"));
+                            // ui.image(SizedTexture::new(
+                            //     textures.textures[&Tile::KEY.atlas_index().unwrap()].0,
+                            //     (h, h),
+                            // ));
+                            // ui.label(format!("{}", scoreboard.keys));
+                            for _ in 0..scoreboard.keys {
+                                ui.image(SizedTexture::new(
+                                    textures.textures[&Tile::KEY.atlas_index().unwrap()].0,
+                                    (h, h),
+                                ));
+                            }
+                            if scoreboard.crystals > 0 {
+                                ui.separator();
+                            }
+                            for _ in 0..scoreboard.crystals {
+                                ui.image(SizedTexture::new(
+                                    textures.textures[&Tile::STARCRYSTAL.atlas_index().unwrap()].0,
+                                    (h, h),
+                                ));
+                            }
                         });
                     });
                     ui.scope(|ui| {
