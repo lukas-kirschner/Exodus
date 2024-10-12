@@ -300,7 +300,7 @@ fn main() {
                     }
                     .into(),
                     level: bevy::log::Level::DEBUG,
-                    update_subscriber: None,
+                    ..default()
                 }),
         )
         .add_systems(Update, resize_notificator)

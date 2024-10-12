@@ -90,7 +90,7 @@ pub fn spawn_tile(
             ..Default::default()
         },
         WorldTile, // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
-        *layer,
+        layer.clone(),
     ));
     insert_wrappers(tile, &mut bundle);
     insert_door_wrappers(tile, &mut bundle);

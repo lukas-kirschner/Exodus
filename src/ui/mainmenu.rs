@@ -59,7 +59,7 @@ fn mainmenu_buttons(
                 ui.centered_and_justified(|ui| {
                     let quit_btn = ui.button(t!("main_menu.quit"));
                     if quit_btn.clicked() {
-                        exit.send(AppExit);
+                        exit.send(AppExit::Success);
                     }
                 });
             });

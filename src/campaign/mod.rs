@@ -68,14 +68,15 @@ fn insert_main_campaign(
                 // TODO Change this to support multiple campaign trails:
                 state.set(AppState::MainMenu);
             },
-            Some(LoadState::Failed) => panic!(
-                "Failed to load the Campaign Trail from {}",
+            Some(LoadState::Failed(error)) => panic!(
+                "Failed to load the Campaign Trail from {}: {}",
                 asset_server
                     .get_path(&asset.handle)
                     .expect("Could not get path from handle!")
                     .path()
                     .to_str()
-                    .unwrap()
+                    .unwrap(),
+                error
             ),
             _ => {},
         }

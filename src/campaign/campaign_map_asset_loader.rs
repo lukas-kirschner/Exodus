@@ -1,5 +1,5 @@
 use bevy::asset::io::Reader;
-use bevy::asset::{AssetLoader, AsyncReadExt, BoxedFuture, LoadContext};
+use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use libexodus::exodus_serializable::ExodusSerializable;
@@ -26,23 +26,21 @@ impl AssetLoader for CampaignMapLoader {
     type Settings = ();
     type Error = GameWorldParseError;
 
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _settings: &'a Self::Settings,
-        load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let mut map = GameWorld::default();
-            // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
-            #[allow(noop_method_call)]
-            map.parse(&mut bytes.as_slice().clone())?;
-            map.set_filename(load_context.path().to_path_buf());
-            let asset = CampaignMapAsset(map);
-            Ok(asset)
-        })
+        load_context: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let mut map = GameWorld::default();
+        // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
+        #[allow(noop_method_call)]
+        map.parse(&mut bytes.as_slice().clone())?;
+        map.set_filename(load_context.path().to_path_buf());
+        let asset = CampaignMapAsset(map);
+        Ok(asset)
     }
 
     fn extensions(&self) -> &[&str] {

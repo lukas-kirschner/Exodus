@@ -31,8 +31,8 @@ pub fn init_player_spawn(
             texture: tileset.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(
-                    (map_player_position_x * tileset.current_tileset.texture_size()) as f32,
-                    (map_player_position_y * tileset.current_tileset.texture_size()) as f32,
+                    (map_player_position_x as u32 * tileset.current_tileset.texture_size()) as f32,
+                    (map_player_position_y as u32 * tileset.current_tileset.texture_size()) as f32,
                     PLAYER_Z,
                 ),
                 ..default()

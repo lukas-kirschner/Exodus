@@ -172,7 +172,7 @@ fn animated_action_sprite_handler(
 ) {
     let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity, animated_sprite) in animated_sprites.iter_mut() {
-        let new_a: f32 = sprite.color.a() + (animated_sprite.alpha() * time.delta_seconds());
+        let new_a: f32 = sprite.color.alpha() + (animated_sprite.alpha() * time.delta_seconds());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned.
             match animated_sprite.action() {
@@ -187,12 +187,12 @@ fn animated_action_sprite_handler(
                         .insert((**animation).clone());
                     transform.translation.x = location.0;
                     transform.translation.y = location.1;
-                    sprite.color.set_a(1.0);
+                    sprite.color.set_alpha(1.0);
                     return;
                 },
                 _ => {
                     // Despawn the sprite completely
-                    sprite.color.set_a(0.0);
+                    sprite.color.set_alpha(0.0);
                     commands.entity(entity).despawn_recursive();
                 },
             }
@@ -229,7 +229,7 @@ fn animated_action_sprite_handler(
             }
             return;
         }
-        sprite.color.set_a(new_a);
+        sprite.color.set_alpha(new_a);
         transform.translation +=
             animated_sprite.translation() * texture_size * time.delta_seconds();
         transform.scale += animated_sprite.scale() * texture_size * time.delta_seconds();

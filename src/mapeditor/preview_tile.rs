@@ -43,12 +43,12 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
     commands.spawn((
         SpriteSheetBundle {
             sprite: Sprite {
-                color: Color::Rgba {
+                color: Color::Srgba(Srgba {
                     red: 1.0,
                     green: 1.0,
                     blue: 1.0,
                     alpha: MAPEDITOR_PREVIEWTILE_ALPHA,
-                },
+                }),
                 ..default()
             },
             atlas: TextureAtlas {

@@ -1,6 +1,7 @@
 use crate::game::pickup_item::PickupItemPlugin;
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
+use bevy::state::state::OnTransition;
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use std::path::PathBuf;
 
@@ -42,8 +43,8 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 OnTransition {
-                    from: AppState::MapSelectionScreen,
-                    to: AppState::Playing,
+                    exited: AppState::MapSelectionScreen,
+                    entered: AppState::Playing,
                 },
                 (load_texture_pack, atlas_to_egui_textures)
                     .chain()
@@ -51,8 +52,8 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 OnTransition {
-                    from: AppState::CampaignTrailScreen,
-                    to: AppState::Playing,
+                    exited: AppState::CampaignTrailScreen,
+                    entered: AppState::Playing,
                 },
                 (load_texture_pack, atlas_to_egui_textures)
                     .chain()
@@ -60,8 +61,8 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 OnTransition {
-                    from: AppState::GameOverScreen,
-                    to: AppState::Playing,
+                    exited: AppState::GameOverScreen,
+                    entered: AppState::Playing,
                 },
                 (load_texture_pack, atlas_to_egui_textures)
                     .chain()

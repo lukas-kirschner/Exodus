@@ -42,7 +42,7 @@ impl Tileset {
         }
         .into()
     }
-    pub fn texture_size(&self) -> usize {
+    pub fn texture_size(&self) -> u32 {
         match self {
             Tileset::TinyPlatformQuestTiles => 16,
             Tileset::Classic => 16,
