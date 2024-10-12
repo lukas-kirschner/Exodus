@@ -86,7 +86,7 @@ fn check_and_init_textures(
                     panic!("Texture not found: {}", textures_folder.to_str().unwrap())
                 });
             let texture_atlas = TextureAtlasLayout::from_grid(
-                UVec2::splat(tileset.texture_size() as u32),
+                UVec2::splat(tileset.texture_size()),
                 16,
                 16,
                 None,

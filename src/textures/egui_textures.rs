@@ -146,7 +146,7 @@ pub fn atlas_to_egui_textures(
         .expect("The atlas layout of the tile set has not yet been loaded!");
     assert_eq!(
         texture_atlas.size.x / 16,
-        tileset_manager.current_tileset.texture_size() as u32
+        tileset_manager.current_tileset.texture_size()
     );
     let texture_handle: Handle<Image> = tileset_manager.current_texture_handle();
     let mut textures = HashMap::new();
