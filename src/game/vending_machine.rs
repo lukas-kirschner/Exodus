@@ -150,7 +150,7 @@ fn vending_machine_ui(
                     RichText::new(t!("game_ui.vending_machine.dialog_greeting"))
                         .text_style(egui::TextStyle::Name("Description".into())),
                 )
-                .wrap(true),
+                .wrap(),
             );
             for (i, item) in items.items.iter().enumerate() {
                 let response = vending_machine_button(
@@ -226,7 +226,7 @@ fn vending_machine_button(
                 1 => t!("game_ui.vending_machine.currency_one", cost = 1),
                 _ => Cow::from(" "),
             })
-            .wrap(false),
+            .truncate(), //TODO or extend?
         )
     })
     .inner
@@ -321,12 +321,12 @@ fn spawn_animation(
     tile: &Tile,
 ) {
     commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: atlas_handle.current_atlas_handle(),
+            index: tile.atlas_index().unwrap(),
+        },
+        SpriteBundle {
             sprite: Sprite::default(),
-            atlas: TextureAtlas {
-                layout: atlas_handle.current_atlas_handle(),
-                index: tile.atlas_index().unwrap(),
-            },
             texture: atlas_handle.current_texture_handle().clone(),
             transform: Transform {
                 translation: (player_pos_px.0, player_pos_px.1, PLAYER_Z - 0.1).into(),

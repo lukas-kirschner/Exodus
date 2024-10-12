@@ -225,7 +225,7 @@ impl UIDialog for CreateNewMapDialog {
                     ui.scope(|ui| {
                         ui.set_width(UIPANELCBWIDTH);
                         let selected_width_kind = size_to_string(&self.size);
-                        egui::ComboBox::from_id_source("size_box").width(UIPANELCBWIDTH).selected_text(selected_width_kind).show_ui(ui, |ui| {
+                        egui::ComboBox::from_id_salt("size_box").width(UIPANELCBWIDTH).selected_text(selected_width_kind).show_ui(ui, |ui| {
                             for size in WorldSize::iter() {
                                 ui.selectable_value(
                                     &mut self.size,
@@ -242,10 +242,10 @@ impl UIDialog for CreateNewMapDialog {
                                 WorldSize::Custom { ref mut width, ref mut height } => (width, height),
                                 _ => (&mut fix_width,&mut fix_height)
                             };
-                            ui.add_sized((UIPANELCBWIDTH / 2. - ui.style().spacing.item_spacing.x / 2.,0.), egui::DragValue::new(width).clamp_range(1..=64).speed(0.1))
+                            ui.add_sized((UIPANELCBWIDTH / 2. - ui.style().spacing.item_spacing.x / 2.,0.), egui::DragValue::new(width).range(1..=64).speed(0.1))
                                 .on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_width_edit"))
                                 .on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_width_noedit"));
-                            ui.add_sized((UIPANELCBWIDTH / 2.- ui.style().spacing.item_spacing.x / 2.,0.), egui::DragValue::new(height).clamp_range(1..=32).speed(0.1))
+                            ui.add_sized((UIPANELCBWIDTH / 2.- ui.style().spacing.item_spacing.x / 2.,0.), egui::DragValue::new(height).range(1..=32).speed(0.1))
                                 .on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_height_edit"))
                                 .on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_height_noedit"));
                         });
@@ -255,7 +255,7 @@ impl UIDialog for CreateNewMapDialog {
                     ui.scope(|ui| {
                         ui.set_width(UIPANELCBWIDTH);
                         let selected_kind = kind_to_string(&self.map_kind);
-                        egui::ComboBox::from_id_source("kind_box").width(UIPANELCBWIDTH).selected_text(selected_kind).show_ui(ui, |ui| {
+                        egui::ComboBox::from_id_salt("kind_box").width(UIPANELCBWIDTH).selected_text(selected_kind).show_ui(ui, |ui| {
                             for kind in WorldGenerationKind::iter() {
                                 ui.selectable_value(
                                     &mut self.map_kind,
@@ -272,7 +272,7 @@ impl UIDialog for CreateNewMapDialog {
                     // Seed (if applicable)
                     ui.add_enabled_ui(self.map_kind.is_seeded(), |ui| {
                         heading_label(ui,t!("map_selection_screen.dialog.create_new_map_dialog_seed"));
-                        ui.add_sized((UIPANELCBWIDTH,0.), egui::DragValue::new(&mut self.seed).clamp_range(u32::MIN..=u32::MAX).speed(0.1))
+                        ui.add_sized((UIPANELCBWIDTH,0.), egui::DragValue::new(&mut self.seed).range(u32::MIN..=u32::MAX).speed(0.1))
                             .on_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_seed_tooltip"))
                             .on_disabled_hover_text(t!("map_selection_screen.dialog.create_new_map_dialog_no_seed_tooltip"));
                         // TODO add randomize button
@@ -406,7 +406,7 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
     ui.scope(|ui| {
         ui.set_width(UIPANELCBWIDTH);
         let selected_kind = tile_to_string(color);
-        egui::ComboBox::from_id_source(tooltip.to_string())
+        egui::ComboBox::from_id_salt(tooltip.to_string())
             .width(UIPANELCBWIDTH)
             .selected_text(selected_kind)
             .show_ui(ui, |ui| {
@@ -420,7 +420,7 @@ fn algorithm_color_selector(ui: &mut Ui, color: &mut Tile, tooltip: Cow<str>) {
 }
 /// Format the given tile using the current locale
 fn tile_to_string(tile: &Tile) -> String {
-    t!(format!("tile.{}", tile.str_id()).as_str()).to_string()
+    t!(format!("tile.{}", tile.str_id())).to_string()
 }
 /// Add one label and one slider, with the label taking up two thirds of the available space
 /// and the numeric slider one third
@@ -448,7 +448,7 @@ fn one_line_label_and_slider(
                     UIPANELCBWIDTH / 3. - ui.style().spacing.item_spacing.x / 2.,
                     0.,
                 ),
-                egui::DragValue::new(num).clamp_range(range).speed(0.1),
+                egui::DragValue::new(num).range(range).speed(0.1),
             )
             .on_hover_text(tooltip),
         )

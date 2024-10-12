@@ -60,6 +60,8 @@ pub enum AppState {
     MapEditor,
     MapEditorDialog,
     #[default]
+    /// Wait for the Startup to finish. See https://bevyengine.org/learn/migration-guides/0-13-to-0-14/#onenter-state-schedules-now-run-before-startup-schedules
+    Init,
     /// Loading and processing all textures
     Loading,
     /// Loading all campaign maps
@@ -93,6 +95,9 @@ impl FromWorld for GameDirectoriesWrapper {
                 .unwrap(),
         }
     }
+}
+fn finished_init(mut app_state: ResMut<NextState<AppState>>) {
+    app_state.set(AppState::Loading);
 }
 
 /// The layer to draw the world and players onto
@@ -276,7 +281,6 @@ fn main() {
         .init_resource::<WindowUiOverlayInfo>()
         .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
-        .init_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins
@@ -300,13 +304,15 @@ fn main() {
                     }
                     .into(),
                     level: bevy::log::Level::DEBUG,
-                    update_subscriber: None,
+                    ..default()
                 }),
         )
+        .add_plugins(EguiPlugin)
+        .init_state::<AppState>()
         .add_systems(Update, resize_notificator)
+        .add_systems(Update, finished_init.run_if(in_state(AppState::Init)))
         .add_plugins(CampaignTrailAssetPlugin)
         .add_plugins(MainCampaignLoader)
-        .add_plugins(EguiPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(Ui)
         .add_plugins(MapEditorPlugin)

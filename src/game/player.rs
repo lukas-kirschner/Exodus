@@ -146,12 +146,12 @@ fn handle_collision_interaction(
                         scoreboard.keys -= 1;
                         // Spawn a "Key Used" Animation:
                         commands.spawn((
-                            SpriteSheetBundle {
+                            TextureAtlas {
+                                layout: atlas_handle.current_atlas_handle(),
+                                index: Tile::KEY.atlas_index().unwrap(),
+                            },
+                            SpriteBundle {
                                 sprite: Sprite::default(),
-                                atlas: TextureAtlas {
-                                    layout: atlas_handle.current_atlas_handle(),
-                                    index: Tile::KEY.atlas_index().unwrap(),
-                                },
                                 texture: texture.clone(),
                                 transform: Transform {
                                     translation: (
@@ -327,10 +327,10 @@ pub fn player_movement(
                                 atlas.index = 222; // Angel texture
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
-                                    SpriteSheetBundle {
+                                    atlas.clone(),
+                                    SpriteBundle {
                                         sprite: Sprite::default(),
                                         texture: sprite.clone(),
-                                        atlas: atlas.clone(),
                                         transform: Transform {
                                             translation: transform.translation,
                                             scale: transform.scale * Vec3::splat(1.2),
@@ -365,10 +365,10 @@ pub fn player_movement(
                                         worldwrapper.world.get_teleport_location(teleport_id)
                                     {
                                         commands.spawn((
-                                            SpriteSheetBundle {
+                                            atlas.clone(),
+                                            SpriteBundle {
                                                 texture: sprite.clone(),
                                                 sprite: Sprite::default(),
-                                                atlas: atlas.clone(),
                                                 transform: *transform,
                                                 ..default()
                                             },
@@ -400,10 +400,10 @@ pub fn player_movement(
                             atlas.index = EXITING_PLAYER_SPRITE;
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
-                                SpriteSheetBundle {
+                                atlas.clone(),
+                                SpriteBundle {
                                     texture: sprite.clone(),
                                     sprite: Sprite::default(),
-                                    atlas: atlas.clone(),
                                     transform: *transform,
                                     ..default()
                                 },
@@ -483,12 +483,12 @@ pub fn respawn_player(
     };
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: atlas_handle_player.current_atlas_handle(),
+            index: player.player.atlas_index(),
+        },
+        SpriteBundle {
             sprite: Sprite::default(),
-            atlas: TextureAtlas {
-                layout: atlas_handle_player.current_atlas_handle(),
-                index: player.player.atlas_index(),
-            },
             texture: atlas_handle_player.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(

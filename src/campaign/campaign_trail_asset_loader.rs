@@ -1,6 +1,6 @@
 use bevy::asset::io::Reader;
 use bevy::asset::AsyncReadExt;
-use bevy::asset::{AssetLoader, BoxedFuture, LoadContext};
+use bevy::asset::{AssetLoader, LoadContext};
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use libexodus::campaign::graph::{Graph, GraphParseError};
@@ -26,22 +26,20 @@ impl AssetLoader for CampaignTrailLoader {
     type Settings = ();
     type Error = GraphParseError;
 
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let mut graph = Graph::default();
-            // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
-            #[allow(noop_method_call)]
-            graph.parse(&mut bytes.as_slice().clone())?;
-            let asset = CampaignTrailAsset(graph);
-            Ok(asset)
-        })
+        _load_context: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let mut graph = Graph::default();
+        // Bug in Clippy: https://github.com/rust-lang/rust-clippy/issues/8566
+        #[allow(noop_method_call)]
+        graph.parse(&mut bytes.as_slice().clone())?;
+        let asset = CampaignTrailAsset(graph);
+        Ok(asset)
     }
 
     fn extensions(&self) -> &[&str] {

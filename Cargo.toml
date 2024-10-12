@@ -13,12 +13,12 @@ members = [
 [dependencies]
 indoc = "2.0.5"
 libexodus = { path = "libexodus" }
-strum = "0.26.2"
-once_cell = "1.19.0"
-rust-i18n = "3.0.1"
-regex = "1.10.4"
+strum = "0.26.3"
+once_cell = "1.20.2"
+rust-i18n = "3.1.2"
+regex = "1.11.0"
 font-kit = "0.14.2"
-trash = "5.0.0"
+trash = "5.1.1"
 
 [package.metadata.i18n]
 available-locales = ["en_US", "de_DE"]
@@ -27,7 +27,7 @@ load_path = "locales"
 
 # Bevy Debloating - see https://bevy-cheatbook.github.io/setup/bevy-config.html
 [dependencies.bevy]
-version = "0.13.2"
+version = "0.14.2"
 default-features = false
 features = [
 
@@ -48,6 +48,7 @@ features = [
     #    "bevy_render",        # Rendering framework core
     #    "bevy_core_pipeline", # Common rendering abstractions
     "bevy_sprite", # 2D (sprites) rendering
+    "bevy_state",
     #    "bevy_pbr",           # 3D (physically-based) rendering
     #    "bevy_gltf",          # GLTF 3D assets format support
     #    "bevy_text",          # Text/font rendering
@@ -90,7 +91,7 @@ features = [
 
 # Only include the features of bevy_egui that we actually need:
 [dependencies.bevy_egui]
-version = "0.26.0"
+version = "0.30.0"
 default-features = false
 features = [
     "render"

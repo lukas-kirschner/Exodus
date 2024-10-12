@@ -29,7 +29,7 @@ impl FromWorld for EguiButtonTextures {
 /// a tuple of the new handle to the scaled image and the texture size in pixels.
 /// The resulting image is always square
 fn scale_texture(
-    uv: &Rect,
+    uv: &URect,
     assets: &mut Assets<Image>,
     texture_handle: &Handle<Image>,
 ) -> (Handle<Image>, usize) {
@@ -40,16 +40,11 @@ fn scale_texture(
         "Expected square textures!"
     );
     assert_eq!(
-        (uv.max.x - uv.min.x) * 16.,
-        source_image.width() as f32,
+        (uv.max.x - uv.min.x) * 16u32,
+        source_image.width(),
         "Expected a source image width of {}, got {}",
-        (uv.max.x - uv.min.x) * 16.,
+        (uv.max.x - uv.min.x) * 16u32,
         source_image.width()
-    );
-    debug_assert_eq!(
-        (uv.max.x - uv.min.x).fract(),
-        0.0,
-        "Expected texture uv sizes to be an integer!"
     );
     let old_texture_size = (uv.max.x - uv.min.x) as usize;
     let ratio = old_texture_size as f64 / EGUI_TEX_SIZE as f64;
@@ -129,7 +124,7 @@ fn convert(
     atlas_index: &AtlasIndex,
     assets: &mut Assets<Image>,
 ) -> (TextureId, egui::Vec2, egui::Rect) {
-    let rect: Rect = texture_atlas.textures[*atlas_index];
+    let rect: URect = texture_atlas.textures[*atlas_index];
     let (handle, size) = scale_texture(&rect, assets, texture_handle);
     let uv: egui::Rect = egui::Rect::from_min_max(Pos2::new(0., 0.), Pos2::new(1., 1.));
     let rect_vec2: egui::Vec2 = egui::Vec2::new(size as f32, size as f32);
@@ -147,11 +142,11 @@ pub fn atlas_to_egui_textures(
     mut assets: ResMut<Assets<Image>>,
 ) {
     let texture_atlas: &TextureAtlasLayout = texture_atlases
-        .get(tileset_manager.current_atlas_handle())
+        .get(&tileset_manager.current_atlas_handle())
         .expect("The atlas layout of the tile set has not yet been loaded!");
     assert_eq!(
-        texture_atlas.size.x / 16.,
-        tileset_manager.current_tileset.texture_size() as f32
+        texture_atlas.size.x / 16,
+        tileset_manager.current_tileset.texture_size()
     );
     let texture_handle: Handle<Image> = tileset_manager.current_texture_handle();
     let mut textures = HashMap::new();

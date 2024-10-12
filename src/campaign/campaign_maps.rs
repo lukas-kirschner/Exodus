@@ -55,7 +55,7 @@ fn generate_campaign_maps_resource(
         Some(RecursiveDependencyLoadState::Loaded) => {
             for handle in &folder_assets.get(&map_handles.handles).unwrap().handles {
                 let map = assets
-                    .remove(handle.clone().typed())
+                    .remove(&handle.clone().typed())
                     .expect("Error removing a map asset from asset manager!")
                     .0;
                 let name = map

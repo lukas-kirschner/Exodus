@@ -52,7 +52,7 @@ fn config_screen_ui(
                         ui.scope(|ui| {
                             ui.set_width(UIPANELCBWIDTH);
                             let selected_lang = res_config.config.game_language.to_string();
-                            egui::ComboBox::from_id_source("lang_box")
+                            egui::ComboBox::from_id_salt("lang_box")
                                 .width(UIPANELCBWIDTH)
                                 .selected_text(selected_lang)
                                 .show_ui(ui, |ui| {
@@ -73,7 +73,7 @@ fn config_screen_ui(
                         ui.scope(|ui| {
                             ui.set_width(UIPANELCBWIDTH);
                             let selected_tileset = res_config.config.tile_set.to_string();
-                            egui::ComboBox::from_id_source("tile_set_box")
+                            egui::ComboBox::from_id_salt("tile_set_box")
                                 .width(UIPANELCBWIDTH)
                                 .selected_text(selected_tileset)
                                 .show_ui(ui, |ui| {

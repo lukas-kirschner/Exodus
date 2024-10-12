@@ -306,7 +306,7 @@ fn campaign_screen_ui(
             ui.vertical(|ui| {
                 ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
                     if in_map {
-                        ui.label(t!(format!("campaign.map.{}", map_name).as_str()));
+                        ui.label(t!(format!("campaign.map.{}", map_name)));
                     }
                 });
                 ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
@@ -395,11 +395,11 @@ pub fn play_map_keyboard_controls(
                     exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
-                        SpriteSheetBundle {
-                            sprite: Sprite::default(),
-                            atlas: exit_atlas,
-                            texture: sprite.clone(),
+                        exit_atlas,
+                        SpriteBundle {
                             transform: *player_pos,
+                            texture: sprite.clone(),
+                            sprite: Sprite::default(),
                             ..default()
                         },
                         AnimatedActionSprite::from_ascend_and_zoom(
