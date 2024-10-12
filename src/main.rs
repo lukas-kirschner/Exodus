@@ -276,7 +276,6 @@ fn main() {
         .init_resource::<WindowUiOverlayInfo>()
         .init_resource::<AllAssetHandles>()
         .add_systems(Startup, game_init)
-        .init_state::<AppState>()
         .insert_resource(Msaa::Sample2)
         .add_plugins(
             DefaultPlugins
@@ -303,10 +302,11 @@ fn main() {
                     ..default()
                 }),
         )
+        .add_plugins(EguiPlugin)
+        .init_state::<AppState>()
         .add_systems(Update, resize_notificator)
         .add_plugins(CampaignTrailAssetPlugin)
         .add_plugins(MainCampaignLoader)
-        .add_plugins(EguiPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(Ui)
         .add_plugins(MapEditorPlugin)

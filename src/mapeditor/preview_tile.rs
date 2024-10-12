@@ -41,7 +41,11 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
     };
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: current_texture_atlas.current_atlas_handle(),
+            index: previewtile.current_tile.atlas_index().unwrap(),
+        },
+        SpriteBundle {
             sprite: Sprite {
                 color: Color::Srgba(Srgba {
                     red: 1.0,
@@ -50,10 +54,6 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
                     alpha: MAPEDITOR_PREVIEWTILE_ALPHA,
                 }),
                 ..default()
-            },
-            atlas: TextureAtlas {
-                layout: current_texture_atlas.current_atlas_handle(),
-                index: previewtile.current_tile.atlas_index().unwrap(),
             },
             texture: current_texture_atlas.current_texture_handle(),
             transform: Transform {

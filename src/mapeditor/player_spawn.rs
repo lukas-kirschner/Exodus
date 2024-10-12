@@ -22,12 +22,12 @@ pub fn init_player_spawn(
     let (map_player_position_x, map_player_position_y) = world_wrapper.world.player_spawn();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: tileset.current_atlas_handle(),
+            index: player.player.atlas_index(),
+        },
+        SpriteBundle {
             sprite: Sprite::default(),
-            atlas: TextureAtlas {
-                layout: tileset.current_atlas_handle(),
-                index: player.player.atlas_index(),
-            },
             texture: tileset.current_texture_handle(),
             transform: Transform {
                 translation: Vec3::new(

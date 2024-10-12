@@ -73,12 +73,12 @@ pub fn spawn_tile(
     layer: &RenderLayers,
 ) {
     let mut bundle: EntityCommands = commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: map_texture_atlas.current_atlas_handle(),
+            index: atlas_index,
+        },
+        SpriteBundle {
             sprite: Sprite::default(),
-            atlas: TextureAtlas {
-                layout: map_texture_atlas.current_atlas_handle(),
-                index: atlas_index,
-            },
             texture: map_texture_atlas.current_texture_handle(),
             transform: Transform {
                 // Multiply the position by the texture size
@@ -100,7 +100,7 @@ pub fn setup_game_world(commands: &mut Commands, world: &GameWorld, atlas_handle
     let layer: RenderLayers = RenderLayers::layer(LAYER_ID);
     // Set Background Color
     let bg_color = atlas_handle.current_tileset.background_color();
-    commands.insert_resource(ClearColor(Color::rgb_u8(
+    commands.insert_resource(ClearColor(Color::srgb_u8(
         bg_color.r, bg_color.g, bg_color.b,
     )));
     // Load the world

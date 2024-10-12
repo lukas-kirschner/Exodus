@@ -321,12 +321,12 @@ fn spawn_animation(
     tile: &Tile,
 ) {
     commands.spawn((
-        SpriteSheetBundle {
+        TextureAtlas {
+            layout: atlas_handle.current_atlas_handle(),
+            index: tile.atlas_index().unwrap(),
+        },
+        SpriteBundle {
             sprite: Sprite::default(),
-            atlas: TextureAtlas {
-                layout: atlas_handle.current_atlas_handle(),
-                index: tile.atlas_index().unwrap(),
-            },
             texture: atlas_handle.current_texture_handle().clone(),
             transform: Transform {
                 translation: (player_pos_px.0, player_pos_px.1, PLAYER_Z - 0.1).into(),

@@ -8,7 +8,7 @@ use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
 use bevy::prelude::Commands;
 use bevy_egui::egui;
-use bevy_egui::egui::{RichText, Ui};
+use bevy_egui::egui::{RichText, Ui, UiBuilder};
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
 use libexodus::tilesets::Tileset;
 use std::path::{Path, PathBuf};
@@ -169,7 +169,7 @@ impl UIDialog for SaveFileDialog {
                 );
                 ui.add_enabled_ui(self.force_texturepack, |ui| {
                     let selected_tileset = self.texturepack.to_string();
-                    egui::ComboBox::from_id_source("forced_tileset")
+                    egui::ComboBox::from_id_salt("forced_tileset")
                         .selected_text(selected_tileset)
                         .width(UIPANELCBWIDTH)
                         .show_ui(ui, |ui| {
@@ -199,9 +199,15 @@ impl UIDialog for SaveFileDialog {
                     }
                 });
             });
-            ui.add_visible_ui(
-                self.state == SaveFileDialogState::Error
-                    || self.state == SaveFileDialogState::Overwrite,
+            ui.scope_builder(
+                if self.state == SaveFileDialogState::Error
+                    || self.state == SaveFileDialogState::Overwrite
+                {
+                    UiBuilder::new().disabled()
+                } else {
+                    UiBuilder::new()
+                }
+                .id_salt("SaveSubDialogUi"),
                 |ui| {
                     ui.scope(|ui| {
                         ui.horizontal(|ui| {
