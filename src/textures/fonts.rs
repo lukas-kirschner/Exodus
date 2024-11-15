@@ -4,8 +4,8 @@ use bevy_egui::egui::{Color32, Context, FontData, FontFamily, FontId, Rounding, 
 use bevy_egui::{egui, EguiContexts};
 use font_kit::family_name::FamilyName;
 use font_kit::properties::{Properties, Style, Weight};
+use font_kit::source::Source;
 use font_kit::source::SystemSource;
-use font_kit::sources::fontconfig::FontconfigSource;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
@@ -14,8 +14,8 @@ const SANSSERIF_BOLD: &str = "SansSerifBold";
 const SANSSERIF_ITALIC: &str = "SansSerifItalic";
 
 /// Insert a single system font or panic, if the font cannot be found
-fn insert_system_font(
-    source: &FontconfigSource,
+fn insert_system_font<S: Source>(
+    source: &S,
     family: &[FamilyName],
     properties: &Properties,
     font_data: &mut BTreeMap<String, FontData>,
@@ -33,7 +33,7 @@ fn insert_system_font(
 }
 
 /// Load the fallback fonts in case font loading goes wrong later
-fn load_system_fonts(ctx: &mut Context, source: &FontconfigSource) {
+fn load_system_fonts<S: Source>(ctx: &mut Context, source: &S) {
     fn sys(s: &str) -> String {
         format!("{}-System", s)
     }
@@ -86,7 +86,7 @@ fn load_system_fonts(ctx: &mut Context, source: &FontconfigSource) {
 }
 
 /// Load the specific fonts, if they exist
-fn load_specific_fonts(_ctx: &mut Context, _source: &FontconfigSource) {
+fn load_specific_fonts<S: Source>(_ctx: &mut Context, _source: &S) {
     // For an example, see https://github.com/emilk/egui/discussions/2169
     // let mut fonts = egui::FontDefinitions::default();
     //
