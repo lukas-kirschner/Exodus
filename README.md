@@ -2,7 +2,7 @@
 
 A Re-Implementation of the
 game [Space Exodus](https://web.archive.org/web/20010609173820/http://www.davidsansome.co.uk/pages/psion/exodus/index.htm)
-, originally programmed by [David Sansome](http://www.davidsansome.com/) for Psion EPOC-based handheld computers.
+, originally written by [David Sansome](http://www.davidsansome.com/) for Psion EPOC-based handheld computers.
 This game is a stand-alone cross-platform project implemented in [Rust](https://www.rust-lang.org/) using
 the [Bevy](https://bevyengine.org/) engine.
 

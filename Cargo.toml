@@ -3,6 +3,18 @@ name = "exodus"
 version = "0.1.0"
 authors = ["Lukas Kirschner <lukas@lukaskirschner.de>"]
 edition = "2021"
+license = "MIT"
+homepage = "https://github.com/lukas-kirschner/Exodus"
+description = "A Re-Implementation of the game Space Exodus, originally written by David Sansome for Psion EPOC-based handheld computers."
+
+# Windows Installer Metadata, see https://volks73.github.io/cargo-wix/cargo_wix/index.html#configuration
+[package.metadata.wix]
+banner = "wix\\Banner.bmp"
+dialog = "wix\\Dialog.bmp"
+name = "Exodus"
+product-name = "Exodus"
+upgrade-guid = "C5F37231-0C45-4CC9-9626-018226709C14"
+path-guid = "1670EC61-2038-4C52-91C5-D317EEFD3EA7"
 
 [workspace]
 resolver = "2"
