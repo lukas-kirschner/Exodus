@@ -32,6 +32,9 @@ regex = "1.11.0"
 font-kit = "0.14.2"
 trash = "5.1.1"
 
+[build-dependencies]
+copy_to_output = "2.2.0"
+
 [package.metadata.i18n]
 available-locales = ["en_US", "de_DE"]
 default_locale = "en_US"

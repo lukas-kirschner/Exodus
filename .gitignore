@@ -1,2 +1,4 @@
 /target
 /.vs
+/wix/assets.wxs
+/wix/assets.xslt

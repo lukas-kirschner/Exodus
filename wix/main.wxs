@@ -86,15 +86,8 @@
         <Property Id='DiskPrompt' Value='exodus Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
-            <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
+			<Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
                 <Directory Id='APPLICATIONFOLDER' Name='exodus'>
-                    <!--
-                      Disabling the license sidecar file in the installer is a two step process:
-
-                      1. Comment out or remove the `Component` tag along with its contents.
-                      2. Comment out or remove the `ComponentRef` tag with the "License" Id
-                         attribute value further down in this file.
-                    -->
                     <Component Id='License' Guid='*'>
                         <File Id='LicenseFile'
                             DiskId='1'
@@ -102,26 +95,14 @@
                             KeyPath='yes'/>
                     </Component>
                     
-                    <Directory Id='Bin' Name='bin'>
-                        <Component Id='Path' Guid='1670EC61-2038-4C52-91C5-D317EEFD3EA7' KeyPath='yes'>
-                            <Environment
-                                Id='PATH'
-                                Name='PATH'
-                                Value='[Bin]'
-                                Permanent='no'
-                                Part='last'
-                                Action='set'
-                                System='yes'/>
-                        </Component>
-                        <Component Id='binary0' Guid='*'>
-                            <File
-                                Id='exe0'
-                                Name='exodus.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\exodus.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                    </Directory>
+                    <Component Id='binary0' Guid='*'>
+                        <File
+                            Id='exe0'
+                            Name='exodus.exe'
+                            DiskId='1'
+                            Source='$(var.CargoTargetBinDir)\exodus.exe'
+                            KeyPath='yes'/>
+                    </Component>
                 </Directory>
             </Directory>
         </Directory>
@@ -135,22 +116,11 @@
             AllowAdvertise='no'
             Display='expand'
             Absent='disallow'>
-            <!--
-              Comment out or remove the following `ComponentRef` tag to remove
-              the license sidecar file from the installer.
-            -->
             <ComponentRef Id='License'/>
             
             <ComponentRef Id='binary0'/>
-
-            <Feature
-                Id='Environment'
-                Title='PATH Environment Variable'
-                Description='Add the install location of the [ProductName] executable to the PATH system environment variable. This allows the [ProductName] executable to be called from any location.'
-                Level='1'
-                Absent='allow'>
-                <ComponentRef Id='Path'/>
-            </Feature>
+			
+            <ComponentGroupRef Id='AssetsComponent'/>
         </Feature>
 
         <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize'/>
@@ -166,9 +136,10 @@
         <!--<Property Id='ARPPRODUCTICON' Value='ProductICO' />-->
 
         <Property Id='ARPHELPLINK' Value='https://github.com/lukas-kirschner/Exodus'/>
-        
-        <UI>
-            <UIRef Id='WixUI_FeatureTree'/>
+		<Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONFOLDER" />
+
+		<UI>
+            <UIRef Id='WixUI_InstallDir'/>
             <!--
               Disabling the EULA dialog in the installer is a two step process:
 

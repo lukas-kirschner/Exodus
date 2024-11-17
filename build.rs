@@ -1,7 +1,52 @@
+use copy_to_output::copy_to_output;
 use std::env;
+use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
+
+fn write_harvest_xslt(relative_source_folder: &str) -> PathBuf {
+    let xslt_path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+        .join("wix")
+        .join(format!("{}.xslt", relative_source_folder));
+    let dir_var = format!("{}Dir", relative_source_folder);
+    let xslt = format!(
+        r#"
+<xsl:stylesheet version="1.0" 
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+<xsl:strip-space elements="*"/>
+
+<!-- identity transform -->
+<xsl:template match="@*|node()">
+    <xsl:copy>
+        <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+</xsl:template>
+
+<!-- match the root element of unknown name -->
+<xsl:template match="/*">
+    <xsl:copy>
+        <xsl:processing-instruction name="define">
+            <xsl:text>{0}="$(var.CargoTargetBinDir)\\{1}"</xsl:text>
+        </xsl:processing-instruction>
+
+        <xsl:apply-templates select="@*|node()"/>
+
+        <xsl:processing-instruction name="undef">
+            <xsl:text>{0}</xsl:text>
+        </xsl:processing-instruction>
+    </xsl:copy>
+</xsl:template>
+
+</xsl:stylesheet>
+"#,
+        dir_var, relative_source_folder
+    );
+    fs::write(&xslt_path, xslt).expect("Unable to write file");
+    xslt_path
+}
 
 fn main() {
     let mut git_hash: String = "<unknown hash>".to_string();
@@ -39,6 +84,9 @@ fn main() {
 
     let os = std::env::var_os("CARGO_CFG_TARGET_OS").unwrap();
     if os == "windows" {
+        // Copy assets folder to target folder
+        copy_to_output("assets", &env::var("PROFILE").unwrap()).expect("Could not copy");
+        let assets_xslt = write_harvest_xslt("assets");
         let out = Command::new("heat.exe")
             .arg("dir")
             .arg(
@@ -52,20 +100,27 @@ fn main() {
             .arg("-sfrag")
             .arg("-template:fragment")
             .arg("-dr")
-            .arg("AssetsDirRef")
+            .arg("APPLICATIONFOLDER")
+            .arg("-cg")
+            .arg("AssetsComponent")
+            .arg("-var")
+            .arg("var.assetsDir")
+            .arg("-t")
+            .arg(assets_xslt)
             .arg("-out")
-            // Problem - Here, we are unable to get anything else than target/debug/build/{some hash we do not know after building}/bin
-            // and in cargo-wix we are unable to get anything else than target/debug.
-            // Therefore, we need to use this ugly relative path which is highly discouraged in cargo build scripts to write the harvested directory file:
+            // We write the harvested fragment into the source folder which is highly discouraged in Cargo build scripts.
             .arg(
-                Path::new(&std::env::var_os("OUT_DIR").expect("Could not get out dir from Cargo!")).join("..").join("..").join("..")
-                    .join("assets.wxi"),
+               Path::new(
+                    &std::env::var("CARGO_MANIFEST_DIR")
+                        .expect("Could not get project dir from Cargo!"),
+                ).join("wix")
+                    .join("assets.wxs"),
             )
             .output()
             .expect("failed to execute process");
         if let Some(0) = out.status.code() {
         } else {
-            println!("cargo:warning={} {:?}", "Heat exited with code", out.status);
+            println!("cargo:warning=Heat exited with code {:?}", out.status);
             panic!();
         }
         println!("cargo:rerun-if-changed=assets");
