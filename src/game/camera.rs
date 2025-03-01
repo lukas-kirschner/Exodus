@@ -186,7 +186,7 @@ pub fn compute_viewport_to_world(
             ret.1 += layer_camera_transform.translation().y / texture_size;
             return Some((ret.0 + 0.5, ret.1 + 0.5));
         },
-        Err(e) => error!(
+        Err(e) => warn!(
             "Could not convert viewport coordinates to world coordinates: {:?}",
             e
         ),
@@ -213,7 +213,7 @@ pub fn compute_world_to_viewport(
     ) {
         Ok(screen_player) => Some(screen_player),
         Err(e) => {
-            error!(
+            warn!(
                 "Could not convert world coordinates to viewport coordinates: {:?}",
                 e
             );
