@@ -24,7 +24,7 @@ fn game_over_screen_ui(
     mut save_state: ResMut<SaveHighscoreState>,
 ) {
     egui::CentralPanel::default()
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal_centered(|ui| {
                 ui.vertical_centered(|ui| {
@@ -111,7 +111,7 @@ fn game_over_screen_ui(
             });
         });
     egui::TopBottomPanel::bottom("navbar")
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 let back_button = image_button(

@@ -123,16 +123,18 @@ pub fn setup_camera(
     };
     image.resize(size);
     let image_handle = images.add(image);
-    let mut layer_camera = Camera::default();
-    layer_camera.target = RenderTarget::Image(image_handle.clone());
-    layer_camera.order = -1;
+    let layer_camera = Camera {
+        target: RenderTarget::Image(image_handle.clone()),
+        order: -1,
+        ..default()
+    };
     let main_camera = Camera::default();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
-    commands.spawn((main_camera, Camera2d::default(), MainCamera));
+    commands.spawn((main_camera, Camera2d {}, MainCamera));
     commands.spawn((
         layer_camera,
-        Camera2d::default(),
+        Camera2d {},
         Msaa::Sample2, // Fewer artifacts when rendering sprites in tiny resolutions
         LayerCamera,
         layer,

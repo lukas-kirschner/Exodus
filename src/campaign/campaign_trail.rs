@@ -389,11 +389,8 @@ pub fn play_map_keyboard_controls(
                     exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
-                        SpriteBundle {
-                            transform: *player_pos,
-                            sprite: Sprite::from_atlas_image(sprite.image.clone(), exit_atlas),
-                            ..default()
-                        },
+                        Sprite::from_atlas_image(sprite.image.clone(), exit_atlas),
+                        *player_pos,
                         AnimatedActionSprite::from_ascend_and_zoom(
                             EXITED_PLAYER_DECAY_SPEED,
                             EXITED_PLAYER_ASCEND_SPEED,

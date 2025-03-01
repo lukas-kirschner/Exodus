@@ -1,5 +1,4 @@
 use bevy::asset::io::Reader;
-use bevy::asset::AsyncReadExt;
 use bevy::asset::{AssetLoader, LoadContext};
 use bevy::prelude::*;
 use bevy::reflect::TypePath;

@@ -46,15 +46,13 @@ impl Plugin for VendingMachinePlugin {
             )
             .add_systems(
                 Update,
-                vending_machine_ui.run_if(
-                    in_state(AppState::Playing).and_then(resource_exists::<HasVendingMachine>),
-                ),
+                vending_machine_ui
+                    .run_if(in_state(AppState::Playing).and(resource_exists::<HasVendingMachine>)),
             )
             .add_systems(
                 Update,
-                vending_machine_key_handler.run_if(
-                    in_state(AppState::Playing).and_then(resource_exists::<HasVendingMachine>),
-                ),
+                vending_machine_key_handler
+                    .run_if(in_state(AppState::Playing).and(resource_exists::<HasVendingMachine>)),
             )
             .insert_resource(VendingMachineItems {
                 items: vec![Box::new(CoinsItem), Box::new(KeysItem)],

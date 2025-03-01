@@ -51,16 +51,12 @@ fn check_and_init_textures(
     all_assets: Res<AllAssetHandles>,
     mut folder_assets: ResMut<Assets<LoadedFolder>>,
 ) {
-    let all_loaded = all_assets
-        .handles
-        .iter()
-        .map(|folder_handle| {
-            asset_server
-                .get_recursive_dependency_load_state(folder_handle)
-                .map(|state| matches!(state, RecursiveDependencyLoadState::Loaded))
-                .unwrap_or(false)
-        })
-        .all(|b| b);
+    let all_loaded = all_assets.handles.iter().all(|folder_handle| {
+        asset_server
+            .get_recursive_dependency_load_state(folder_handle)
+            .map(|state| matches!(state, RecursiveDependencyLoadState::Loaded))
+            .unwrap_or(false)
+    });
     if all_loaded {
         // Remove all handles inside the textures folder, because they are only needed here
         let all_texture_handles: Vec<UntypedHandle> = folder_assets

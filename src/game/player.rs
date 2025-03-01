@@ -61,17 +61,15 @@ pub struct PlayerComponent {
 fn set_player_direction(player: &mut Player, sprite: &mut Sprite, right: bool) {
     if right && !player.is_facing_right() {
         player.set_face_right(true);
-        sprite
-            .texture_atlas
-            .as_mut()
-            .map(|a| a.index = player.atlas_index());
+        if let Some(ref mut a) = sprite.texture_atlas {
+            a.index = player.atlas_index();
+        }
     }
     if !right && player.is_facing_right() {
         player.set_face_right(false);
-        sprite
-            .texture_atlas
-            .as_mut()
-            .map(|a| a.index = player.atlas_index());
+        if let Some(ref mut a) = sprite.texture_atlas {
+            a.index = player.atlas_index()
+        }
     }
 }
 
@@ -148,10 +146,9 @@ fn handle_collision_interaction(
                             target_y_coord as usize,
                             Tile::OPENDOOR,
                         );
-                        sprite
-                            .texture_atlas
-                            .as_mut()
-                            .map(|a| a.index = Tile::OPENDOOR.atlas_index().unwrap());
+                        if let Some(ref mut a) = sprite.texture_atlas {
+                            a.index = Tile::OPENDOOR.atlas_index().unwrap();
+                        }
                         scoreboard.keys -= 1;
                         // Spawn a "Key Used" Animation:
                         commands.spawn((
@@ -319,10 +316,9 @@ pub fn player_movement(
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(player_entity).despawn_recursive();
-                                sprite
-                                    .texture_atlas
-                                    .as_mut()
-                                    .map(|a| a.index = ANGEL_SPRITE);
+                                if let Some(ref mut a) = sprite.texture_atlas {
+                                    a.index = ANGEL_SPRITE
+                                }
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
                                     Sprite::from_atlas_image(
@@ -355,10 +351,9 @@ pub fn player_movement(
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location
                                     commands.entity(player_entity).despawn_recursive();
-                                    sprite
-                                        .texture_atlas
-                                        .as_mut()
-                                        .map(|a| a.index = EXITING_PLAYER_SPRITE);
+                                    if let Some(ref mut a) = sprite.texture_atlas {
+                                        a.index = EXITING_PLAYER_SPRITE;
+                                    }
                                     let layer = RenderLayers::layer(LAYER_ID);
                                     if let Some(location) =
                                         worldwrapper.world.get_teleport_location(teleport_id)
@@ -394,10 +389,9 @@ pub fn player_movement(
                         TileKind::COLLECTIBLE { .. } => {},
                         TileKind::EXIT => {
                             commands.entity(player_entity).despawn_recursive();
-                            sprite
-                                .texture_atlas
-                                .as_mut()
-                                .map(|a| a.index = EXITING_PLAYER_SPRITE);
+                            if let Some(ref mut a) = sprite.texture_atlas {
+                                a.index = EXITING_PLAYER_SPRITE;
+                            }
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
                                 Sprite::from_atlas_image(

@@ -60,10 +60,9 @@ fn update_texture_at(
                 && transform.translation.y as i32
                     == (pos.y as i32 * map_texture_atlas.current_tileset.texture_size() as i32)
             {
-                sprite
-                    .texture_atlas
-                    .as_mut()
-                    .map(|a| a.index = new_atlas_index);
+                if let Some(ref mut a) = sprite.texture_atlas {
+                    a.index = new_atlas_index;
+                }
                 debug!("Updated tile texture at position {},{}", pos.x, pos.y);
                 return;
             }

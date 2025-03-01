@@ -67,21 +67,23 @@ fn set_preview_tile_texture(
     preview_tile: &mut PreviewTile,
     current_texture_atlas: &TilesetManager,
 ) {
-    sprite.texture_atlas.as_mut().map(|a| match *new_tile {
-        Tile::PLAYERSPAWN => {
-            a.layout = current_texture_atlas.current_atlas_handle();
-            a.index = Player::new().atlas_index();
-        },
-        _ => {
-            if let Some(atlas_index) = new_tile.atlas_index() {
+    if let Some(ref mut a) = sprite.texture_atlas {
+        match *new_tile {
+            Tile::PLAYERSPAWN => {
                 a.layout = current_texture_atlas.current_atlas_handle();
-                a.index = atlas_index;
-            } else {
-                a.layout = current_texture_atlas.current_atlas_handle();
-                a.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
-            }
-        },
-    });
+                a.index = Player::new().atlas_index();
+            },
+            _ => {
+                if let Some(atlas_index) = new_tile.atlas_index() {
+                    a.layout = current_texture_atlas.current_atlas_handle();
+                    a.index = atlas_index;
+                } else {
+                    a.layout = current_texture_atlas.current_atlas_handle();
+                    a.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
+                }
+            },
+        }
+    }
     sprite.image = current_texture_atlas.current_texture_handle();
     preview_tile.current_tile = new_tile.clone();
 }
