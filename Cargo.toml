@@ -54,16 +54,11 @@ features = [
     #    "bevy_text",          # Text/font rendering
     #    "bevy_ui",            # UI toolkit
     "bevy_window",
-    # File formats:
-    "png",
-    #    "hdr",
-    #    "vorbis",
-
     # These are other features that may be of interest:
     # (add any of these that you need)
 
     # Bevy functionality:
-    "wayland", # Linux: Support Wayland windowing system
+    #    "wayland", # Linux: Support Wayland windowing system
     #    "subpixel_glyph_atlas", # Subpixel antialiasing for text/fonts
     #    "serialize",            # Support for `serde` Serialize/Deserialize
     #    "bevy_dynamic_plugin",   # Support for loading of `DynamicPlugin`s
@@ -75,11 +70,13 @@ features = [
     #    "bmp",
     "png",
     #    "tga",
+    #    "hdr",
     #    "basis-universal",
     #    "zstd", # needed if using zstd in KTX2 files
     #    "flac",
     #    "mp3",
     #    "wav",
+    #    "vorbis",
 
     # Development/Debug features:
     #    "dynamic", # Dynamic linking for faster compile-times
