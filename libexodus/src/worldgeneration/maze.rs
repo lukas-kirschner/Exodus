@@ -1,6 +1,7 @@
 use crate::tiles::Tile;
 use crate::world::GameWorld;
 use crate::worldgeneration::{WorldGenerationAlgorithm, WorldGenerationError};
+use rand::prelude::IndexedRandom;
 use rand::prelude::SliceRandom;
 use rand::Rng;
 use rand_chacha::rand_core::SeedableRng;
