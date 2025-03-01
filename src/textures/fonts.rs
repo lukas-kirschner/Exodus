@@ -1,6 +1,6 @@
 use crate::ui::UIMARGIN;
 use bevy_egui::egui::style::Spacing;
-use bevy_egui::egui::{Color32, Context, FontData, FontFamily, FontId, Rounding, Visuals};
+use bevy_egui::egui::{Color32, Context, FontData, FontFamily, FontId, Visuals};
 use bevy_egui::{egui, EguiContexts};
 use font_kit::family_name::FamilyName;
 use font_kit::properties::{Properties, Style, Weight};

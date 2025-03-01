@@ -4,12 +4,11 @@ use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::UiSizeChangedEvent;
 use crate::{GameConfig, TilesetManager, LAYER_ID};
 use bevy::prelude::*;
-use bevy::render::camera::{RenderTarget, ViewportConversionError};
+use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::render::view::RenderLayers;
-use bevy::utils::error;
 use bevy::window::PrimaryWindow;
 
 #[derive(Component)]
@@ -124,15 +123,20 @@ pub fn setup_camera(
     };
     image.resize(size);
     let image_handle = images.add(image);
-    let mut layer_camera = Camera2dBundle::default();
-    layer_camera.camera.target = RenderTarget::Image(image_handle.clone());
-    layer_camera.camera.order = -1;
-    layer_camera.msaa = Msaa::Sample2;
-    let main_camera = Camera2dBundle::default();
+    let mut layer_camera = Camera::default();
+    layer_camera.target = RenderTarget::Image(image_handle.clone());
+    layer_camera.order = -1;
+    let main_camera = Camera::default();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
-    commands.spawn((main_camera, MainCamera));
-    commands.spawn((layer_camera, LayerCamera, layer));
+    commands.spawn((main_camera, Camera2d::default(), MainCamera));
+    commands.spawn((
+        layer_camera,
+        Camera2d::default(),
+        Msaa::Sample2, // Fewer artifacts when rendering sprites in tiny resolutions
+        LayerCamera,
+        layer,
+    ));
     commands.spawn((
         Sprite::from_image(image_handle),
         Transform {
