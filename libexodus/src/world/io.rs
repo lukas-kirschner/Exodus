@@ -39,7 +39,6 @@ pub(crate) const HASH_LENGTH: usize = 32;
 /// If it does not match, the load will fail.
 /// If there is extra data at the end of a map, it will be ignored and discarded when the map
 /// is loaded and saved again.
-
 impl GameWorld {
     /// Load a map from the given file.
     pub fn load_from_file(path: &Path) -> Result<GameWorld, GameWorldParseError> {
