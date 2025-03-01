@@ -74,7 +74,7 @@ fn mainmenu_ui(
     exit: EventWriter<AppExit>,
 ) {
     egui::CentralPanel::default()
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 // Left-Justify everything

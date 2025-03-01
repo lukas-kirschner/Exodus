@@ -71,7 +71,9 @@ fn generate_campaign_maps_resource(
             }
             commands.remove_resource::<CampaignMapHandles>();
         },
-        Some(RecursiveDependencyLoadState::Failed) => panic!("Failed to load the campaign maps!"),
+        Some(RecursiveDependencyLoadState::Failed(e)) => {
+            panic!("Failed to load the campaign maps: {}", e)
+        },
         _ => {},
     }
 }

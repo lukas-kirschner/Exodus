@@ -11,7 +11,7 @@ use libexodus::directions::Directions::*;
 use libexodus::directions::FromDirection;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{InteractionKind, Tile, TileKind, EXITING_PLAYER_SPRITE};
+use libexodus::tiles::{InteractionKind, Tile, TileKind, ANGEL_SPRITE, EXITING_PLAYER_SPRITE};
 use libexodus::world::GameWorld;
 
 pub struct PlayerPlugin;
@@ -58,14 +58,18 @@ pub struct PlayerComponent {
     pub player: Player,
 }
 
-fn set_player_direction(player: &mut Player, sprite: &mut TextureAtlas, right: bool) {
+fn set_player_direction(player: &mut Player, sprite: &mut Sprite, right: bool) {
     if right && !player.is_facing_right() {
         player.set_face_right(true);
-        sprite.index = player.atlas_index();
+        if let Some(ref mut a) = sprite.texture_atlas {
+            a.index = player.atlas_index();
+        }
     }
     if !right && player.is_facing_right() {
         player.set_face_right(false);
-        sprite.index = player.atlas_index();
+        if let Some(ref mut a) = sprite.texture_atlas {
+            a.index = player.atlas_index()
+        }
     }
 }
 
@@ -81,7 +85,7 @@ pub struct ReturnTo(pub AppState);
 /// Fail, if the player does not have enough keys.
 /// If true is returned, the player does not collide with the tile, e.g., because the door has been opened.
 fn handle_collision_interaction(
-    doors: &mut Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
+    doors: &mut Query<(Entity, &Transform, &mut Sprite), With<DoorWrapper>>,
     commands: &mut Commands,
     target_x_coord: i32,
     target_y_coord: i32,
@@ -131,7 +135,7 @@ fn handle_collision_interaction(
         TileKind::COLLECTIBLE { .. } => false,
         TileKind::DOOR => {
             if scoreboard.keys > 0 {
-                for (entity, transform, mut atlas, texture) in doors.iter_mut() {
+                for (entity, transform, mut sprite) in doors.iter_mut() {
                     if transform.translation.x == target_x_px as f32
                         && transform.translation.y == target_y_px as f32
                     {
@@ -142,28 +146,24 @@ fn handle_collision_interaction(
                             target_y_coord as usize,
                             Tile::OPENDOOR,
                         );
-                        atlas.index = Tile::OPENDOOR.atlas_index().unwrap();
+                        if let Some(ref mut a) = sprite.texture_atlas {
+                            a.index = Tile::OPENDOOR.atlas_index().unwrap();
+                        }
                         scoreboard.keys -= 1;
                         // Spawn a "Key Used" Animation:
                         commands.spawn((
-                            TextureAtlas {
-                                layout: atlas_handle.current_atlas_handle(),
-                                index: Tile::KEY.atlas_index().unwrap(),
-                            },
-                            SpriteBundle {
-                                sprite: Sprite::default(),
-                                texture: texture.clone(),
-                                transform: Transform {
-                                    translation: (
-                                        target_x_px as f32,
-                                        target_y_px as f32,
-                                        PLAYER_Z - 0.1,
-                                    )
-                                        .into(),
-                                    ..default()
+                            Sprite::from_atlas_image(
+                                sprite.image.clone(),
+                                TextureAtlas {
+                                    layout: atlas_handle.current_atlas_handle(),
+                                    index: Tile::KEY.atlas_index().unwrap(),
                                 },
-                                ..Default::default()
-                            },
+                            ),
+                            Transform::from_translation(Vec3::new(
+                                target_x_px as f32,
+                                target_y_px as f32,
+                                PLAYER_Z - 0.1,
+                            )),
                             AnimatedActionSprite::from_ascend_and_zoom(
                                 KEY_OPEN_ANIMATION_DECAY_SPEED,
                                 KEY_OPEN_ANIMATION_ASCEND_SPEED,
@@ -191,25 +191,17 @@ pub fn player_movement(
     mut commands: Commands,
     mut scoreboard: ResMut<Scoreboard>,
     mut player_positions: Query<
-        (
-            &mut PlayerComponent,
-            &Handle<Image>,
-            Entity,
-            &mut Transform,
-            &mut TextureAtlas,
-        ),
+        (&mut PlayerComponent, &mut Sprite, Entity, &mut Transform),
         Without<DoorWrapper>,
     >,
-    mut doors: Query<(Entity, &Transform, &mut TextureAtlas, &Handle<Image>), With<DoorWrapper>>,
+    mut doors: Query<(Entity, &Transform, &mut Sprite), With<DoorWrapper>>,
     mut worldwrapper: ResMut<MapWrapper>,
     config: Res<GameConfig>,
     time: Res<Time>,
     atlas_handle: Res<TilesetManager>,
     mut vending_machine_trigger: EventWriter<VendingMachineTriggered>,
 ) {
-    for (mut _player, sprite, player_entity, mut transform, mut atlas) in
-        player_positions.iter_mut()
-    {
+    for (mut _player, mut sprite, player_entity, mut transform) in player_positions.iter_mut() {
         // Peek the player's movement queue
         let player: &mut Player = &mut _player.player;
         // let mut transform: Transform = _transform;
@@ -276,10 +268,10 @@ pub fn player_movement(
             let direction = movement.direction();
             if direction == EAST {
                 // Check player's x direction and change texture accordingly
-                set_player_direction(player, &mut atlas, true);
+                set_player_direction(player, sprite.as_mut(), true);
 
                 if transform.translation.x < target_x_px {
-                    transform.translation.x += velocity_x * time.delta_seconds();
+                    transform.translation.x += velocity_x * time.delta_secs();
                 }
                 if transform.translation.x >= target_x_px {
                     transform.translation.x = target_x_px;
@@ -288,11 +280,11 @@ pub fn player_movement(
                 if velocity_x < 0. {
                     // Do not change direction if no x acceleration is happening
                     // Check player's x direction and change texture accordingly
-                    set_player_direction(player, &mut atlas, false);
+                    set_player_direction(player, sprite.as_mut(), false);
                 }
 
                 if transform.translation.x > target_x_px {
-                    transform.translation.x += velocity_x * time.delta_seconds();
+                    transform.translation.x += velocity_x * time.delta_secs();
                 }
                 if transform.translation.x <= target_x_px {
                     transform.translation.x = target_x_px;
@@ -300,14 +292,14 @@ pub fn player_movement(
             }
             if direction == NORTH {
                 if transform.translation.y < target_y_px {
-                    transform.translation.y += velocity_y * time.delta_seconds();
+                    transform.translation.y += velocity_y * time.delta_secs();
                 }
                 if transform.translation.y >= target_y_px {
                     transform.translation.y = target_y_px;
                 }
             } else {
                 if transform.translation.y > target_y_px {
-                    transform.translation.y += velocity_y * time.delta_seconds();
+                    transform.translation.y += velocity_y * time.delta_secs();
                 }
                 if transform.translation.y <= target_y_px {
                     transform.translation.y = target_y_px;
@@ -324,19 +316,19 @@ pub fn player_movement(
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
                                 commands.entity(player_entity).despawn_recursive();
-                                atlas.index = 222; // Angel texture
+                                if let Some(ref mut a) = sprite.texture_atlas {
+                                    a.index = ANGEL_SPRITE
+                                }
                                 let layer = RenderLayers::layer(LAYER_ID);
                                 commands.spawn((
-                                    atlas.clone(),
-                                    SpriteBundle {
-                                        sprite: Sprite::default(),
-                                        texture: sprite.clone(),
-                                        transform: Transform {
-                                            translation: transform.translation,
-                                            scale: transform.scale * Vec3::splat(1.2),
-                                            ..default()
-                                        },
-                                        ..Default::default()
+                                    Sprite::from_atlas_image(
+                                        sprite.image.clone(),
+                                        sprite.texture_atlas.clone().unwrap(),
+                                    ),
+                                    Transform {
+                                        translation: transform.translation,
+                                        scale: transform.scale * Vec3::splat(1.2),
+                                        ..default()
                                     },
                                     AnimatedActionSprite::from_ascend_and_zoom(
                                         DEAD_PLAYER_DECAY_SPEED,
@@ -359,19 +351,19 @@ pub fn player_movement(
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location
                                     commands.entity(player_entity).despawn_recursive();
-                                    atlas.index = EXITING_PLAYER_SPRITE;
+                                    if let Some(ref mut a) = sprite.texture_atlas {
+                                        a.index = EXITING_PLAYER_SPRITE;
+                                    }
                                     let layer = RenderLayers::layer(LAYER_ID);
                                     if let Some(location) =
                                         worldwrapper.world.get_teleport_location(teleport_id)
                                     {
                                         commands.spawn((
-                                            atlas.clone(),
-                                            SpriteBundle {
-                                                texture: sprite.clone(),
-                                                sprite: Sprite::default(),
-                                                transform: *transform,
-                                                ..default()
-                                            },
+                                            Sprite::from_atlas_image(
+                                                sprite.image.clone(),
+                                                sprite.texture_atlas.clone().unwrap(),
+                                            ),
+                                            *transform,
                                             AnimatedActionSprite::from_ascend_and_zoom(
                                                 EXITED_PLAYER_DECAY_SPEED,
                                                 EXITED_PLAYER_ASCEND_SPEED,
@@ -397,16 +389,16 @@ pub fn player_movement(
                         TileKind::COLLECTIBLE { .. } => {},
                         TileKind::EXIT => {
                             commands.entity(player_entity).despawn_recursive();
-                            atlas.index = EXITING_PLAYER_SPRITE;
+                            if let Some(ref mut a) = sprite.texture_atlas {
+                                a.index = EXITING_PLAYER_SPRITE;
+                            }
                             let layer = RenderLayers::layer(LAYER_ID);
                             commands.spawn((
-                                atlas.clone(),
-                                SpriteBundle {
-                                    texture: sprite.clone(),
-                                    sprite: Sprite::default(),
-                                    transform: *transform,
-                                    ..default()
-                                },
+                                Sprite::from_atlas_image(
+                                    sprite.image.clone(),
+                                    sprite.texture_atlas.clone().unwrap(),
+                                ),
+                                *transform,
                                 AnimatedActionSprite::from_ascend_and_zoom(
                                     EXITED_PLAYER_DECAY_SPEED,
                                     EXITED_PLAYER_ASCEND_SPEED,
@@ -483,23 +475,18 @@ pub fn respawn_player(
     };
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
-        TextureAtlas {
-            layout: atlas_handle_player.current_atlas_handle(),
-            index: player.player.atlas_index(),
-        },
-        SpriteBundle {
-            sprite: Sprite::default(),
-            texture: atlas_handle_player.current_texture_handle(),
-            transform: Transform {
-                translation: Vec3::new(
-                    position.0 * atlas_handle_player.current_tileset().texture_size() as f32,
-                    position.1 * atlas_handle_player.current_tileset().texture_size() as f32,
-                    PLAYER_Z,
-                ),
-                ..default()
+        Sprite::from_atlas_image(
+            atlas_handle_player.current_texture_handle(),
+            TextureAtlas {
+                layout: atlas_handle_player.current_atlas_handle(),
+                index: player.player.atlas_index(),
             },
-            ..Default::default()
-        },
+        ),
+        Transform::from_translation(Vec3::new(
+            position.0 * atlas_handle_player.current_tileset().texture_size() as f32,
+            position.1 * atlas_handle_player.current_tileset().texture_size() as f32,
+            PLAYER_Z,
+        )),
         player,
         layer,
     ));
@@ -528,7 +515,7 @@ pub fn setup_player(
 
 pub fn keyboard_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut players: Query<(&mut PlayerComponent, &mut TextureAtlas, &Transform)>,
+    mut players: Query<(&mut PlayerComponent, &mut Sprite, &Transform)>,
     mut scoreboard: ResMut<Scoreboard>,
     config: Res<GameConfig>,
     map: Res<MapWrapper>,
@@ -571,7 +558,7 @@ pub fn keyboard_controls(
                         });
                     }
                 } else if keyboard_input.just_pressed(KeyCode::ArrowRight) {
-                    set_player_direction(player, &mut sprite, true);
+                    set_player_direction(player, sprite.as_mut(), true);
                     player.push_movement_queue(Movement {
                         velocity: (vx, 0.),
                         target: (cur_x + 1, cur_y),
