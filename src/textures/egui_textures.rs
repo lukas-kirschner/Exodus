@@ -141,6 +141,8 @@ pub fn atlas_to_egui_textures(
     mut egui_ctx: EguiContexts,
     mut assets: ResMut<Assets<Image>>,
 ) {
+    // Free the memory used by the EguiButtonTextures
+    commands.remove_resource::<EguiButtonTextures>();
     let texture_atlas: &TextureAtlasLayout = texture_atlases
         .get(&tileset_manager.current_atlas_handle())
         .expect("The atlas layout of the tile set has not yet been loaded!");
@@ -163,5 +165,6 @@ pub fn atlas_to_egui_textures(
             ),
         );
     }
+    // Insert the new EguiButtonTextures
     commands.insert_resource(EguiButtonTextures { textures });
 }
