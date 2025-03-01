@@ -73,22 +73,17 @@ pub fn spawn_tile(
     layer: &RenderLayers,
 ) {
     let mut bundle: EntityCommands = commands.spawn((
-        TextureAtlas {
-            layout: map_texture_atlas.current_atlas_handle(),
-            index: atlas_index,
-        },
-        SpriteBundle {
-            sprite: Sprite::default(),
-            texture: map_texture_atlas.current_texture_handle(),
-            transform: Transform {
-                // Multiply the position by the texture size
-                translation: (*tile_position
-                    * (map_texture_atlas.current_tileset().texture_size() as f32))
-                    .extend(WORLD_Z),
-                ..default()
+        Sprite::from_atlas_image(
+            map_texture_atlas.current_texture_handle(),
+            TextureAtlas {
+                layout: map_texture_atlas.current_atlas_handle(),
+                index: atlas_index,
             },
-            ..Default::default()
-        },
+        ),
+        Transform::from_translation(
+            (*tile_position * (map_texture_atlas.current_tileset().texture_size() as f32))
+                .extend(WORLD_Z),
+        ),
         WorldTile, // WorldTiles are attached to each world tile, while TileWrappers are additionally attached to non-interactive world tiles.
         layer.clone(),
     ));

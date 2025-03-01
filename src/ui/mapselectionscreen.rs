@@ -406,15 +406,15 @@ impl Plugin for MapSelectionScreenPlugin {
                 Update,
                 map_selection_screen_dialog.run_if(
                     in_state(AppState::MapSelectionScreenDialog)
-                        .and_then(resource_exists::<DialogResource>),
+                        .and(resource_exists::<DialogResource>),
                 ),
             )
             .add_systems(
                 Update,
                 bevy_job_handler.run_if(
                     in_state(AppState::MapSelectionScreenDialog)
-                        .and_then(resource_exists::<DialogResource>)
-                        .and_then(resource_exists::<CreateMapBackgroundWorkerThread>),
+                        .and(resource_exists::<DialogResource>)
+                        .and(resource_exists::<CreateMapBackgroundWorkerThread>),
                 ),
             )
             .add_systems(OnEnter(AppState::MapSelectionScreenDialog), setup_camera.after(AppLabels::World).in_set(AppLabels::Camera))

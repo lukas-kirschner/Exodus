@@ -123,24 +123,28 @@ pub fn setup_camera(
     };
     image.resize(size);
     let image_handle = images.add(image);
-    let mut layer_camera = Camera2dBundle::default();
-    layer_camera.camera.target = RenderTarget::Image(image_handle.clone());
-    layer_camera.camera.order = -1;
-
-    let main_camera = Camera2dBundle::default();
+    let layer_camera = Camera {
+        target: RenderTarget::Image(image_handle.clone()),
+        order: -1,
+        ..default()
+    };
+    let main_camera = Camera::default();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
-    commands.spawn((main_camera, MainCamera));
-    commands.spawn((layer_camera, LayerCamera, layer));
+    commands.spawn((main_camera, Camera2d {}, MainCamera));
     commands.spawn((
-        SpriteBundle {
-            texture: image_handle,
-            transform: Transform {
-                // Rescale the world, such that 1 world unit = 1 tile
-                scale: Vec3::splat(1. / (config.texture_size())),
-                translation: Vec3::new(0., 0., RENDER_PLANE_Z),
-                ..default()
-            },
+        layer_camera,
+        Camera2d {},
+        Msaa::Sample2, // Fewer artifacts when rendering sprites in tiny resolutions
+        LayerCamera,
+        layer,
+    ));
+    commands.spawn((
+        Sprite::from_image(image_handle),
+        Transform {
+            // Rescale the world, such that 1 world unit = 1 tile
+            scale: Vec3::splat(1. / (config.texture_size())),
+            translation: Vec3::new(0., 0., RENDER_PLANE_Z),
             ..default()
         },
         LayerImage,
@@ -175,11 +179,17 @@ pub fn compute_viewport_to_world(
     layer_camera_transform: &GlobalTransform,
     texture_size: f32,
 ) -> Option<(f32, f32)> {
-    if let Some(world_coord) = main_camera.viewport_to_world(main_camera_transform, screen_pos) {
-        let mut ret = ((world_coord.origin.x), (world_coord.origin.y));
-        ret.0 += layer_camera_transform.translation().x / texture_size;
-        ret.1 += layer_camera_transform.translation().y / texture_size;
-        return Some((ret.0 + 0.5, ret.1 + 0.5));
+    match main_camera.viewport_to_world(main_camera_transform, screen_pos) {
+        Ok(world_coord) => {
+            let mut ret = ((world_coord.origin.x), (world_coord.origin.y));
+            ret.0 += layer_camera_transform.translation().x / texture_size;
+            ret.1 += layer_camera_transform.translation().y / texture_size;
+            return Some((ret.0 + 0.5, ret.1 + 0.5));
+        },
+        Err(e) => warn!(
+            "Could not convert viewport coordinates to world coordinates: {:?}",
+            e
+        ),
     }
     None
 }
@@ -197,11 +207,17 @@ pub fn compute_world_to_viewport(
         - (layer_camera_transform.translation().x / texture_size);
     let main_y = ((world_position.y - 0.5) / texture_size)
         - (layer_camera_transform.translation().y / texture_size);
-    if let Some(screen_player) = main_camera.world_to_viewport(
+    match main_camera.world_to_viewport(
         main_camera_transform,
         (main_x, main_y, world_position.z).into(),
     ) {
-        return Some(screen_player);
+        Ok(screen_player) => Some(screen_player),
+        Err(e) => {
+            warn!(
+                "Could not convert world coordinates to viewport coordinates: {:?}",
+                e
+            );
+            None
+        },
     }
-    None
 }

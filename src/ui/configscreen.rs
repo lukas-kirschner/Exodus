@@ -39,7 +39,7 @@ fn config_screen_ui(
     );
 
     egui::CentralPanel::default()
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.group(|ui| {

@@ -33,7 +33,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Install Dependencies
-        run: sudo apt-get install -y libwayland-dev libxkbcommon-dev
+        run: sudo apt-get install -y libxkbcommon-dev libfontconfig1-dev
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -53,9 +53,10 @@ jobs:
   check:
     name: Run Unit Tests
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - name: Install Dependencies
-        run: sudo apt-get install -y libwayland-dev libxkbcommon-dev
+        run: sudo apt-get install -y libxkbcommon-dev libfontconfig1-dev lcov
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -63,39 +64,30 @@ jobs:
           lfs: true
           submodules: true
       - name: Install Stable Rust Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          version: '0.15.0'
-          args: '--workspace -- --test-threads 1'
-          out-type: Xml
+          components: llvm-tools-preview
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info -- --test-threads 1
       - name: Upload code coverage results
-        uses: irongut/CodeCoverageSummary@v1.3.0
+        uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          filename: cobertura.xml
-          badge: true
-          format: markdown
-          hide_branch_rate: false
-          indicators: true
-          thresholds: '60 80'
-          output: both
-          hide_complexity: true
-      - name: Add Coverage Pull Request Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
+          coverage-files: lcov.info
+          minimum-coverage: 0
+          artifact-name: code-coverage-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./
+          update-comment: true
+          title-prefix: "Exodus"
+          additional-message: "Coverage Result for Linux x64 Unit Tests"
   build_linux64:
     name: Build Nightly for Linux x64
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
-        run: sudo apt-get install -y libwayland-dev libxkbcommon-dev
+        run: sudo apt-get install -y libxkbcommon-dev libfontconfig1-dev
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -117,7 +109,7 @@ jobs:
           cp -vr assets target/release
         shell: bash
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exodus-linux-x64
           path: |

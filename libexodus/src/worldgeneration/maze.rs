@@ -1,7 +1,7 @@
 use crate::tiles::Tile;
 use crate::world::GameWorld;
 use crate::worldgeneration::{WorldGenerationAlgorithm, WorldGenerationError};
-use rand::prelude::SliceRandom;
+use rand::prelude::IndexedRandom;
 use rand::Rng;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha20Rng;
@@ -33,7 +33,6 @@ impl Maze {
     ///    5. Remove the chosen frontier cell from the list of frontier cells.
     ///
     /// See https://stackoverflow.com/a/29758926
-
     fn generate_validated(&self) -> Result<GameWorld, WorldGenerationError> {
         let mut frontier_cells: Vec<(usize, usize)> = vec![];
         let mut ret = GameWorld::new(self.width as usize, self.height as usize);
@@ -49,13 +48,13 @@ impl Maze {
         let mut rng = ChaCha20Rng::from_seed(seed.try_into().unwrap());
 
         let start_cell: (usize, usize) = (
-            rng.gen_range(0..self.width as usize),
-            rng.gen_range(0..self.height as usize),
+            rng.random_range(0..self.width as usize),
+            rng.random_range(0..self.height as usize),
         );
         frontier_cells.push(start_cell);
         while !frontier_cells.is_empty() {
             // Pop a random frontier cell. TODO: Choose a more efficient data structure for removing
-            let remove_ind = rng.gen_range(0..frontier_cells.len());
+            let remove_ind = rng.random_range(0..frontier_cells.len());
             let current_coord = frontier_cells.remove(remove_ind);
 
             // Check if the cell is in fact unvisited and continue if it is visited

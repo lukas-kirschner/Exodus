@@ -7,7 +7,7 @@ use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContexts, EguiSet};
+use bevy_egui::{egui, EguiContexts, EguiPreUpdateSet};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 
@@ -24,7 +24,7 @@ fn game_over_screen_ui(
     mut save_state: ResMut<SaveHighscoreState>,
 ) {
     egui::CentralPanel::default()
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal_centered(|ui| {
                 ui.vertical_centered(|ui| {
@@ -111,7 +111,7 @@ fn game_over_screen_ui(
             });
         });
     egui::TopBottomPanel::bottom("navbar")
-        .frame(Frame::none())
+        .frame(Frame::NONE)
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 let back_button = image_button(
@@ -220,7 +220,7 @@ impl Plugin for GameOverScreen {
             Update,
             game_over_screen_ui
                 .run_if(in_state(AppState::GameOverScreen))
-                .after(EguiSet::InitContexts),
+                .after(EguiPreUpdateSet::InitContexts),
         )
         .add_systems(OnEnter(AppState::GameOverScreen), init_game_over_screen_ui)
         .add_systems(OnExit(AppState::GameOverScreen), save_highscores);

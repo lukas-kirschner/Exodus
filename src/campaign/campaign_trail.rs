@@ -336,13 +336,7 @@ fn campaign_screen_ui(
 
 pub fn play_map_keyboard_controls(
     mut keyboard_input: ResMut<ButtonInput<KeyCode>>,
-    player_query: Query<(
-        &mut PlayerComponent,
-        &Transform,
-        Entity,
-        &Handle<Image>,
-        &mut TextureAtlas,
-    )>,
+    player_query: Query<(&mut PlayerComponent, &Transform, Entity, &Sprite)>,
     config: Res<GameConfig>,
     campaign_trail: Res<MapWrapper>,
     campaign_maps: Res<CampaignMaps>,
@@ -353,7 +347,7 @@ pub fn play_map_keyboard_controls(
 ) {
     if keyboard_input.just_pressed(KeyCode::Enter) {
         keyboard_input.reset(KeyCode::Enter);
-        let Ok((_player, player_pos, entity, sprite, atlas)) = player_query.get_single() else {
+        let Ok((_player, player_pos, entity, sprite)) = player_query.get_single() else {
             debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
             state.set(AppState::Playing);
             return;
@@ -391,17 +385,12 @@ pub fn play_map_keyboard_controls(
                         (player_map_x - offset_x, player_map_y - offset_y);
 
                     commands.entity(entity).despawn_recursive();
-                    let mut exit_atlas = atlas.clone();
+                    let mut exit_atlas = sprite.texture_atlas.clone().unwrap();
                     exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
                     commands.spawn((
-                        exit_atlas,
-                        SpriteBundle {
-                            transform: *player_pos,
-                            texture: sprite.clone(),
-                            sprite: Sprite::default(),
-                            ..default()
-                        },
+                        Sprite::from_atlas_image(sprite.image.clone(), exit_atlas),
+                        *player_pos,
                         AnimatedActionSprite::from_ascend_and_zoom(
                             EXITED_PLAYER_DECAY_SPEED,
                             EXITED_PLAYER_ASCEND_SPEED,
