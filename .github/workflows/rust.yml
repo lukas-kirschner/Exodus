@@ -71,22 +71,16 @@ jobs:
       - name: Generate code coverage
         run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info -- --test-threads 1
       - name: Upload code coverage results
-        uses: irongut/CodeCoverageSummary@v1.3.0
+        uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          filename: lcov.info
-          badge: true
-          format: markdown
-          hide_branch_rate: false
-          indicators: true
-          thresholds: '60 80'
-          output: both
-          hide_complexity: true
-      - name: Add Coverage Pull Request Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
+          coverage-files: lcov.info
+          minimum-coverage: 0
+          artifact-name: code-coverage-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./
+          update-comment: true
+          title-prefix: "Exodus"
+          additional-message: "Coverage Result for Linux x64 Unit Tests"
   build_linux64:
     name: Build Nightly for Linux x64
     runs-on: ubuntu-latest
