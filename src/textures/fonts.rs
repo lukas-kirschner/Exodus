@@ -18,7 +18,7 @@ fn insert_system_font(
     source: &FontconfigSource,
     family: &[FamilyName],
     properties: &Properties,
-    font_data: &mut BTreeMap<String, FontData>,
+    font_data: &mut BTreeMap<String, Arc<FontData>>,
     name: String,
 ) {
     let font = source
@@ -28,7 +28,9 @@ fn insert_system_font(
         .unwrap();
     font_data.insert(
         name,
-        FontData::from_owned((*font.copy_font_data().expect("Could not copy font data")).clone()),
+        Arc::new(FontData::from_owned(
+            (*font.copy_font_data().expect("Could not copy font data")).clone(),
+        )),
     );
 }
 
@@ -186,7 +188,6 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
 pub fn egui_visuals(mut ctx: EguiContexts) {
     let mut visuals = Visuals::dark();
     visuals.striped = true;
-    visuals.window_rounding = Rounding::same(0.);
     visuals.faint_bg_color = Color32::from_rgb(
         visuals.panel_fill.r() + 15,
         visuals.panel_fill.g() + 15,

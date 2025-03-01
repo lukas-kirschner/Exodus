@@ -22,23 +22,18 @@ pub fn init_player_spawn(
     let (map_player_position_x, map_player_position_y) = world_wrapper.world.player_spawn();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.spawn((
-        TextureAtlas {
-            layout: tileset.current_atlas_handle(),
-            index: player.player.atlas_index(),
-        },
-        SpriteBundle {
-            sprite: Sprite::default(),
-            texture: tileset.current_texture_handle(),
-            transform: Transform {
-                translation: Vec3::new(
-                    (map_player_position_x as u32 * tileset.current_tileset.texture_size()) as f32,
-                    (map_player_position_y as u32 * tileset.current_tileset.texture_size()) as f32,
-                    PLAYER_Z,
-                ),
-                ..default()
+        Sprite::from_atlas_image(
+            tileset.current_texture_handle(),
+            TextureAtlas {
+                layout: tileset.current_atlas_handle(),
+                index: player.player.atlas_index(),
             },
-            ..Default::default()
-        },
+        ),
+        Transform::from_translation(Vec3::new(
+            (map_player_position_x as u32 * tileset.current_tileset.texture_size()) as f32,
+            (map_player_position_y as u32 * tileset.current_tileset.texture_size()) as f32,
+            PLAYER_Z,
+        )),
         player,
         layer,
     ));

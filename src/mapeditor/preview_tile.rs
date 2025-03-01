@@ -40,28 +40,22 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
         current_tile: Tile::WALL,
     };
     let layer = RenderLayers::layer(LAYER_ID);
-    commands.spawn((
+    let mut sprite = Sprite::from_atlas_image(
+        current_texture_atlas.current_texture_handle(),
         TextureAtlas {
             layout: current_texture_atlas.current_atlas_handle(),
             index: previewtile.current_tile.atlas_index().unwrap(),
         },
-        SpriteBundle {
-            sprite: Sprite {
-                color: Color::Srgba(Srgba {
-                    red: 1.0,
-                    green: 1.0,
-                    blue: 1.0,
-                    alpha: MAPEDITOR_PREVIEWTILE_ALPHA,
-                }),
-                ..default()
-            },
-            texture: current_texture_atlas.current_texture_handle(),
-            transform: Transform {
-                translation: Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z),
-                ..default()
-            },
-            ..default()
-        },
+    );
+    sprite.color = Color::Srgba(Srgba {
+        red: 1.0,
+        green: 1.0,
+        blue: 1.0,
+        alpha: MAPEDITOR_PREVIEWTILE_ALPHA,
+    });
+    commands.spawn((
+        sprite,
+        Transform::from_translation(Vec3::new(-1f32, -1f32, MAPEDITOR_PREVIEWTILE_Z)),
         previewtile,
         layer,
     ));
@@ -69,27 +63,26 @@ pub fn setup_preview_tile(mut commands: Commands, current_texture_atlas: Res<Til
 
 fn set_preview_tile_texture(
     new_tile: &Tile,
-    texture_atlas_sprite: &mut TextureAtlas,
-    texture: &mut Handle<Image>,
+    sprite: &mut Sprite,
     preview_tile: &mut PreviewTile,
     current_texture_atlas: &TilesetManager,
 ) {
-    match *new_tile {
+    sprite.texture_atlas.as_mut().map(|a| match *new_tile {
         Tile::PLAYERSPAWN => {
-            texture_atlas_sprite.layout = current_texture_atlas.current_atlas_handle();
-            texture_atlas_sprite.index = Player::new().atlas_index();
+            a.layout = current_texture_atlas.current_atlas_handle();
+            a.index = Player::new().atlas_index();
         },
         _ => {
             if let Some(atlas_index) = new_tile.atlas_index() {
-                texture_atlas_sprite.layout = current_texture_atlas.current_atlas_handle();
-                texture_atlas_sprite.index = atlas_index;
+                a.layout = current_texture_atlas.current_atlas_handle();
+                a.index = atlas_index;
             } else {
-                texture_atlas_sprite.layout = current_texture_atlas.current_atlas_handle();
-                texture_atlas_sprite.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
+                a.layout = current_texture_atlas.current_atlas_handle();
+                a.index = MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX;
             }
         },
-    }
-    *texture = current_texture_atlas.current_texture_handle();
+    });
+    sprite.image = current_texture_atlas.current_texture_handle();
     preview_tile.current_tile = new_tile.clone();
 }
 
@@ -100,22 +93,16 @@ fn update_preview_tile(
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapWrapper>,
     current_tile: Res<SelectedTile>,
-    mut preview_tile_q: Query<(
-        &mut PreviewTile,
-        &mut Handle<Image>,
-        &mut TextureAtlas,
-        &mut Transform,
-    )>,
+    mut preview_tile_q: Query<(&mut PreviewTile, &mut Sprite, &mut Transform)>,
     current_texture_atlas: Res<TilesetManager>,
     config: Res<GameConfig>,
 ) {
-    let (mut preview_tile, mut texture, mut atlas, mut transform) = preview_tile_q.single_mut();
+    let (mut preview_tile, mut sprite, mut transform) = preview_tile_q.single_mut();
     if current_tile.tile != preview_tile.current_tile {
         set_preview_tile_texture(
             &current_tile.tile,
-            &mut atlas,
-            &mut texture,
-            &mut preview_tile,
+            &mut sprite,
+            preview_tile.as_mut(),
             &current_texture_atlas,
         );
     }

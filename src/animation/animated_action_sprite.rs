@@ -172,7 +172,7 @@ fn animated_action_sprite_handler(
 ) {
     let texture_size = config.texture_size();
     for (mut sprite, mut transform, entity, animated_sprite) in animated_sprites.iter_mut() {
-        let new_a: f32 = sprite.color.alpha() + (animated_sprite.alpha() * time.delta_seconds());
+        let new_a: f32 = sprite.color.alpha() + (animated_sprite.alpha() * time.delta_secs());
         if new_a <= 0.0 {
             // The player has fully decayed and can be despawned.
             match animated_sprite.action() {
@@ -230,13 +230,12 @@ fn animated_action_sprite_handler(
             return;
         }
         sprite.color.set_alpha(new_a);
-        transform.translation +=
-            animated_sprite.translation() * texture_size * time.delta_seconds();
-        transform.scale += animated_sprite.scale() * texture_size * time.delta_seconds();
-        transform.rotation.x += animated_sprite.rotation().x * texture_size * time.delta_seconds();
-        transform.rotation.y += animated_sprite.rotation().y * texture_size * time.delta_seconds();
-        transform.rotation.z += animated_sprite.rotation().z * texture_size * time.delta_seconds();
-        transform.rotation.w += animated_sprite.rotation().w * texture_size * time.delta_seconds();
+        transform.translation += animated_sprite.translation() * texture_size * time.delta_secs();
+        transform.scale += animated_sprite.scale() * texture_size * time.delta_secs();
+        transform.rotation.x += animated_sprite.rotation().x * texture_size * time.delta_secs();
+        transform.rotation.y += animated_sprite.rotation().y * texture_size * time.delta_secs();
+        transform.rotation.z += animated_sprite.rotation().z * texture_size * time.delta_secs();
+        transform.rotation.w += animated_sprite.rotation().w * texture_size * time.delta_secs();
     }
 }
 
