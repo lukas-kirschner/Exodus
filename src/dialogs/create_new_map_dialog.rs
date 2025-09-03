@@ -335,8 +335,8 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
             // No parameters at all
         },
         WorldGenerationKind::Border {
-            ref mut width,
-            ref mut color,
+            width,
+            color,
         } => {
             one_line_label_and_slider(
                 ui,
@@ -355,7 +355,7 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
                 t!("map_selection_screen.dialog.create_new_map_dialog_border_color_tooltip"),
             );
         },
-        WorldGenerationKind::Filled { ref mut color } => {
+        WorldGenerationKind::Filled { color } => {
             heading_label(
                 ui,
                 t!("map_selection_screen.dialog.create_new_map_dialog_filled_color"),
@@ -366,7 +366,7 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
                 t!("map_selection_screen.dialog.create_new_map_dialog_filled_color_tooltip"),
             );
         },
-        WorldGenerationKind::Maze { ref mut color } => {
+        WorldGenerationKind::Maze { color } => {
             heading_label(
                 ui,
                 t!("map_selection_screen.dialog.create_new_map_dialog_maze_color"),
