@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs::{File, OpenOptions};
 use std::io;
-use std::io::{BufReader, BufWriter, ErrorKind, Read, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 use strum_macros::{EnumCount as EnumCountMacro, EnumIter};
 
@@ -128,21 +128,13 @@ impl ExodusSerializable for Config {
         // Read Language
         let mut lang_buf = [0u8; 1];
         file.read_exact(&mut lang_buf)?;
-        self.game_language = Language::from_bytes(lang_buf[0]).ok_or_else(|| {
-            io::Error::new(
-                ErrorKind::Other,
-                format!("Invalid Language 0x{:02X}", lang_buf[0]),
-            )
-        })?;
+        self.game_language = Language::from_bytes(lang_buf[0])
+            .ok_or_else(|| io::Error::other(format!("Invalid Language 0x{:02X}", lang_buf[0])))?;
         // Read Tile set
         let mut tileset_buf = [0u8; 1];
         file.read_exact(&mut tileset_buf)?;
-        self.tile_set = Tileset::from_bytes(tileset_buf[0]).ok_or_else(|| {
-            io::Error::new(
-                ErrorKind::Other,
-                format!("Invalid Tileset 0x{:02X}", tileset_buf[0]),
-            )
-        })?;
+        self.tile_set = Tileset::from_bytes(tileset_buf[0])
+            .ok_or_else(|| io::Error::other(format!("Invalid Tileset 0x{:02X}", tileset_buf[0])))?;
         self.player_id = bincode::deserialize_from(file)?;
 
         Ok(())
@@ -206,7 +198,13 @@ mod tests {
         for lang in Language::iter() {
             let reference = &lang;
             let actual = Language::from_bytes(reference.to_bytes());
-            assert!(actual.is_some(), "Deserializing Language {} (0x{:02X}) resulted in an error: Language not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Language::from_bytes()));
+            assert!(
+                actual.is_some(),
+                "Deserializing Language {} (0x{:02X}) resulted in an error: Language not found in {}",
+                reference.to_string(),
+                reference.to_bytes(),
+                stringify!(Language::from_bytes())
+            );
             let actual = actual.unwrap();
             assert_eq!(
                 *reference,
@@ -225,7 +223,13 @@ mod tests {
         for lang in Tileset::iter() {
             let reference = &lang;
             let actual = Tileset::from_bytes(reference.to_bytes());
-            assert!(actual.is_some(), "Deserializing Tile Set {} (0x{:02X}) resulted in an error: Tile Set not found in {}", reference.to_string(), reference.to_bytes(), stringify!(Tileset::from_bytes()));
+            assert!(
+                actual.is_some(),
+                "Deserializing Tile Set {} (0x{:02X}) resulted in an error: Tile Set not found in {}",
+                reference.to_string(),
+                reference.to_bytes(),
+                stringify!(Tileset::from_bytes())
+            );
             let actual = actual.unwrap();
             assert_eq!(
                 *reference,

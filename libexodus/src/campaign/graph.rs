@@ -3,7 +3,7 @@ use regex::Regex;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::io::{prelude::*, BufReader, Error};
+use std::io::{BufReader, Error, prelude::*};
 use std::num::ParseIntError;
 
 pub type NodeID = u16;
@@ -202,7 +202,11 @@ impl Display for GraphValidationError {
                 node2_id,
                 node2_x,
                 node2_y,
-            } => write!(f, "The adjacent nodes {} (at {},{}) and {} (at {},{}) must be connected through an edge explicitly!", node1_id,node1_x,node1_y,node2_id,node2_x,node2_y),
+            } => write!(
+                f,
+                "The adjacent nodes {} (at {},{}) and {} (at {},{}) must be connected through an edge explicitly!",
+                node1_id, node1_x, node1_y, node2_id, node2_x, node2_y
+            ),
         }
     }
 }
@@ -390,7 +394,7 @@ enum NodeParseResult<'s> {
     Hash,
     Empty,
 }
-fn parse_node_line(line: &str) -> NodeParseResult {
+fn parse_node_line(line: &str) -> NodeParseResult<'_> {
     if line.trim().is_empty() {
         NodeParseResult::Empty
     } else if matches!(line.trim(), "#") {
@@ -431,7 +435,7 @@ enum EdgeParseResult<'s> {
     Empty,
 }
 
-fn parse_edge_line(line: &str) -> EdgeParseResult {
+fn parse_edge_line(line: &str) -> EdgeParseResult<'_> {
     let re_named = Regex::new(r"^\s*(\S+)\s+(\S+)\s+(\S.*\S)\s*$").unwrap();
     let re_unnamed = Regex::new(r"^\s*(\S+)\s+(\S+)\s*$").unwrap();
     if line.trim().is_empty() {

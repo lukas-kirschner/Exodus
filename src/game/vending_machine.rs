@@ -238,8 +238,8 @@ fn vending_machine_button(
 
 trait VendingMachineItem: Sync + Send {
     fn cost(&self) -> usize;
-    fn button_text(&self, index: usize) -> Cow<str>;
-    fn button_tooltip(&self, index: usize) -> Cow<str>;
+    fn button_text(&self, index: usize) -> Cow<'_, str>;
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str>;
     fn purchase(
         &self,
         commands: &mut Commands,
@@ -256,7 +256,7 @@ impl VendingMachineItem for KeysItem {
         COST_KEY
     }
 
-    fn button_text(&self, index: usize) -> Cow<str> {
+    fn button_text(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_key",
             key = index,
@@ -264,7 +264,7 @@ impl VendingMachineItem for KeysItem {
         )
     }
 
-    fn button_tooltip(&self, index: usize) -> Cow<str> {
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_key_tooltip",
             key = index,
@@ -339,7 +339,7 @@ impl VendingMachineItem for CoinsItem {
         COST_COINS
     }
 
-    fn button_text(&self, index: usize) -> Cow<str> {
+    fn button_text(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_five_coins",
             key = index,
@@ -347,7 +347,7 @@ impl VendingMachineItem for CoinsItem {
         )
     }
 
-    fn button_tooltip(&self, index: usize) -> Cow<str> {
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_five_coins_tooltip",
             key = index,

@@ -53,7 +53,7 @@ pub fn compute_cursor_position_in_world(
     texture_size: f32,
 ) -> Option<(i32, i32)> {
     // get the window that the camera is displaying to (or the primary window)
-    let Ok(wnd) = windows.get_single() else {
+    let Ok(wnd) = windows.single() else {
         return None;
     };
 

@@ -107,7 +107,7 @@ fn reset_trail(
     highscores: Res<HighscoresDatabaseWrapper>,
     campaign_maps: Res<CampaignMaps>,
 ) {
-    let trail: &CampaignTrail = match trail_query.get_single() {
+    let trail: &CampaignTrail = match trail_query.single() {
         Ok(trail) => trail,
         Err(e) => {
             error!("{}", e);
@@ -267,7 +267,7 @@ fn campaign_screen_ui(
     highscores: Res<HighscoresDatabaseWrapper>,
     config: Res<GameConfig>,
 ) {
-    if let Ok(player_pos) = player_query.get_single() {
+    if let Ok(player_pos) = player_query.single() {
         let navbar_response = add_navbar(
             egui_ctx.ctx_mut().unwrap(),
             &mut state,
@@ -298,7 +298,7 @@ fn campaign_screen_ui(
                     }
                 },
                 InteractionKind::TeleportTo { .. } => (false, None, "".to_string()),
-                InteractionKind::VendingMachine { .. } => (false, None, "".to_string()),
+                InteractionKind::VendingMachine => (false, None, "".to_string()),
             },
             _ => (false, None, "".to_string()),
         };
@@ -350,7 +350,7 @@ pub fn play_map_keyboard_controls(
 ) {
     if keyboard_input.just_pressed(KeyCode::Enter) {
         keyboard_input.reset(KeyCode::Enter);
-        let Ok((_player, player_pos, entity, sprite)) = player_query.get_single() else {
+        let Ok((_player, player_pos, entity, sprite)) = player_query.single() else {
             debug!(
                 "The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback."
             );
@@ -391,7 +391,7 @@ pub fn play_map_keyboard_controls(
                         .unwrap()
                         .last_player_position = (player_map_x - offset_x, player_map_y - offset_y);
 
-                    commands.entity(entity).despawn_recursive();
+                    commands.entity(entity).despawn();
                     let mut exit_atlas = sprite.texture_atlas.clone().unwrap();
                     exit_atlas.index = EXITING_PLAYER_SPRITE;
                     let layer = RenderLayers::layer(LAYER_ID);
@@ -410,7 +410,7 @@ pub fn play_map_keyboard_controls(
                     ));
                 },
                 InteractionKind::TeleportTo { .. } => {},
-                InteractionKind::VendingMachine { .. } => {},
+                InteractionKind::VendingMachine => {},
             }
         };
     }

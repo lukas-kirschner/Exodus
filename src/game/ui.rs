@@ -176,10 +176,10 @@ fn sign_message_system(
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let (layer_camera, layer_camera_transform) = q_layer_camera
-        .get_single()
+        .single()
         .expect("There were multiple layer cameras spawned");
     let (main_camera, main_camera_transform) = q_main_camera
-        .get_single()
+        .single()
         .expect("There were multiple main cameras spawned");
     let mut messages_to_show: Vec<&str> = vec![];
     let mut first_player_pos: Option<&Transform> = None;

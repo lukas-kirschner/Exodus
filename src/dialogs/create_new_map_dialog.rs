@@ -4,10 +4,10 @@ use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
 use crate::dialogs::{DialogResource, UIDialog};
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::{despawn_world, setup_game_world, WorldTile};
+use crate::game::world::{WorldTile, despawn_world, setup_game_world};
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::textures::tileset_manager::TilesetManager;
-use crate::ui::{UiSizeChangedEvent, UIPANELCBWIDTH};
+use crate::ui::{UIPANELCBWIDTH, UiSizeChangedEvent};
 use bevy::ecs::system::SystemState;
 use bevy::prelude::*;
 use bevy_egui::egui;
@@ -16,7 +16,7 @@ use libexodus::directories::GameDirectories;
 use libexodus::tiles::Tile;
 use libexodus::world::GameWorld;
 use libexodus::worldgeneration::{
-    build_generator, WorldGenerationError, WorldGenerationKind, WorldSize,
+    WorldGenerationError, WorldGenerationKind, WorldSize, build_generator,
 };
 use std::borrow::Cow;
 use std::ops::RangeInclusive;
@@ -50,7 +50,7 @@ pub struct CreateNewMapDialog {
     error_text: Option<String>,
 }
 
-fn size_to_string(size: &WorldSize) -> Cow<str> {
+fn size_to_string(size: &WorldSize) -> Cow<'_, str> {
     match size {
         WorldSize::Classic5mx => t!("map_selection_screen.dialog.create_new_map_dialog_size_5mx"),
         WorldSize::Small => t!("map_selection_screen.dialog.create_new_map_dialog_size_small"),
@@ -62,7 +62,7 @@ fn size_to_string(size: &WorldSize) -> Cow<str> {
         },
     }
 }
-fn kind_to_string(size: &WorldGenerationKind) -> Cow<str> {
+fn kind_to_string(size: &WorldGenerationKind) -> Cow<'_, str> {
     match size {
         WorldGenerationKind::Empty => {
             t!("map_selection_screen.dialog.create_new_map_dialog_kind_empty")
@@ -334,10 +334,7 @@ fn ui_for_generation_kind(kind: &mut WorldGenerationKind, ui: &mut Ui) {
         WorldGenerationKind::Empty => {
             // No parameters at all
         },
-        WorldGenerationKind::Border {
-            width,
-            color,
-        } => {
+        WorldGenerationKind::Border { width, color } => {
             one_line_label_and_slider(
                 ui,
                 t!("map_selection_screen.dialog.create_new_map_dialog_border_width"),

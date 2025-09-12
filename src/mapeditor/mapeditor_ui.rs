@@ -14,7 +14,7 @@ use crate::ui::{UiSizeChangedEvent, check_ui_size_changed, image_button};
 use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align, Layout, TextBuffer, Ui};
+use bevy_egui::egui::{Align, Layout, TextBuffer, Ui, UiKind};
 use bevy_egui::{EguiContexts, egui};
 use libexodus::tiles::{TeleportId, Tile, UITiles};
 use std::borrow::Borrow;
@@ -78,7 +78,7 @@ fn tile_kind_selector_button_for(
             ;
         if button.clicked() {
             selected_tile.tile = tile.clone();
-            ui.close_menu();
+            ui.close_kind(UiKind::Menu);
         }
     });
 }

@@ -225,13 +225,13 @@ fn resize_notificator(
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
     window: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let Ok(_) = window.get_single() else {
+    let Ok(_) = window.single() else {
         return;
     };
     for _ in resize_event.read() {
         // event_window = commands.entity(e.window);
         // if event_window == primary {
-        ev_camera_writer.send(UiSizeChangedEvent);
+        ev_camera_writer.write(UiSizeChangedEvent);
         // }
     }
 }

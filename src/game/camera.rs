@@ -32,7 +32,7 @@ pub fn handle_ui_resize(
     mut layer_camera_query: Query<&mut Transform, (With<LayerCamera>, Without<MainCamera>)>,
     tileset: Res<TilesetManager>,
 ) {
-    let Ok(primary) = window.get_single() else {
+    let Ok(primary) = window.single() else {
         return;
     };
     for _ in event.read() {
@@ -74,8 +74,8 @@ pub fn rescale_main_camera(
     } else {
         viewport_height_pixels / (map_height_px)
     };
-    if let Projection::Orthographic(orthographicProjection) = main_camera_projection {
-        orthographicProjection.scale = 1. / (camera_scale * texture_size);
+    if let Projection::Orthographic(orthographic_projection) = main_camera_projection {
+        orthographic_projection.scale = 1. / (camera_scale * texture_size);
     }
 
     // Translate the layer camera, such that the world is centered on screen.
@@ -91,10 +91,10 @@ pub fn rescale_main_camera(
 
     // Shift the main camera by the UI margin sizes to fit the world into the viewport
 
-    if let Projection::Orthographic(orthographicProjection) = main_camera_projection {
+    if let Projection::Orthographic(orthographic_projection) = main_camera_projection {
         main_camera_transform.translation = Vec3::new(
-            ((ui_margins.right - ui_margins.left) * orthographicProjection.scale) / 2.,
-            ((ui_margins.top - ui_margins.bottom) * orthographicProjection.scale) / 2.,
+            ((ui_margins.right - ui_margins.left) * orthographic_projection.scale) / 2.,
+            ((ui_margins.top - ui_margins.bottom) * orthographic_projection.scale) / 2.,
             0.,
         )
     }

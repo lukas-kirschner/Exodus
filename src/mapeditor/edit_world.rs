@@ -39,7 +39,7 @@ fn view_delete_tile_at(
             && transform.translation.y as i32
                 == (pos.y as i32 * map_texture_atlas.current_tileset.texture_size() as i32)
         {
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
             debug!("Deleted tile at {},{}", pos.x, pos.y);
             return;
         }
@@ -150,10 +150,10 @@ fn mouse_down_handler(
     mut state: ResMut<NextState<AppState>>,
 ) {
     let (layer_camera, layer_camera_transform) = q_layer_camera
-        .get_single()
+        .single()
         .expect("There were multiple layer cameras spawned");
     let (main_camera, main_camera_transform) = q_main_camera
-        .get_single()
+        .single()
         .expect("There were multiple main cameras spawned");
     if buttons.just_released(MouseButton::Left) {
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
