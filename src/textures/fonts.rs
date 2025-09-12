@@ -13,7 +13,7 @@ const SANSSERIF_NORMAL: &str = "SansSerif";
 const SANSSERIF_BOLD: &str = "SansSerifBold";
 const SANSSERIF_ITALIC: &str = "SansSerifItalic";
 
-/// Insert a single system font or panic, if the font cannot be found
+/// Insert a single system font or panic if the font cannot be found
 fn insert_system_font(
     source: &FontconfigSource,
     family: &[FamilyName],

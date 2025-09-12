@@ -1,4 +1,5 @@
 use crate::game::camera::setup_egui_camera;
+use crate::textures::colors::ColorsPlugin;
 use crate::textures::fonts::{egui_fonts, egui_visuals};
 use crate::textures::tileset_manager::{ImageHandles, TilesetManager, file_name_for_tileset};
 use crate::{AllAssetHandles, AppState};
@@ -8,6 +9,7 @@ use libexodus::tilesets::Tileset;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
 
+mod colors;
 pub mod egui_textures;
 pub mod fonts;
 pub mod tileset_manager;
@@ -24,7 +26,8 @@ impl Plugin for Textures {
         .add_systems(
             Update,
             check_and_init_textures.run_if(in_state(AppState::Loading)),
-        );
+        )
+        .add_plugins(ColorsPlugin);
     }
 
     fn name(&self) -> &str {
