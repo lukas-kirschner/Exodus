@@ -276,9 +276,7 @@ fn map_selection_screen_ui(
                                                                         .weak_text_color
                                                                         .unwrap(),
                                                                 ),
-                                                        )
-                                                        .rect
-                                                        .height();
+                                                        );
                                                     }
                                                 },
                                             );
