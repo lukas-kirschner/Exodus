@@ -27,7 +27,7 @@ use bevy::platform::collections::HashSet;
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use bevy_egui::egui::{Align, Layout};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
 use libexodus::tiles::{EXITING_PLAYER_SPRITE, InteractionKind, Tile};
 use libexodus::world::GameWorld;
@@ -51,7 +51,7 @@ pub struct CampaignTrailPlugin;
 impl Plugin for CampaignTrailPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            EguiPrimaryContextPass,
             campaign_screen_ui
                 .run_if(in_state(AppState::CampaignTrailScreen))
                 .in_set(AppLabels::GameUI),

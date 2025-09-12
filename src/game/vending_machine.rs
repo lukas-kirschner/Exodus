@@ -13,7 +13,7 @@ use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{RichText, WidgetText};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use egui::Label;
 use libexodus::tiles::Tile;
 use std::borrow::Cow;
@@ -45,7 +45,7 @@ impl Plugin for VendingMachinePlugin {
                 vending_machine_triggered_event_clearer,
             )
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 vending_machine_ui
                     .run_if(in_state(AppState::Playing).and(resource_exists::<HasVendingMachine>)),
             )

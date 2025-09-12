@@ -5,7 +5,7 @@ use crate::ui::{BUTTON_HEIGHT, UIMAINMENUMARGIN};
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Frame, Layout, TextStyle};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 
 /// Draw the Main Menu Buttons
 fn mainmenu_buttons(
@@ -115,10 +115,13 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
-            .add_systems(
-                OnEnter(AppState::MainMenu),
-                (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
-            );
+        app.add_systems(
+            EguiPrimaryContextPass,
+            mainmenu_ui.run_if(in_state(AppState::MainMenu)),
+        )
+        .add_systems(
+            OnEnter(AppState::MainMenu),
+            (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
+        );
     }
 }

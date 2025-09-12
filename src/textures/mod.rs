@@ -1,5 +1,6 @@
+use crate::game::camera::setup_egui_camera;
 use crate::textures::fonts::{egui_fonts, egui_visuals};
-use crate::textures::tileset_manager::{file_name_for_tileset, ImageHandles, TilesetManager};
+use crate::textures::tileset_manager::{ImageHandles, TilesetManager, file_name_for_tileset};
 use crate::{AllAssetHandles, AppState};
 use bevy::asset::{LoadedFolder, RecursiveDependencyLoadState};
 use bevy::prelude::*;
@@ -16,13 +17,14 @@ pub struct Textures;
 
 impl Plugin for Textures {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::Loading), load_textures)
-            .add_systems(OnEnter(AppState::Loading), egui_fonts)
-            .add_systems(OnEnter(AppState::Loading), egui_visuals)
-            .add_systems(
-                Update,
-                check_and_init_textures.run_if(in_state(AppState::Loading)),
-            );
+        app.add_systems(
+            OnEnter(AppState::Loading),
+            (setup_egui_camera, load_textures, egui_fonts, egui_visuals).chain(),
+        )
+        .add_systems(
+            Update,
+            check_and_init_textures.run_if(in_state(AppState::Loading)),
+        );
     }
 
     fn name(&self) -> &str {
@@ -100,7 +102,8 @@ fn check_and_init_textures(
                     .to_str()
                     .unwrap(),
                 tileset.texture_size(),
-                atlas_size.x,atlas_size.y
+                atlas_size.x,
+                atlas_size.y
             );
         }
         // Finish loading and start the processing

@@ -4,7 +4,7 @@ use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::{AppState, get_buildnr};
 use bevy::prelude::*;
 use bevy_egui::egui::{Frame, RichText};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use indoc::formatdoc;
 
 pub struct CreditsScreen;
@@ -79,7 +79,7 @@ fn credits_screen_ui(
 impl Plugin for CreditsScreen {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            EguiPrimaryContextPass,
             credits_screen_ui.run_if(in_state(AppState::CreditsScreen)),
         )
         .add_systems(

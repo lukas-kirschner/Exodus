@@ -9,7 +9,7 @@ use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Align2, Layout};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
 use regex::Regex;
@@ -21,7 +21,7 @@ pub struct GameUIPlugin;
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Scoreboard>().add_systems(
-            Update,
+            EguiPrimaryContextPass,
             (game_ui_system, sign_message_system)
                 .chain()
                 .run_if(in_state(AppState::Playing))

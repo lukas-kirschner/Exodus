@@ -15,7 +15,7 @@ use crate::ui::{BUTTON_HEIGHT, UIMARGIN, UiSizeChangedEvent, check_ui_size_chang
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, Ui};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
 use libexodus::world::{GameWorld, presets};
@@ -389,7 +389,7 @@ impl Plugin for MapSelectionScreenPlugin {
                 load_maps.in_set(AppLabels::LoadMaps),
             )
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 map_selection_screen_ui.run_if(in_state(AppState::MapSelectionScreen)),
             )
             .add_systems(
@@ -403,7 +403,7 @@ impl Plugin for MapSelectionScreenPlugin {
             )
             // Map Selection Screen Dialog Logic:
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 map_selection_screen_dialog.run_if(
                     in_state(AppState::MapSelectionScreenDialog)
                         .and(resource_exists::<DialogResource>),

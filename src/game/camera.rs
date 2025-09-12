@@ -10,6 +10,7 @@ use bevy::render::render_resource::{
 };
 use bevy::render::view::RenderLayers;
 use bevy::window::PrimaryWindow;
+use bevy_egui::PrimaryEguiContext;
 
 #[derive(Component)]
 pub struct MainCamera;
@@ -100,6 +101,19 @@ pub fn rescale_main_camera(
     }
 }
 
+pub fn setup_egui_camera(mut commands: Commands) {
+    info!("Setting up Egui Camera");
+    commands.spawn((
+        PrimaryEguiContext,
+        Camera2d,
+        // Setting RenderLayers to none makes sure we won't render anything apart from the UI.
+        RenderLayers::none(),
+        Camera {
+            order: 1,
+            ..default()
+        },
+    ));
+}
 pub fn setup_camera(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
@@ -135,7 +149,7 @@ pub fn setup_camera(
     let main_camera = Camera::default();
     let layer = RenderLayers::layer(LAYER_ID);
     commands.insert_resource::<WindowUiOverlayInfo>(WindowUiOverlayInfo::default());
-    commands.spawn((main_camera, Camera2d {}, MainCamera));
+    commands.spawn((main_camera, Camera2d, MainCamera));
     commands.spawn((
         layer_camera,
         Camera2d {},

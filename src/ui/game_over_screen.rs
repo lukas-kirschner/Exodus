@@ -7,7 +7,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH, image_button};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{EguiContexts, EguiPreUpdateSet, egui};
+use bevy_egui::{EguiContexts, EguiPreUpdateSet, EguiPrimaryContextPass, egui};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 
@@ -223,7 +223,7 @@ enum SaveHighscoreState {
 impl Plugin for GameOverScreen {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            EguiPrimaryContextPass,
             game_over_screen_ui
                 .run_if(in_state(AppState::GameOverScreen))
                 .after(EguiPreUpdateSet::InitContexts),

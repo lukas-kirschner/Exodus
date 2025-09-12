@@ -4,7 +4,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Frame, Layout};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
@@ -14,7 +14,7 @@ pub struct ConfigScreen;
 impl Plugin for ConfigScreen {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            EguiPrimaryContextPass,
             config_screen_ui.run_if(in_state(AppState::ConfigScreen)),
         )
         .add_systems(

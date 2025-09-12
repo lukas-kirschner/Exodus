@@ -15,7 +15,7 @@ use crate::{AppLabels, AppState, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Layout, TextBuffer, Ui, UiKind};
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::tiles::{TeleportId, Tile, UITiles};
 use std::borrow::Borrow;
 use strum::IntoEnumIterator;
@@ -36,14 +36,14 @@ impl Plugin for MapEditorUiPlugin {
                 atlas_to_egui_textures.after(MapeditorSystems::PlayerSpawnPlaceholderInit),
             )
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 mapeditor_ui
                     .run_if(in_state(AppState::MapEditor))
                     .after(MapeditorSystems::GameBoardMouseHandlers)
                     .in_set(MapeditorSystems::UiDrawing),
             )
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 mapeditor_dialog.run_if(
                     in_state(AppState::MapEditorDialog).and(resource_exists::<DialogResource>),
                 ),
