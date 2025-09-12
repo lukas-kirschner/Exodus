@@ -14,7 +14,8 @@ use crate::ui::uicontrols::{WindowUiOverlayInfo, add_navbar_with_extra_buttons, 
 use crate::ui::{BUTTON_HEIGHT, UIMARGIN, UiSizeChangedEvent, check_ui_size_changed, image_button};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
-use bevy_egui::egui::{Align, Layout, Ui};
+use bevy_egui::egui::load::SizedTexture;
+use bevy_egui::egui::{Align, Layout, RichText, Ui};
 use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
@@ -238,10 +239,42 @@ fn map_selection_screen_ui(
                                             ui.add_space(UIMARGIN);
                                             labels_name_author(ui, &map.world);
                                             ui.add_space(UIMARGIN);
-                                            egui_highscore_label(
-                                                ui,
-                                                &map.previous_best,
-                                                &egui_textures,
+
+                                            ui.with_layout(
+                                                Layout::left_to_right(Align::Min),
+                                                |ui| {
+                                                    ui.style_mut().spacing.item_spacing =
+                                                        (0.0, 0.0).into();
+                                                    ui.style_mut().spacing.indent = 0.0;
+                                                    let h = egui_highscore_label(
+                                                        ui,
+                                                        &map.previous_best,
+                                                        &egui_textures,
+                                                    )
+                                                    .rect
+                                                    .height();
+                                                    if let Some(tileset) =
+                                                        &map.world.forced_tileset()
+                                                    {
+                                                        ui.add_space(4. * UIMARGIN);
+                                                        ui.image(SizedTexture::new(
+                                                            egui_textures.textures
+                                                                [&UITiles::SAVEBUTTON
+                                                                    .atlas_index()
+                                                                    .unwrap()]
+                                                                .0,
+                                                            (h, h),
+                                                        ));
+                                                        ui.label(
+                                                            RichText::new(tileset.to_string())
+                                                                .text_style(egui::TextStyle::Name(
+                                                                    "Highscore".into(),
+                                                                )),
+                                                        )
+                                                        .rect
+                                                        .height();
+                                                    }
+                                                },
                                             );
                                             ui.add_space(UIMARGIN);
                                         });
