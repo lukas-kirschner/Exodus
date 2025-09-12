@@ -1,15 +1,15 @@
-use crate::game::camera::{compute_world_to_viewport, LayerCamera, MainCamera};
+use crate::game::camera::{LayerCamera, MainCamera, compute_world_to_viewport};
 use crate::game::player::PlayerComponent;
 use crate::game::scoreboard::Scoreboard;
 use crate::game::tilewrapper::MapWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::WindowUiOverlayInfo;
-use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, UIMARGIN};
+use crate::ui::{UIMARGIN, UiSizeChangedEvent, check_ui_size_changed};
 use crate::{AppLabels, AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Align2, Layout};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
 use regex::Regex;
@@ -21,7 +21,7 @@ pub struct GameUIPlugin;
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Scoreboard>().add_systems(
-            Update,
+            EguiPrimaryContextPass,
             (game_ui_system, sign_message_system)
                 .chain()
                 .run_if(in_state(AppState::Playing))
@@ -40,7 +40,7 @@ fn game_ui_system(
     let bot_panel =
         egui::TopBottomPanel::bottom("")
             .resizable(false)
-            .show(egui_ctx.ctx_mut(), |ui| {
+            .show(egui_ctx.ctx_mut().unwrap(), |ui| {
                 ui.vertical(|ui| {
                     ui.add_space(UIMARGIN / 2.);
                     ui.scope(|ui| {
@@ -176,10 +176,10 @@ fn sign_message_system(
     q_main_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let (layer_camera, layer_camera_transform) = q_layer_camera
-        .get_single()
+        .single()
         .expect("There were multiple layer cameras spawned");
     let (main_camera, main_camera_transform) = q_main_camera
-        .get_single()
+        .single()
         .expect("There were multiple main cameras spawned");
     let mut messages_to_show: Vec<&str> = vec![];
     let mut first_player_pos: Option<&Transform> = None;
@@ -197,7 +197,7 @@ fn sign_message_system(
     }
     if let Some(player_position) = first_player_pos {
         let (xpos, ypos, message_alignment) = message_window_position(
-            egui_ctx.ctx_mut(),
+            egui_ctx.ctx_mut().unwrap(),
             player_position,
             main_camera,
             main_camera_transform,
@@ -212,14 +212,14 @@ fn sign_message_system(
             .title_bar(false)
             .interactable(false)
             // Set max width to 1/3 of available screen size
-            .fixed_size(egui_ctx.ctx_mut().available_rect().size() / 3.)
+            .fixed_size(egui_ctx.ctx_mut().unwrap().available_rect().size() / 3.)
             // move window to the left of the player position if the player position is > 1/2 of the screen width, right otherwise.
             // move window to top-align with player position, if player is >1/2 of screen height, bottom-align otherwise.
             .pivot(message_alignment.into())
             .fixed_pos((xpos, ypos))
             // Show the actual message inside a label. If there are multiple players triggering
             // messages simultaneously, show all messages concatenated with a " / ".
-            .show(egui_ctx.ctx_mut(), |ui| {
+            .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.with_layout(Layout::top_down(Align::TOP),|ui| {
                 ui.label(messages_to_show.iter().map(|m| parse_text(m)).collect::<Vec<String>>().join(" / "));
             });

@@ -48,7 +48,7 @@ fn setup_collectible_event(
             let dist = dist_2d(&player_pos, coin_pos);
             if dist <= COLLECTIBLE_PICKUP_DISTANCE {
                 // Fire event
-                ev_collectible_collected.send(CollectibleCollectedEvent {
+                ev_collectible_collected.write(CollectibleCollectedEvent {
                     player: player_entity,
                     action: collectible.kind.clone(),
                     collectible: collectible_entity,

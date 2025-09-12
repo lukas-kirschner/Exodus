@@ -149,7 +149,7 @@ impl ExodusSerializable for HighscoresDatabase {
             _ => {
                 return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
 

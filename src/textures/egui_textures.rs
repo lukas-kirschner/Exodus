@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_egui::egui::{Pos2, TextureId};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use libexodus::tiles::AtlasIndex;
 use std::collections::HashMap;
 

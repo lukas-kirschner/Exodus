@@ -99,7 +99,7 @@ impl ExodusSerializable for HighscoreRecords {
             _ => {
                 return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
         Ok(())

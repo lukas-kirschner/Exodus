@@ -1,3 +1,4 @@
+use crate::WindowUiOverlayInfo;
 use crate::game::constants::MENU_SQUARE_BUTTON_SIZE;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::configscreen::ConfigScreen;
@@ -5,7 +6,6 @@ use crate::ui::creditsscreen::CreditsScreen;
 use crate::ui::game_over_screen::GameOverScreen;
 use crate::ui::mainmenu::MainMenu;
 use crate::ui::mapselectionscreen::MapSelectionScreenPlugin;
-use crate::WindowUiOverlayInfo;
 use bevy::prelude::*;
 use bevy_egui::egui;
 use bevy_egui::egui::load::SizedTexture;
@@ -58,7 +58,7 @@ pub fn check_ui_size_changed(
 ) {
     if *new_size != *current_size {
         *current_size = *new_size;
-        event_writer.send(UiSizeChangedEvent);
+        event_writer.write(UiSizeChangedEvent);
         debug!(
             "Changed UI Overlay to T {:?} B {:?} L {:?} R{:?}",
             new_size.top, new_size.bottom, new_size.left, new_size.right

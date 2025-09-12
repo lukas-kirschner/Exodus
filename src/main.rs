@@ -1,11 +1,11 @@
 use crate::animation::AnimationPlugin;
+use crate::campaign::MainCampaignLoader;
 use crate::campaign::campaign_trail::CampaignTrailPlugin;
 use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
-use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
-use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::textures::Textures;
+use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
 use bevy::asset::LoadedFolder;
@@ -225,13 +225,13 @@ fn resize_notificator(
     mut ev_camera_writer: EventWriter<UiSizeChangedEvent>,
     window: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let Ok(_) = window.get_single() else {
+    let Ok(_) = window.single() else {
         return;
     };
     for _ in resize_event.read() {
         // event_window = commands.entity(e.window);
         // if event_window == primary {
-        ev_camera_writer.send(UiSizeChangedEvent);
+        ev_camera_writer.write(UiSizeChangedEvent);
         // }
     }
 }
@@ -306,7 +306,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(EguiPlugin)
+        .add_plugins(EguiPlugin::default())
         .init_state::<AppState>()
         .add_systems(Update, resize_notificator)
         .add_systems(Update, finished_init.run_if(in_state(AppState::Init)))

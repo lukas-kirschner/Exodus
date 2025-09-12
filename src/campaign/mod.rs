@@ -56,7 +56,7 @@ fn insert_main_campaign(
                 let graph = assets.remove(&asset.handle).expect(
                     "The Campaign Trail was removed from the asset manager before loading!",
                 );
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
                 commands
                     .spawn(CampaignTrail {
                         trail: graph.0,

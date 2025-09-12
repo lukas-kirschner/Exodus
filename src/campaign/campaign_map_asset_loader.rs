@@ -3,8 +3,8 @@ use bevy::asset::{AssetLoader, LoadContext};
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use libexodus::exodus_serializable::ExodusSerializable;
-use libexodus::world::io_error::GameWorldParseError;
 use libexodus::world::GameWorld;
+use libexodus::world::io_error::GameWorldParseError;
 
 pub struct CampaignMapAssetPlugin;
 

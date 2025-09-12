@@ -91,7 +91,10 @@ impl AnimatedActionSprite {
         delta_rotation: Quat,
         action_after_despawn: AnimatedSpriteAction,
     ) -> Self {
-        assert!(delta_alpha < 0., "Since an AnimatedActionSprite decays when alpha reaches zero, delta_alpha must have a value less than zero!");
+        assert!(
+            delta_alpha < 0.,
+            "Since an AnimatedActionSprite decays when alpha reaches zero, delta_alpha must have a value less than zero!"
+        );
         Self {
             delta_alpha,
             delta_translation,
@@ -193,7 +196,7 @@ fn animated_action_sprite_handler(
                 _ => {
                     // Despawn the sprite completely
                     sprite.color.set_alpha(0.0);
-                    commands.entity(entity).despawn_recursive();
+                    commands.entity(entity).despawn();
                 },
             }
             match animated_sprite.action() {
@@ -211,7 +214,7 @@ fn animated_action_sprite_handler(
                         "Sending GameOverEvent {:?}, triggered by AnimatedActionSprite",
                         state
                     );
-                    event_writer.send(GameOverEvent {
+                    event_writer.write(GameOverEvent {
                         state: state.clone(),
                     });
                 },
@@ -245,6 +248,6 @@ fn despawn_and_discard_all_animated_action_tiles(
 ) {
     for entity in animated_sprites.iter() {
         debug!("Despawning leftover animated entity {:?}", &entity);
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

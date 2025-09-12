@@ -1,11 +1,11 @@
+use crate::AppState;
 use crate::game::load_texture_pack_from_config;
 use crate::textures::egui_textures::atlas_to_egui_textures;
 use crate::ui::{BUTTON_HEIGHT, UIMAINMENUMARGIN};
-use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Frame, Layout, TextStyle};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 
 /// Draw the Main Menu Buttons
 fn mainmenu_buttons(
@@ -59,7 +59,7 @@ fn mainmenu_buttons(
                 ui.centered_and_justified(|ui| {
                     let quit_btn = ui.button(t!("main_menu.quit"));
                     if quit_btn.clicked() {
-                        exit.send(AppExit::Success);
+                        exit.write(AppExit::Success);
                     }
                 });
             });
@@ -75,7 +75,7 @@ fn mainmenu_ui(
 ) {
     egui::CentralPanel::default()
         .frame(Frame::NONE)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 // Left-Justify everything
                 // Margin Left
@@ -115,10 +115,13 @@ pub struct MainMenu;
 
 impl Plugin for MainMenu {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, mainmenu_ui.run_if(in_state(AppState::MainMenu)))
-            .add_systems(
-                OnEnter(AppState::MainMenu),
-                (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
-            );
+        app.add_systems(
+            EguiPrimaryContextPass,
+            mainmenu_ui.run_if(in_state(AppState::MainMenu)),
+        )
+        .add_systems(
+            OnEnter(AppState::MainMenu),
+            (load_texture_pack_from_config, atlas_to_egui_textures).chain(),
+        );
     }
 }

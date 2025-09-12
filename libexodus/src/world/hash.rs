@@ -1,5 +1,5 @@
-use crate::world::io_error::GameWorldParseError;
 use crate::world::GameWorld;
+use crate::world::io_error::GameWorldParseError;
 use bytebuffer::ByteBuffer;
 use sha2::{Digest, Sha256};
 
@@ -43,8 +43,8 @@ impl GameWorld {
 mod tests {
     use crate::tiles::Tile;
     use crate::tilesets::Tileset::Classic;
-    use crate::world::hash::RecomputeHashResult;
     use crate::world::GameWorld;
+    use crate::world::hash::RecomputeHashResult;
 
     fn assert_hashes_are_equal(hash1: &[u8; 32], hash2: &[u8; 32]) {
         assert_eq!(

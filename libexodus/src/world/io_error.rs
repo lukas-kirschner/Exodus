@@ -51,19 +51,63 @@ pub enum GameWorldParseError {
 impl Display for GameWorldParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            GameWorldParseError::InvalidMagicBytes { expected, actual } =>
-                write!(f, "Invalid Magic Bytes in Map File! Expected: {:02x?} Got: {:02x?}", expected, actual),
+            GameWorldParseError::InvalidMagicBytes { expected, actual } => write!(
+                f,
+                "Invalid Magic Bytes in Map File! Expected: {:02x?} Got: {:02x?}",
+                expected, actual
+            ),
             GameWorldParseError::NotImplemented => write!(f, "Not Implemented"),
-            GameWorldParseError::InvalidVersion { invalid_version } => write!(f, "Invalid Map Version: 0x{:02x}", invalid_version),
+            GameWorldParseError::InvalidVersion { invalid_version } => {
+                write!(f, "Invalid Map Version: 0x{:02x}", invalid_version)
+            },
             GameWorldParseError::IOError { io_error } => std::fmt::Display::fmt(&io_error, f),
-            GameWorldParseError::BincodeError { bincode_error } => std::fmt::Display::fmt(&bincode_error, f),
-            GameWorldParseError::InvalidMapWidth { max_width, actual_width } => write!(f, "Invalid Map Width: {} (Max allowed width: {})", actual_width, max_width),
-            GameWorldParseError::InvalidMapHeight { max_height, actual_height } => write!(f, "Invalid Map Height: {} (Max allowed height: {})", actual_height, max_height),
-            GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(f, "Unexpected end of Tile Data at position {}! {}", position, io_error),
-            GameWorldParseError::InvalidTile { tile_bytes } => write!(f, "Tile Byte not recognized as valid tile: 0x{:02x}", tile_bytes),
-            GameWorldParseError::InvalidTileset { tileset_bytes } => write!(f, "Tileset Byte not recognized as valid tileset: 0x{:02x}", tileset_bytes),
-            GameWorldParseError::HashMismatch { expected, actual } => write!(f, "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}", expected, actual),
-            GameWorldParseError::MissingMessageString { expected_length, actual_length } => write!(f, "Missing Message String! Expected number of messages: {} - actual: {}", expected_length, actual_length),
+            GameWorldParseError::BincodeError { bincode_error } => {
+                std::fmt::Display::fmt(&bincode_error, f)
+            },
+            GameWorldParseError::InvalidMapWidth {
+                max_width,
+                actual_width,
+            } => write!(
+                f,
+                "Invalid Map Width: {} (Max allowed width: {})",
+                actual_width, max_width
+            ),
+            GameWorldParseError::InvalidMapHeight {
+                max_height,
+                actual_height,
+            } => write!(
+                f,
+                "Invalid Map Height: {} (Max allowed height: {})",
+                actual_height, max_height
+            ),
+            GameWorldParseError::UnexpectedEndOfTileData { position, io_error } => write!(
+                f,
+                "Unexpected end of Tile Data at position {}! {}",
+                position, io_error
+            ),
+            GameWorldParseError::InvalidTile { tile_bytes } => write!(
+                f,
+                "Tile Byte not recognized as valid tile: 0x{:02x}",
+                tile_bytes
+            ),
+            GameWorldParseError::InvalidTileset { tileset_bytes } => write!(
+                f,
+                "Tileset Byte not recognized as valid tileset: 0x{:02x}",
+                tileset_bytes
+            ),
+            GameWorldParseError::HashMismatch { expected, actual } => write!(
+                f,
+                "Hash Mismatch - your map file might be corrupted!\nExpected: {:02x?}\nActual: {:02x?}",
+                expected, actual
+            ),
+            GameWorldParseError::MissingMessageString {
+                expected_length,
+                actual_length,
+            } => write!(
+                f,
+                "Missing Message String! Expected number of messages: {} - actual: {}",
+                expected_length, actual_length
+            ),
         }
     }
 }

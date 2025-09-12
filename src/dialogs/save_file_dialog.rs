@@ -1,8 +1,8 @@
+use crate::dialogs::UIDialog;
 use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::dialogs::UIDialog;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};

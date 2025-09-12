@@ -1,8 +1,8 @@
 use crate::campaign::campaign_map_asset_loader::*;
 use crate::{AllAssetHandles, AppState};
 use bevy::asset::{LoadedFolder, RecursiveDependencyLoadState};
+use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 use libexodus::world::GameWorld;
 
 pub struct CampaignMapsLoadingPlugin;

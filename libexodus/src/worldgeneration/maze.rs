@@ -1,10 +1,10 @@
 use crate::tiles::Tile;
 use crate::world::GameWorld;
 use crate::worldgeneration::{WorldGenerationAlgorithm, WorldGenerationError};
-use rand::prelude::IndexedRandom;
 use rand::Rng;
-use rand_chacha::rand_core::SeedableRng;
+use rand::prelude::IndexedRandom;
 use rand_chacha::ChaCha20Rng;
+use rand_chacha::rand_core::SeedableRng;
 use std::cmp::{max, min};
 
 #[derive(Clone)]
@@ -153,7 +153,7 @@ impl WorldGenerationAlgorithm for Maze {
 #[cfg(test)]
 mod tests {
     use crate::tiles::Tile;
-    use crate::worldgeneration::{build_generator, WorldGenerationKind};
+    use crate::worldgeneration::{WorldGenerationKind, build_generator};
 
     #[test]
     fn test_generate_2x2_map() {

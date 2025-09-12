@@ -1,7 +1,7 @@
 use crate::game::scoreboard::Scoreboard;
 use bevy::prelude::*;
-use libexodus::world::presets::map_with_border;
 use libexodus::world::GameWorld;
+use libexodus::world::presets::map_with_border;
 
 ///
 /// A wrapper around a GameWorld

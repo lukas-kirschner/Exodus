@@ -1,7 +1,7 @@
 use crate::ui::UIMARGIN;
 use bevy_egui::egui::style::Spacing;
 use bevy_egui::egui::{Color32, Context, FontData, FontFamily, FontId, Visuals};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use font_kit::family_name::FamilyName;
 use font_kit::properties::{Properties, Style, Weight};
 use font_kit::source::SystemSource;
@@ -13,7 +13,7 @@ const SANSSERIF_NORMAL: &str = "SansSerif";
 const SANSSERIF_BOLD: &str = "SansSerifBold";
 const SANSSERIF_ITALIC: &str = "SansSerifItalic";
 
-/// Insert a single system font or panic, if the font cannot be found
+/// Insert a single system font or panic if the font cannot be found
 fn insert_system_font(
     source: &FontconfigSource,
     family: &[FamilyName],
@@ -116,9 +116,9 @@ fn load_specific_fonts(_ctx: &mut Context, _source: &FontconfigSource) {
 
 pub fn egui_fonts(mut ctx: EguiContexts) {
     let source = SystemSource::new();
-    load_system_fonts(ctx.ctx_mut(), &source);
-    load_specific_fonts(ctx.ctx_mut(), &source);
-    let mut style = (*ctx.ctx_mut().style()).clone();
+    load_system_fonts(ctx.ctx_mut().unwrap(), &source);
+    load_specific_fonts(ctx.ctx_mut().unwrap(), &source);
+    let mut style = (*ctx.ctx_mut().unwrap().style()).clone();
     style.text_styles = [
         (
             egui::TextStyle::Heading,
@@ -183,7 +183,7 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
     .into();
     style.spacing = Spacing::default();
     style.spacing.item_spacing = (2.0 * UIMARGIN, UIMARGIN).into();
-    ctx.ctx_mut().set_style(style);
+    ctx.ctx_mut().unwrap().set_style(style);
 }
 pub fn egui_visuals(mut ctx: EguiContexts) {
     let mut visuals = Visuals::dark();
@@ -193,5 +193,5 @@ pub fn egui_visuals(mut ctx: EguiContexts) {
         visuals.panel_fill.g() + 15,
         visuals.panel_fill.b() + 15,
     );
-    ctx.ctx_mut().set_visuals(visuals);
+    ctx.ctx_mut().unwrap().set_visuals(visuals);
 }

@@ -13,7 +13,7 @@ use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{RichText, WidgetText};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use egui::Label;
 use libexodus::tiles::Tile;
 use std::borrow::Cow;
@@ -45,7 +45,7 @@ impl Plugin for VendingMachinePlugin {
                 vending_machine_triggered_event_clearer,
             )
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 vending_machine_ui
                     .run_if(in_state(AppState::Playing).and(resource_exists::<HasVendingMachine>)),
             )
@@ -81,7 +81,7 @@ fn vending_machine_key_handler(
     player_positions: Query<&Transform, With<PlayerComponent>>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    let player_pos = player_positions.single();
+    let player_pos = player_positions.single().unwrap();
     for (i, item) in items.items.iter().enumerate() {
         let keycode = index_to_keycode(i + 1);
         if keyboard_input.just_pressed(keycode) && scoreboard.crystals >= item.cost() {
@@ -140,7 +140,7 @@ fn vending_machine_ui(
         .collapsible(false)
         .min_width(VENDINGMACHINEWIDTH)
         .max_width(VENDINGMACHINEWIDTH)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.set_width(VENDINGMACHINEWIDTH);
             ui.add_sized(
                 (VENDINGMACHINEWIDTH, 0.0),
@@ -161,7 +161,7 @@ fn vending_machine_ui(
                     Some(Tile::STARCRYSTAL),
                 );
                 if response.clicked() {
-                    let player_pos = player_positions.single();
+                    let player_pos = player_positions.single().unwrap();
                     item.purchase(
                         &mut commands,
                         &mut scoreboard,
@@ -238,8 +238,8 @@ fn vending_machine_button(
 
 trait VendingMachineItem: Sync + Send {
     fn cost(&self) -> usize;
-    fn button_text(&self, index: usize) -> Cow<str>;
-    fn button_tooltip(&self, index: usize) -> Cow<str>;
+    fn button_text(&self, index: usize) -> Cow<'_, str>;
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str>;
     fn purchase(
         &self,
         commands: &mut Commands,
@@ -256,7 +256,7 @@ impl VendingMachineItem for KeysItem {
         COST_KEY
     }
 
-    fn button_text(&self, index: usize) -> Cow<str> {
+    fn button_text(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_key",
             key = index,
@@ -264,7 +264,7 @@ impl VendingMachineItem for KeysItem {
         )
     }
 
-    fn button_tooltip(&self, index: usize) -> Cow<str> {
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_key_tooltip",
             key = index,
@@ -339,7 +339,7 @@ impl VendingMachineItem for CoinsItem {
         COST_COINS
     }
 
-    fn button_text(&self, index: usize) -> Cow<str> {
+    fn button_text(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_five_coins",
             key = index,
@@ -347,7 +347,7 @@ impl VendingMachineItem for CoinsItem {
         )
     }
 
-    fn button_tooltip(&self, index: usize) -> Cow<str> {
+    fn button_tooltip(&self, index: usize) -> Cow<'_, str> {
         t!(
             "game_ui.vending_machine.button_purchase_five_coins_tooltip",
             key = index,

@@ -3,8 +3,8 @@ use crate::game::constants::{
     MAPEDITOR_PREVIEWTILE_AIR_ATLAS_INDEX, MAPEDITOR_PREVIEWTILE_ALPHA, MAPEDITOR_PREVIEWTILE_Z,
 };
 use crate::game::tilewrapper::MapWrapper;
-use crate::mapeditor::{compute_cursor_position_in_world, SelectedTile};
-use crate::{App, AppState, GameConfig, TilesetManager, LAYER_ID};
+use crate::mapeditor::{SelectedTile, compute_cursor_position_in_world};
+use crate::{App, AppState, GameConfig, LAYER_ID, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use bevy::window::PrimaryWindow;
@@ -30,7 +30,7 @@ impl Plugin for MapEditorPreviewTilePlugin {
 }
 
 fn destroy_preview_tile(mut commands: Commands, preview_tile_q: Query<Entity, With<PreviewTile>>) {
-    let ent = preview_tile_q.single();
+    let ent = preview_tile_q.single().unwrap();
     commands.entity(ent).despawn();
 }
 
@@ -99,7 +99,7 @@ fn update_preview_tile(
     current_texture_atlas: Res<TilesetManager>,
     config: Res<GameConfig>,
 ) {
-    let (mut preview_tile, mut sprite, mut transform) = preview_tile_q.single_mut();
+    let (mut preview_tile, mut sprite, mut transform) = preview_tile_q.single_mut().unwrap();
     if current_tile.tile != preview_tile.current_tile {
         set_preview_tile_texture(
             &current_tile.tile,
@@ -108,8 +108,8 @@ fn update_preview_tile(
             &current_texture_atlas,
         );
     }
-    let (layer_camera, layer_camera_transform) = q_layer_camera.single();
-    let (main_camera, main_camera_transform) = q_main_camera.single();
+    let (layer_camera, layer_camera_transform) = q_layer_camera.single().unwrap();
+    let (main_camera, main_camera_transform) = q_main_camera.single().unwrap();
     if let Some((world_x_coord, world_y_coord)) = compute_cursor_position_in_world(
         &wnds,
         main_camera,

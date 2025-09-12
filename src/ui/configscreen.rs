@@ -4,7 +4,7 @@ use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Frame, Layout};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::config::Language;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
@@ -14,7 +14,7 @@ pub struct ConfigScreen;
 impl Plugin for ConfigScreen {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            EguiPrimaryContextPass,
             config_screen_ui.run_if(in_state(AppState::ConfigScreen)),
         )
         .add_systems(
@@ -32,7 +32,7 @@ fn config_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
 ) {
     add_navbar(
-        egui_ctx.ctx_mut(),
+        egui_ctx.ctx_mut().unwrap(),
         &mut state,
         &egui_textures,
         &t!("config_screen.title"),
@@ -40,7 +40,7 @@ fn config_screen_ui(
 
     egui::CentralPanel::default()
         .frame(Frame::NONE)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.group(|ui| {
                     ui.set_width(UIPANELWIDTH);

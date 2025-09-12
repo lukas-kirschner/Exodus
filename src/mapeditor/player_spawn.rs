@@ -1,6 +1,6 @@
 use crate::game::constants::PLAYER_Z;
 use crate::game::tilewrapper::MapWrapper;
-use crate::{TilesetManager, LAYER_ID};
+use crate::{LAYER_ID, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::player::Player;
@@ -43,5 +43,5 @@ pub fn destroy_player_spawn(
     mut commands: Commands,
     player_query: Query<Entity, With<PlayerSpawnComponent>>,
 ) {
-    commands.entity(player_query.single()).despawn_recursive();
+    commands.entity(player_query.single().unwrap()).despawn();
 }

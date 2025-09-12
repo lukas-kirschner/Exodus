@@ -4,14 +4,14 @@ use crate::game::scoreboard::{GameOverEvent, GameOverState, Scoreboard};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::vending_machine::VendingMachineTriggered;
 use crate::game::world::DoorWrapper;
-use crate::{AppLabels, AppState, GameConfig, TilesetManager, LAYER_ID};
+use crate::{AppLabels, AppState, GameConfig, LAYER_ID, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use libexodus::directions::Directions::*;
 use libexodus::directions::FromDirection;
 use libexodus::movement::Movement;
 use libexodus::player::Player;
-use libexodus::tiles::{InteractionKind, Tile, TileKind, ANGEL_SPRITE, EXITING_PLAYER_SPRITE};
+use libexodus::tiles::{ANGEL_SPRITE, EXITING_PLAYER_SPRITE, InteractionKind, Tile, TileKind};
 use libexodus::world::GameWorld;
 
 pub struct PlayerPlugin;
@@ -109,7 +109,7 @@ fn handle_collision_interaction(
         TileKind::SOLID => false,
         TileKind::SOLIDINTERACTABLE { from, kind } => {
             let from_direction = FromDirection::from(movement.direction());
-            if !from.iter().any(|fromdir| *fromdir == from_direction) {
+            if !from.contains(&from_direction) {
                 // debug!(
                 //     "A Collision with an interactable solid from {:?} was detected",
                 //     FromDirection::from(movement.direction())
@@ -123,7 +123,7 @@ fn handle_collision_interaction(
                     InteractionKind::TeleportTo { .. } => {},
                     InteractionKind::VendingMachine => {
                         // Trigger Vending Machine
-                        vending_machine_trigger.send(VendingMachineTriggered);
+                        vending_machine_trigger.write(VendingMachineTriggered);
                     },
                 }
             }
@@ -219,7 +219,12 @@ pub fn player_movement(
                 || target_x_coord >= (worldwrapper.world.width()) as i32
                 || target_y_coord >= (worldwrapper.world.height()) as i32
             {
-                debug!("Dropped Movement {:?} to {},{}, because its target lies outside of the map boundaries!", movement.direction(), movement.target.0, movement.target.1);
+                debug!(
+                    "Dropped Movement {:?} to {},{}, because its target lies outside of the map boundaries!",
+                    movement.direction(),
+                    movement.target.0,
+                    movement.target.1
+                );
                 player.pop_movement_queue();
                 continue;
             }
@@ -315,7 +320,7 @@ pub fn player_movement(
                         TileKind::SOLIDINTERACTABLE { .. } => {},
                         TileKind::DEADLY { .. } => {
                             if block.is_deadly_from(&FromDirection::from(direction)) {
-                                commands.entity(player_entity).despawn_recursive();
+                                commands.entity(player_entity).despawn();
                                 if let Some(ref mut a) = sprite.texture_atlas {
                                     a.index = ANGEL_SPRITE
                                 }
@@ -346,11 +351,11 @@ pub fn player_movement(
                             match interaction {
                                 InteractionKind::LaunchMap { .. } => { // Only applicable in Campaign Trail
                                 },
-                                InteractionKind::VendingMachine { .. } => { // Handled already in Collision Detection
+                                InteractionKind::VendingMachine => { // Handled already in Collision Detection
                                 },
                                 InteractionKind::TeleportTo { teleport_id } => {
                                     // Teleport the player to the given location
-                                    commands.entity(player_entity).despawn_recursive();
+                                    commands.entity(player_entity).despawn();
                                     if let Some(ref mut a) = sprite.texture_atlas {
                                         a.index = EXITING_PLAYER_SPRITE;
                                     }
@@ -388,7 +393,7 @@ pub fn player_movement(
                         TileKind::DOOR => {},
                         TileKind::COLLECTIBLE { .. } => {},
                         TileKind::EXIT => {
-                            commands.entity(player_entity).despawn_recursive();
+                            commands.entity(player_entity).despawn();
                             if let Some(ref mut a) = sprite.texture_atlas {
                                 a.index = EXITING_PLAYER_SPRITE;
                             }
@@ -494,7 +499,7 @@ pub fn respawn_player(
 
 pub fn despawn_players(mut commands: Commands, players: Query<Entity, With<PlayerComponent>>) {
     for entity in players.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
 

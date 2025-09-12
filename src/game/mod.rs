@@ -16,7 +16,7 @@ mod vending_machine;
 pub(crate) mod world;
 
 use crate::game::player::{PlayerPlugin, ReturnTo};
-use crate::game::tilewrapper::{reset_score, MapWrapper};
+use crate::game::tilewrapper::{MapWrapper, reset_score};
 use crate::game::ui::GameUIPlugin;
 use crate::game::vending_machine::VendingMachinePlugin;
 use crate::game::world::WorldPlugin;
