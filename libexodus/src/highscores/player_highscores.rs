@@ -91,7 +91,7 @@ impl ExodusSerializable for PlayerHighscores {
             _ => {
                 return Err(HighscoreParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
 
@@ -152,7 +152,7 @@ impl ExodusSerializable for PlayerHighscoresWrapper {
             _ => {
                 return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
         Ok(())

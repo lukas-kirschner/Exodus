@@ -73,7 +73,7 @@ impl WorldGenerationAlgorithm for Border {
 mod tests {
     use crate::tiles::Tile;
     use crate::worldgeneration::tests::assert_map_content_matches;
-    use crate::worldgeneration::{build_generator, WorldGenerationKind};
+    use crate::worldgeneration::{WorldGenerationKind, build_generator};
 
     #[test]
     fn test_generate_2x2_map() {

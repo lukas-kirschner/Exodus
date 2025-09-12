@@ -52,7 +52,7 @@ impl ExodusSerializable for Highscore {
             _ => {
                 return Err(HighscoreParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
 

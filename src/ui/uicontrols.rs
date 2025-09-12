@@ -1,6 +1,6 @@
-use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::{image_button, BUTTON_HEIGHT};
 use crate::AppState;
+use crate::textures::egui_textures::EguiButtonTextures;
+use crate::ui::{BUTTON_HEIGHT, image_button};
 /// This module contains UI elements and styles that are reusable throughout the program
 use bevy::prelude::*;
 use bevy_egui::egui;

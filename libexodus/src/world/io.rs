@@ -1,9 +1,9 @@
 use crate::exodus_serializable::ExodusSerializable;
 use crate::tiles::{InteractionKind, TeleportId, Tile};
 use crate::tilesets::Tileset;
+use crate::world::GameWorld;
 use crate::world::hash::RecomputeHashResult;
 use crate::world::io_error::GameWorldParseError;
-use crate::world::GameWorld;
 use bincode;
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
@@ -126,7 +126,7 @@ impl ExodusSerializable for GameWorld {
             _ => {
                 return Err(Self::ParseError::InvalidVersion {
                     invalid_version: buf[0],
-                })
+                });
             },
         }?;
         match self.recompute_hash() {

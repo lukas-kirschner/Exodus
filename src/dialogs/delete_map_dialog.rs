@@ -1,8 +1,8 @@
+use crate::dialogs::UIDialog;
 use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::save_file_dialog::SaveFileDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
-use crate::dialogs::UIDialog;
 use crate::game::scoreboard::egui_highscore_label;
 use crate::game::tilewrapper::MapWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
