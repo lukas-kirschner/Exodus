@@ -256,10 +256,10 @@ fn map_selection_screen_ui(
                                                     if let Some(tileset) =
                                                         &map.world.forced_tileset()
                                                     {
-                                                        ui.add_space(4. * UIMARGIN);
+                                                        ui.add_space(8. * UIMARGIN);
                                                         ui.image(SizedTexture::new(
                                                             egui_textures.textures
-                                                                [&UITiles::SAVEBUTTON
+                                                                [&UITiles::TEXTURESTHUMBNAIL
                                                                     .atlas_index()
                                                                     .unwrap()]
                                                                 .0,
@@ -268,8 +268,14 @@ fn map_selection_screen_ui(
                                                         ui.label(
                                                             RichText::new(tileset.to_string())
                                                                 .text_style(egui::TextStyle::Name(
-                                                                    "Highscore".into(),
-                                                                )),
+                                                                    "MapTexturepackName".into(),
+                                                                ))
+                                                                .color(
+                                                                    ui.style()
+                                                                        .visuals
+                                                                        .weak_text_color
+                                                                        .unwrap(),
+                                                                ),
                                                         )
                                                         .rect
                                                         .height();
