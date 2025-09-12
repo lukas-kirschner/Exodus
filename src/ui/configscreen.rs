@@ -1,10 +1,12 @@
+use crate::egui_extensions::selectable_value_with_image::selectable_value_with_image;
+use crate::game::constants::DROPDOWN_THUMBNAIL_SIZE;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align, Button, Frame, Layout, Response, Ui, Widget, WidgetText};
+use bevy_egui::egui::{Align, Frame, Layout};
 use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::config::Language;
 use libexodus::tiles::UITiles;
@@ -89,7 +91,7 @@ fn config_screen_ui(
                                                     .atlas_index()
                                                     .unwrap()]
                                                     .0,
-                                                (12., 12.),
+                                                (DROPDOWN_THUMBNAIL_SIZE, DROPDOWN_THUMBNAIL_SIZE),
                                             ),
                                             tileset.to_string(),
                                         );
@@ -110,41 +112,6 @@ fn config_screen_ui(
                 });
             });
         });
-}
-
-fn selectable_value_with_image<'a, Value: PartialEq>(
-    ui: &mut Ui,
-    current_value: &mut Value,
-    selected_value: Value,
-    image: impl Into<bevy_egui::egui::Image<'a>>,
-    text: impl Into<WidgetText>,
-) -> egui::response::Response {
-    let mut response =
-        selectable_label_with_image(ui, *current_value == selected_value, image, text);
-    if response.clicked() && *current_value != selected_value {
-        *current_value = selected_value;
-        response.mark_changed();
-    }
-    response
-}
-fn selectable_label_with_image<'a>(
-    ui: &mut Ui,
-    checked: bool,
-    image: impl Into<bevy_egui::egui::Image<'a>>,
-    text: impl Into<WidgetText>,
-) -> Response {
-    selectable_image_button(checked, image, text).ui(ui)
-}
-
-pub fn selectable_image_button<'a>(
-    selected: bool,
-    image: impl Into<bevy_egui::egui::Image<'a>>,
-    atoms: impl Into<WidgetText>,
-) -> Button<'a> {
-    Button::image_and_text(image, atoms)
-        .selected(selected)
-        .frame_when_inactive(selected)
-        .frame(true)
 }
 
 fn save_and_apply_config(res_config: Res<GameConfig>) {

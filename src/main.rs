@@ -27,6 +27,7 @@ i18n!("locales");
 mod animation;
 mod campaign;
 mod dialogs;
+mod egui_extensions;
 mod game;
 mod mapeditor;
 mod textures;
