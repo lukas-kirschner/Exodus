@@ -1,10 +1,10 @@
-use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::DialogResource;
+use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::game::camera::{LayerCamera, MainCamera};
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::world::{spawn_tile, WorldTile};
+use crate::game::world::{WorldTile, spawn_tile};
 use crate::mapeditor::player_spawn::PlayerSpawnComponent;
-use crate::mapeditor::{compute_cursor_position_in_world, MapeditorSystems, SelectedTile};
+use crate::mapeditor::{MapeditorSystems, SelectedTile, compute_cursor_position_in_world};
 use crate::{AppState, GameConfig, TilesetManager};
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
@@ -99,7 +99,7 @@ fn replace_world_tile_at(
             _ => {
                 if *current_world_tile == Tile::AIR || *current_world_tile == Tile::PLAYERSPAWN {
                     // The world currently contains air at the given place, i.e. just create a new tile
-                    let layer: &RenderLayers = layer_query.single();
+                    let layer: &RenderLayers = layer_query.single().unwrap();
                     spawn_tile(
                         commands,
                         atlas,
@@ -223,8 +223,8 @@ fn mouse_down_handler_playerspawn(
     config: Res<GameConfig>,
 ) {
     if current_tile.tile == Tile::PLAYERSPAWN && buttons.just_pressed(MouseButton::Left) {
-        let (layer_camera, layer_camera_transform) = q_layer_camera.single();
-        let (main_camera, main_camera_transform) = q_main_camera.single();
+        let (layer_camera, layer_camera_transform) = q_layer_camera.single().unwrap();
+        let (main_camera, main_camera_transform) = q_main_camera.single().unwrap();
         if let Some((world_x, world_y)) = compute_cursor_position_in_world(
             &wnds,
             main_camera,
@@ -238,7 +238,8 @@ fn mouse_down_handler_playerspawn(
                 && world_y > 0
                 && world_y < _map.world.height() as i32
             {
-                let translation: &mut Vec3 = &mut player_spawn_query.single_mut().translation;
+                let translation: &mut Vec3 =
+                    &mut player_spawn_query.single_mut().unwrap().translation;
                 translation.x = world_x as f32 * config.texture_size();
                 translation.y = world_y as f32 * config.texture_size();
             }

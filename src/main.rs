@@ -1,11 +1,11 @@
 use crate::animation::AnimationPlugin;
+use crate::campaign::MainCampaignLoader;
 use crate::campaign::campaign_trail::CampaignTrailPlugin;
 use crate::campaign::campaign_trail_asset_loader::CampaignTrailAssetPlugin;
-use crate::campaign::MainCampaignLoader;
 use crate::game::{GamePlugin, HighscoresDatabaseWrapper};
 use crate::mapeditor::MapEditorPlugin;
-use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::textures::Textures;
+use crate::textures::tileset_manager::{ImageHandles, TilesetManager};
 use crate::ui::uicontrols::WindowUiOverlayInfo;
 use crate::ui::{Ui, UiSizeChangedEvent};
 use bevy::asset::LoadedFolder;
@@ -306,7 +306,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(EguiPlugin)
+        .add_plugins(EguiPlugin::default())
         .init_state::<AppState>()
         .add_systems(Update, resize_notificator)
         .add_systems(Update, finished_init.run_if(in_state(AppState::Init)))

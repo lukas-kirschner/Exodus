@@ -13,7 +13,7 @@ use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{RichText, WidgetText};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use egui::Label;
 use libexodus::tiles::Tile;
 use std::borrow::Cow;
@@ -81,7 +81,7 @@ fn vending_machine_key_handler(
     player_positions: Query<&Transform, With<PlayerComponent>>,
     atlas_handle: Res<TilesetManager>,
 ) {
-    let player_pos = player_positions.single();
+    let player_pos = player_positions.single().unwrap();
     for (i, item) in items.items.iter().enumerate() {
         let keycode = index_to_keycode(i + 1);
         if keyboard_input.just_pressed(keycode) && scoreboard.crystals >= item.cost() {
@@ -140,7 +140,7 @@ fn vending_machine_ui(
         .collapsible(false)
         .min_width(VENDINGMACHINEWIDTH)
         .max_width(VENDINGMACHINEWIDTH)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.set_width(VENDINGMACHINEWIDTH);
             ui.add_sized(
                 (VENDINGMACHINEWIDTH, 0.0),
@@ -161,7 +161,7 @@ fn vending_machine_ui(
                     Some(Tile::STARCRYSTAL),
                 );
                 if response.clicked() {
-                    let player_pos = player_positions.single();
+                    let player_pos = player_positions.single().unwrap();
                     item.purchase(
                         &mut commands,
                         &mut scoreboard,

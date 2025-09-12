@@ -1,24 +1,24 @@
+use crate::dialogs::DialogResource;
 use crate::dialogs::create_new_map_dialog::{
-    bevy_job_handler, CreateMapBackgroundWorkerThread, CreateNewMapDialog,
+    CreateMapBackgroundWorkerThread, CreateNewMapDialog, bevy_job_handler,
 };
 use crate::dialogs::delete_map_dialog::DeleteMapDialog;
-use crate::dialogs::DialogResource;
+use crate::game::HighscoresDatabaseWrapper;
 use crate::game::camera::{destroy_camera, handle_ui_resize, setup_camera};
 use crate::game::player::ReturnTo;
-use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
+use crate::game::scoreboard::{Scoreboard, egui_highscore_label};
 use crate::game::tilewrapper::MapWrapper;
 use crate::game::world::destroy_world;
-use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar_with_extra_buttons, menu_esc_control, WindowUiOverlayInfo};
-use crate::ui::{check_ui_size_changed, image_button, UiSizeChangedEvent, BUTTON_HEIGHT, UIMARGIN};
+use crate::ui::uicontrols::{WindowUiOverlayInfo, add_navbar_with_extra_buttons, menu_esc_control};
+use crate::ui::{BUTTON_HEIGHT, UIMARGIN, UiSizeChangedEvent, check_ui_size_changed, image_button};
 use crate::{AppLabels, AppState, GameConfig, GameDirectoriesWrapper};
 use bevy::prelude::*;
 use bevy_egui::egui::{Align, Layout, Ui};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use libexodus::highscores::highscores_database::HighscoresDatabase;
 use libexodus::tiles::UITiles;
-use libexodus::world::{presets, GameWorld};
+use libexodus::world::{GameWorld, presets};
 
 #[derive(Resource)]
 struct Maps {
@@ -193,7 +193,7 @@ fn map_selection_screen_ui(
     maps: Res<Maps>,
 ) {
     add_navbar_with_extra_buttons(
-        egui_ctx.ctx_mut(),
+        egui_ctx.ctx_mut().unwrap(),
         &mut state,
         &egui_textures,
         &t!("map_selection_screen.title"),
@@ -214,10 +214,10 @@ fn map_selection_screen_ui(
         1,
     );
     let spacing = (
-        egui_ctx.ctx_mut().style().spacing.item_spacing.x,
-        egui_ctx.ctx_mut().style().spacing.item_spacing.y,
+        egui_ctx.ctx_mut().unwrap().style().spacing.item_spacing.x,
+        egui_ctx.ctx_mut().unwrap().style().spacing.item_spacing.y,
     );
-    egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
+    egui::CentralPanel::default().show(egui_ctx.ctx_mut().unwrap(), |ui| {
         egui::ScrollArea::new([false, true])
             .auto_shrink([false; 2])
             .max_width(ui.available_width())
@@ -324,7 +324,7 @@ fn map_selection_screen_dialog(
     egui::Window::new(dialog.ui_dialog.dialog_title())
         .resizable(false)
         .collapsible(false)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             dialog.ui_dialog.draw(
                 ui,
                 &egui_textures,

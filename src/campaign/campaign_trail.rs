@@ -1,5 +1,6 @@
 use crate::animation::animated_action_sprite::{AnimatedActionSprite, AnimatedSpriteAction};
 use crate::campaign::campaign_maps::CampaignMaps;
+use crate::game::HighscoresDatabaseWrapper;
 use crate::game::constants::{
     EXITED_PLAYER_ASCEND_SPEED, EXITED_PLAYER_DECAY_SPEED, EXITED_PLAYER_ZOOM_SPEED,
 };
@@ -14,22 +15,21 @@ use crate::game::constants::{
 /// Especially the movement, camera and tile placement functions are exactly the same, except in the
 /// campaign screen, the player is not affected by gravity and may move upwards or downwards.
 use crate::game::player::{
-    despawn_players, keyboard_controls, player_movement, setup_player, PlayerComponent, ReturnTo,
+    PlayerComponent, ReturnTo, despawn_players, keyboard_controls, player_movement, setup_player,
 };
-use crate::game::scoreboard::{egui_highscore_label, Scoreboard};
+use crate::game::scoreboard::{Scoreboard, egui_highscore_label};
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control, WindowUiOverlayInfo};
-use crate::ui::{check_ui_size_changed, UiSizeChangedEvent, CAMPAIGN_MAPINFO_HEIGHT};
+use crate::ui::uicontrols::{WindowUiOverlayInfo, add_navbar, menu_esc_control};
+use crate::ui::{CAMPAIGN_MAPINFO_HEIGHT, UiSizeChangedEvent, check_ui_size_changed};
 use crate::{AppLabels, AppState, GameConfig, LAYER_ID};
+use bevy::platform::collections::HashSet;
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
-use bevy::utils::HashSet;
 use bevy_egui::egui::{Align, Layout};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use libexodus::campaign::graph::{Coord, Graph, Node, NodeID, NodeKind};
-use libexodus::tiles::{InteractionKind, Tile, EXITING_PLAYER_SPRITE};
+use libexodus::tiles::{EXITING_PLAYER_SPRITE, InteractionKind, Tile};
 use libexodus::world::GameWorld;
 use std::cmp::{max, min};
 
@@ -202,9 +202,11 @@ fn reset_trail(
     }
     // Traverse the graph using a breadth-first search to unlock all maps that are reachable from
     // a won map, starting at node id 0. Unlock all maps adjacent to unlocked maps.
-    let mut stack: Vec<&Node> = vec![trail_graph
-        .start_node()
-        .expect("The campaign graph did not have a start node!")];
+    let mut stack: Vec<&Node> = vec![
+        trail_graph
+            .start_node()
+            .expect("The campaign graph did not have a start node!"),
+    ];
     let mut visited: HashSet<NodeID> = HashSet::new();
     visited.insert(0);
     while let Some(cur) = stack.pop() {
@@ -267,7 +269,7 @@ fn campaign_screen_ui(
 ) {
     if let Ok(player_pos) = player_query.get_single() {
         let navbar_response = add_navbar(
-            egui_ctx.ctx_mut(),
+            egui_ctx.ctx_mut().unwrap(),
             &mut state,
             &egui_textures,
             &t!("campaign_screen.title"),
@@ -300,27 +302,28 @@ fn campaign_screen_ui(
             },
             _ => (false, None, "".to_string()),
         };
-        let bot = egui::TopBottomPanel::bottom("map_info").show(egui_ctx.ctx_mut(), |ui| {
-            ui.set_height(CAMPAIGN_MAPINFO_HEIGHT);
-            ui.set_width(ui.available_width());
-            ui.vertical(|ui| {
-                ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                    if in_map {
-                        ui.label(t!(format!("campaign.map.{}", map_name)));
-                    }
-                });
-                ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                    if in_map {
-                        egui_highscore_label(ui, &scoreboard, &egui_textures);
-                    }
-                });
-                ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                    if in_map {
-                        ui.label(t!("campaign_screen.press_x_to_play"));
-                    }
+        let bot =
+            egui::TopBottomPanel::bottom("map_info").show(egui_ctx.ctx_mut().unwrap(), |ui| {
+                ui.set_height(CAMPAIGN_MAPINFO_HEIGHT);
+                ui.set_width(ui.available_width());
+                ui.vertical(|ui| {
+                    ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                        if in_map {
+                            ui.label(t!(format!("campaign.map.{}", map_name)));
+                        }
+                    });
+                    ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                        if in_map {
+                            egui_highscore_label(ui, &scoreboard, &egui_textures);
+                        }
+                    });
+                    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                        if in_map {
+                            ui.label(t!("campaign_screen.press_x_to_play"));
+                        }
+                    });
                 });
             });
-        });
         let ui_bot_height = bot.response.rect.height();
         check_ui_size_changed(
             &WindowUiOverlayInfo {
@@ -348,7 +351,9 @@ pub fn play_map_keyboard_controls(
     if keyboard_input.just_pressed(KeyCode::Enter) {
         keyboard_input.reset(KeyCode::Enter);
         let Ok((_player, player_pos, entity, sprite)) = player_query.get_single() else {
-            debug!("The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback.");
+            debug!(
+                "The Enter Key has been pressed twice. Launching Campaign Map immediately as fallback."
+            );
             state.set(AppState::Playing);
             return;
         };
@@ -377,12 +382,14 @@ pub fn play_map_keyboard_controls(
                     });
                     // Insert the ReturnTo resource and update the player position, such that it
                     // can be restored later:
-                    let trail_graph = &current_campaign_trail.single().trail;
+                    let trail_graph = &current_campaign_trail.single().unwrap().trail;
                     let offset_x = -trail_graph.min_x();
                     let offset_y = -trail_graph.min_y();
                     commands.insert_resource(ReturnTo(AppState::CampaignTrailScreen));
-                    current_campaign_trail.single_mut().last_player_position =
-                        (player_map_x - offset_x, player_map_y - offset_y);
+                    current_campaign_trail
+                        .single_mut()
+                        .unwrap()
+                        .last_player_position = (player_map_x - offset_x, player_map_y - offset_y);
 
                     commands.entity(entity).despawn_recursive();
                     let mut exit_atlas = sprite.texture_atlas.clone().unwrap();

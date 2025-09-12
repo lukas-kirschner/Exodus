@@ -1,10 +1,10 @@
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::UIMARGIN;
-use crate::{get_buildnr, AppState};
+use crate::ui::uicontrols::{add_navbar, menu_esc_control};
+use crate::{AppState, get_buildnr};
 use bevy::prelude::*;
 use bevy_egui::egui::{Frame, RichText};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use indoc::formatdoc;
 
 pub struct CreditsScreen;
@@ -46,7 +46,7 @@ fn credits_screen_ui(
     egui_textures: Res<EguiButtonTextures>,
 ) {
     add_navbar(
-        egui_ctx.ctx_mut(),
+        egui_ctx.ctx_mut().unwrap(),
         &mut state,
         &egui_textures,
         &t!("credits_screen.title"),
@@ -54,7 +54,7 @@ fn credits_screen_ui(
 
     egui::CentralPanel::default()
         .frame(Frame::NONE)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.horizontal_centered(|ui| {
                 ui.vertical_centered(|ui| {
                     ui.scope(|ui| {

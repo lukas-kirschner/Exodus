@@ -1,13 +1,13 @@
+use crate::game::HighscoresDatabaseWrapper;
 use crate::game::player::ReturnTo;
 use crate::game::scoreboard::GameOverState;
 use crate::game::tilewrapper::MapWrapper;
-use crate::game::HighscoresDatabaseWrapper;
 use crate::textures::egui_textures::EguiButtonTextures;
-use crate::ui::{image_button, UIBIGMARGIN, UIMARGIN, UIPANELWIDTH};
+use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELWIDTH, image_button};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
 use bevy_egui::egui::Frame;
-use bevy_egui::{egui, EguiContexts, EguiPreUpdateSet};
+use bevy_egui::{EguiContexts, EguiPreUpdateSet, egui};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::tiles::UITiles;
 
@@ -25,7 +25,7 @@ fn game_over_screen_ui(
 ) {
     egui::CentralPanel::default()
         .frame(Frame::NONE)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.horizontal_centered(|ui| {
                 ui.vertical_centered(|ui| {
                     ui.scope(|ui| {
@@ -112,7 +112,7 @@ fn game_over_screen_ui(
         });
     egui::TopBottomPanel::bottom("navbar")
         .frame(Frame::NONE)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.ctx_mut().unwrap(), |ui| {
             ui.horizontal(|ui| {
                 let back_button = image_button(
                     ui,
@@ -155,7 +155,13 @@ fn save_highscores(
                     config.config.player_id.clone(),
                     Highscore::new(score.moves as u32, score.coins as u32),
                 );
-                info!("Added Highscore for player {} with {} moves and {} coins in map with hash {} to the highscores database.", config.config.player_id,score.moves,score.coins,map.world.hash_str());
+                info!(
+                    "Added Highscore for player {} with {} moves and {} coins in map with hash {} to the highscores database.",
+                    config.config.player_id,
+                    score.moves,
+                    score.coins,
+                    map.world.hash_str()
+                );
                 match highscore_database
                     .highscores
                     .save_to_file(highscore_database.file.as_path())
