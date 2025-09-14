@@ -572,6 +572,8 @@ pub enum UITiles {
     DISCARDBUTTON,
     /// Texture for the Create new Map Button
     CREATENEWBUTTON,
+    /// Texture for the texture pack thumbnail
+    TEXTURESTHUMBNAIL,
 }
 
 impl UITiles {
@@ -585,6 +587,7 @@ impl UITiles {
             UITiles::CREATENEWBUTTON => 63,
             UITiles::REPLAYBUTTON => 47,
             UITiles::DISCARDBUTTON => 15,
+            UITiles::TEXTURESTHUMBNAIL => 14,
         })
     }
 }

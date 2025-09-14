@@ -4,7 +4,7 @@ use crate::ui::UIMARGIN;
 use bevy::prelude::*;
 use bevy_egui::egui;
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align, Layout, RichText, Ui};
+use bevy_egui::egui::{Align, Layout, Response, RichText, Ui};
 use libexodus::highscores::highscore::Highscore;
 use libexodus::player::Player;
 use libexodus::tiles::Tile;
@@ -64,7 +64,7 @@ pub fn egui_highscore_label(
     ui: &mut Ui,
     scoreboard: &Option<Scoreboard>,
     textures: &EguiButtonTextures,
-) {
+) -> Response {
     ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
         ui.style_mut().spacing.item_spacing = (0.0, 0.0).into();
         ui.style_mut().spacing.indent = 0.0;
@@ -109,5 +109,6 @@ pub fn egui_highscore_label(
                 );
             },
         }
-    });
+    })
+    .response
 }

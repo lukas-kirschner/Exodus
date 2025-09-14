@@ -1,11 +1,15 @@
+use crate::egui_extensions::selectable_value_with_image::selectable_value_with_image;
+use crate::game::constants::DROPDOWN_THUMBNAIL_SIZE;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::uicontrols::{add_navbar, menu_esc_control};
 use crate::ui::{UIBIGMARGIN, UIMARGIN, UIPANELCBWIDTH, UIPANELWIDTH};
 use crate::{AppState, GameConfig};
 use bevy::prelude::*;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align, Frame, Layout};
 use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use libexodus::config::Language;
+use libexodus::tiles::UITiles;
 use libexodus::tilesets::Tileset;
 use strum::IntoEnumIterator;
 
@@ -78,9 +82,17 @@ fn config_screen_ui(
                                 .selected_text(selected_tileset)
                                 .show_ui(ui, |ui| {
                                     for tileset in Tileset::iter() {
-                                        ui.selectable_value(
+                                        selectable_value_with_image(
+                                            ui,
                                             &mut res_config.config.tile_set,
                                             tileset,
+                                            SizedTexture::new(
+                                                egui_textures.textures[&UITiles::TEXTURESTHUMBNAIL
+                                                    .atlas_index()
+                                                    .unwrap()]
+                                                    .0,
+                                                (DROPDOWN_THUMBNAIL_SIZE, DROPDOWN_THUMBNAIL_SIZE),
+                                            ),
                                             tileset.to_string(),
                                         );
                                     }

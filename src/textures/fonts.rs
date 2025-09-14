@@ -139,6 +139,11 @@ pub fn egui_fonts(mut ctx: EguiContexts) {
             FontId::new(14.0, FontFamily::Name(Arc::from(SANSSERIF_ITALIC))),
         ),
         (
+            // Style for Texture Pack Thumbnails
+            egui::TextStyle::Name("MapTexturepackName".into()),
+            FontId::new(14.0, FontFamily::Name(Arc::from(SANSSERIF_ITALIC))),
+        ),
+        (
             // Style for Map Titles
             egui::TextStyle::Name("MapTitle".into()),
             FontId::new(22.0, FontFamily::Name(Arc::from(SANSSERIF_NORMAL))),
@@ -193,5 +198,6 @@ pub fn egui_visuals(mut ctx: EguiContexts) {
         visuals.panel_fill.g() + 15,
         visuals.panel_fill.b() + 15,
     );
+    visuals.weak_text_color = Some(visuals.text_color().linear_multiply(0.5));
     ctx.ctx_mut().unwrap().set_visuals(visuals);
 }

@@ -3,13 +3,17 @@ use crate::dialogs::create_new_map_dialog::CreateNewMapDialog;
 use crate::dialogs::delete_map_dialog::DeleteMapDialog;
 use crate::dialogs::edit_message_dialog::EditMessageDialog;
 use crate::dialogs::unsaved_changes_dialog::UnsavedChangesDialog;
+use crate::egui_extensions::selectable_value_with_image::selectable_value_with_image;
+use crate::game::constants::DROPDOWN_THUMBNAIL_SIZE;
 use crate::textures::egui_textures::EguiButtonTextures;
 use crate::ui::UIPANELCBWIDTH;
 use bevy::log::{debug, warn};
 use bevy::prelude::Commands;
 use bevy_egui::egui;
+use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{RichText, Ui, UiBuilder};
 use libexodus::directories::{GameDirectories, InvalidMapNameError};
+use libexodus::tiles::UITiles;
 use libexodus::tilesets::Tileset;
 use std::path::{Path, PathBuf};
 use strum::IntoEnumIterator;
@@ -99,7 +103,7 @@ impl UIDialog for SaveFileDialog {
     fn draw(
         &mut self,
         ui: &mut Ui,
-        _egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
+        egui_textures: &EguiButtonTextures, // TODO include Save Button Icon etc.
         directories: &GameDirectories,
         _commands: &mut Commands,
     ) {
@@ -174,9 +178,16 @@ impl UIDialog for SaveFileDialog {
                         .width(UIPANELCBWIDTH)
                         .show_ui(ui, |ui| {
                             for tileset in Tileset::iter() {
-                                ui.selectable_value(
+                                selectable_value_with_image(
+                                    ui,
                                     &mut self.texturepack,
                                     tileset,
+                                    SizedTexture::new(
+                                        egui_textures.textures
+                                            [&UITiles::TEXTURESTHUMBNAIL.atlas_index().unwrap()]
+                                            .0,
+                                        (DROPDOWN_THUMBNAIL_SIZE, DROPDOWN_THUMBNAIL_SIZE),
+                                    ),
                                     tileset.to_string(),
                                 );
                             }
